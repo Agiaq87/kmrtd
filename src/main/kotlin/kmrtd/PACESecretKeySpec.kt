@@ -46,8 +46,8 @@ class PACESecretKeySpec(
             return false
         }
 
-        val other = other as PACESecretKeySpec
-        return keyReference == other.keyReference
+        val that = other as PACESecretKeySpec
+        return keyReference == that.keyReference
     }
 
     companion object {
