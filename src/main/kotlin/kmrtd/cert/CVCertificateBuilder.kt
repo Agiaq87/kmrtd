@@ -108,15 +108,13 @@ object CVCertificateBuilder {
      * 
      * @return the role as an EJBCA typed object
      */
-    private fun getRole(role: CVCAuthorizationTemplate.Role): AuthorizationRoleEnum {
+    private fun getRole(role: CVCAuthorizationTemplate.Role): AuthorizationRoleEnum =
         when (role) {
             CVCAuthorizationTemplate.Role.CVCA -> return AuthorizationRoleEnum.CVCA
             CVCAuthorizationTemplate.Role.DV_D -> return AuthorizationRoleEnum.DV_D
             CVCAuthorizationTemplate.Role.DV_F -> return AuthorizationRoleEnum.DV_F
             CVCAuthorizationTemplate.Role.IS -> return AuthorizationRoleEnum.IS
-            else -> throw NumberFormatException("Cannot decode role " + role)
         }
-    }
 
     /**
      * Translates an access right to an EJBCA type.
@@ -125,13 +123,11 @@ object CVCertificateBuilder {
      * 
      * @return the access right as an EJBCA typed object
      */
-    private fun getAccessRight(accessRight: CVCAuthorizationTemplate.Permission): AccessRightEnum {
+    private fun getAccessRight(accessRight: CVCAuthorizationTemplate.Permission): AccessRightEnum =
         when (accessRight) {
-            CVCAuthorizationTemplate.Permission.READ_ACCESS_NONE -> return AccessRightEnum.READ_ACCESS_NONE
-            CVCAuthorizationTemplate.Permission.READ_ACCESS_DG3 -> return AccessRightEnum.READ_ACCESS_DG3
-            CVCAuthorizationTemplate.Permission.READ_ACCESS_DG4 -> return AccessRightEnum.READ_ACCESS_DG4
-            CVCAuthorizationTemplate.Permission.READ_ACCESS_DG3_AND_DG4 -> return AccessRightEnum.READ_ACCESS_DG3_AND_DG4
-            else -> throw NumberFormatException("Cannot decode access right " + accessRight)
+            CVCAuthorizationTemplate.Permission.READ_ACCESS_NONE -> AccessRightEnum.READ_ACCESS_NONE
+            CVCAuthorizationTemplate.Permission.READ_ACCESS_DG3 -> AccessRightEnum.READ_ACCESS_DG3
+            CVCAuthorizationTemplate.Permission.READ_ACCESS_DG4 -> AccessRightEnum.READ_ACCESS_DG4
+            CVCAuthorizationTemplate.Permission.READ_ACCESS_DG3_AND_DG4 -> AccessRightEnum.READ_ACCESS_DG3_AND_DG4
         }
-    }
 }

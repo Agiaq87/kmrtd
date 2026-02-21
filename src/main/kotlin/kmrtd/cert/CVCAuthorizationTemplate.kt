@@ -101,15 +101,13 @@ class CVCAuthorizationTemplate {
          * 
          * @return a boolean
          */
-        fun implies(other: Permission?): Boolean {
-            return when (this) {
+        fun implies(other: Permission): Boolean =
+            when (this) {
                 READ_ACCESS_NONE -> other == READ_ACCESS_NONE
                 READ_ACCESS_DG3 -> other == READ_ACCESS_DG3
                 READ_ACCESS_DG4 -> other == READ_ACCESS_DG4
                 READ_ACCESS_DG3_AND_DG4 -> other == READ_ACCESS_DG3 || other == READ_ACCESS_DG4 || other == READ_ACCESS_DG3_AND_DG4
-                else -> false
             }
-        }
     }
 
     /**
