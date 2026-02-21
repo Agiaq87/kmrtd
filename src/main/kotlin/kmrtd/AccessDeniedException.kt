@@ -41,7 +41,7 @@ import kmrtd.AccessKeySpec
  * 
  */
 @Deprecated("Use {@link CardServiceProtocolException} instead.")
-class AccessDeniedException
+data class AccessDeniedException
 /**
  * Creates an exception.
  * 
@@ -49,13 +49,14 @@ class AccessDeniedException
  * @param accessKey the BAC entry that was tried, or `null`
  * @param sw status word or `-1`
  */(
-    msg: String?,
+    val msg: String,
     /**
      * Returns the BAC key that was tried before BAC failed.
      * 
      * @return a BAC key
      */
-    val accessKey: AccessKeySpec?, sw: Int
+    val accessKey: AccessKeySpec?,
+    val sw: Int
 ) : CardServiceException(msg, sw) {
     /**
      * Creates an exception.
@@ -63,7 +64,7 @@ class AccessDeniedException
      * @param msg the message
      * @param sw status word or `-1`
      */
-    constructor(msg: String?, sw: Int) : this(msg, null, sw)
+    constructor(msg: String, sw: Int) : this(msg, null, sw)
 
     companion object {
         private val serialVersionUID = -7094953658210693249L
