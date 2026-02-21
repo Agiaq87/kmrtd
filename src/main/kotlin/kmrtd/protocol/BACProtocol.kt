@@ -28,7 +28,7 @@
 package kmrtd.protocol
 
 import net.sf.scuba.smartcards.CardServiceException
-import org.jmrtd.*
+import kmrtd.*
 import java.security.GeneralSecurityException
 import java.security.SecureRandom
 import java.util.*

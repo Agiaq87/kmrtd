@@ -1,4 +1,4 @@
-package org.giaquinto.kmrtd.support
+package kmrtd.support
 
 /**
  * Represents an ICAO-compliant travel document number.

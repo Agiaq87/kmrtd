@@ -27,7 +27,7 @@
  */
 package kmrtd.io
 
-import org.jmrtd.io.FragmentBuffer
+import kmrtd.io.FragmentBuffer
 import java.io.IOException
 import java.io.InputStream
 import kotlin.math.min

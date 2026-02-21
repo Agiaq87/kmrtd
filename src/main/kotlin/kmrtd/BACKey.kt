@@ -1,9 +1,7 @@
-package org.giaquinto.kmrtd
+package kmrtd
 
-import kmrtd.BACKeySpec
-import kmrtd.Util
-import org.giaquinto.kmrtd.support.DocumentNumber
-import org.giaquinto.kmrtd.support.ICAODate
+import kmrtd.support.DocumentNumber
+import kmrtd.support.ICAODate
 import java.security.GeneralSecurityException
 import java.util.*
 

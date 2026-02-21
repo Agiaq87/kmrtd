@@ -43,7 +43,7 @@ package kmrtd.lds.iso39794
 import kmrtd.lds.iso39794.Block.aSN1Object
 import org.bouncycastle.asn1.*
 import kmrtd.ASN1Util
-import org.jmrtd.lds.iso39794.FaceImageInformation2DBlock
+import kmrtd.lds.iso39794.FaceImageInformation2DBlock
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.util.*

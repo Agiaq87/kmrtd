@@ -29,7 +29,7 @@ package kmrtd.protocol
 
 import net.sf.scuba.smartcards.*
 import net.sf.scuba.util.Hex
-import org.jmrtd.APDULevelAACapable
+import kmrtd.APDULevelAACapable
 import java.util.logging.Level
 import java.util.logging.Logger
 

@@ -27,7 +27,7 @@
  */
 package kmrtd
 
-import org.jmrtd.AccessKeySpec
+import kmrtd.AccessKeySpec
 import javax.crypto.spec.SecretKeySpec
 
 /**

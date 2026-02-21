@@ -43,7 +43,7 @@ package kmrtd.lds.iso39794
 import kmrtd.lds.ImageInfo
 import org.bouncycastle.asn1.*
 import kmrtd.ASN1Util
-import org.jmrtd.cbeff.CBEFFInfo
+import kmrtd.cbeff.CBEFFInfo
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.util.*

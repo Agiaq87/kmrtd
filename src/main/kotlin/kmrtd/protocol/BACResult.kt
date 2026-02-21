@@ -27,7 +27,7 @@
  */
 package kmrtd.protocol
 
-import org.jmrtd.AccessKeySpec
+import kmrtd.AccessKeySpec
 import java.io.Serializable
 
 /**

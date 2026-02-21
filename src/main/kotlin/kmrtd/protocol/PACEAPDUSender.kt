@@ -29,8 +29,8 @@ package kmrtd.protocol
 
 import net.sf.scuba.smartcards.*
 import net.sf.scuba.tlv.TLVUtil
-import org.jmrtd.APDULevelPACECapable
-import org.jmrtd.Util
+import kmrtd.APDULevelPACECapable
+import kmrtd.Util
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.logging.Level

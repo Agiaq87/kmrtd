@@ -1,9 +1,9 @@
 package kmrtd.protocol
 
 import net.sf.scuba.smartcards.*
-import org.jmrtd.APDULevelBACCapable
-import org.jmrtd.CardServiceProtocolException
-import org.jmrtd.Util
+import kmrtd.APDULevelBACCapable
+import kmrtd.CardServiceProtocolException
+import kmrtd.Util
 import java.security.GeneralSecurityException
 import java.security.Provider
 import javax.crypto.Cipher

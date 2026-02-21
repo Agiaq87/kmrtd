@@ -28,9 +28,9 @@
 package kmrtd
 
 import net.sf.scuba.util.Hex
-import org.jmrtd.AccessKeySpec
-import org.jmrtd.BACKeySpec
-import org.jmrtd.protocol.PACEProtocol
+import kmrtd.AccessKeySpec
+import kmrtd.BACKeySpec
+import kmrtd.protocol.PACEProtocol
 import java.security.GeneralSecurityException
 
 /**

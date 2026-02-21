@@ -29,7 +29,7 @@ package kmrtd.lds.icao
 
 import kmrtd.lds.DataGroup
 import kmrtd.lds.LDSFile
-import org.jmrtd.Util
+import kmrtd.Util
 import java.io.DataInputStream
 import java.io.IOException
 import java.io.InputStream

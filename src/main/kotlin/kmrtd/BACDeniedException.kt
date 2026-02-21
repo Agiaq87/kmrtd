@@ -28,7 +28,7 @@
 package kmrtd
 
 import net.sf.scuba.smartcards.CardServiceException
-import org.jmrtd.BACKeySpec
+import kmrtd.BACKeySpec
 
 /**
  * Exception for signaling failed BAC.

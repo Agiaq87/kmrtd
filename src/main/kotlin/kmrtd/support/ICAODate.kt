@@ -1,4 +1,4 @@
-package org.giaquinto.kmrtd.support
+package kmrtd.support
 
 import java.text.SimpleDateFormat
 import java.util.Date

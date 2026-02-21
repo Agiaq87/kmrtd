@@ -2,7 +2,7 @@ package kmrtd.protocol
 
 import net.sf.scuba.smartcards.*
 import net.sf.scuba.util.Hex
-import org.jmrtd.APDULevelReadBinaryCapable
+import kmrtd.APDULevelReadBinaryCapable
 import java.util.logging.Level
 import java.util.logging.Logger
 

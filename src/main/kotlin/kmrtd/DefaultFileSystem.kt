@@ -30,11 +30,10 @@ package kmrtd
 import net.sf.scuba.smartcards.*
 import net.sf.scuba.tlv.TLVInputStream
 import net.sf.scuba.util.Hex
-import org.jmrtd.APDULevelReadBinaryCapable
-import org.jmrtd.io.FragmentBuffer
-import org.jmrtd.lds.CVCAFile
-import org.jmrtd.lds.LDSFileUtil
-import org.jmrtd.protocol.SecureMessagingWrapper
+import kmrtd.io.FragmentBuffer
+import kmrtd.lds.CVCAFile
+import kmrtd.lds.LDSFileUtil
+import kmrtd.protocol.SecureMessagingWrapper
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.Serializable

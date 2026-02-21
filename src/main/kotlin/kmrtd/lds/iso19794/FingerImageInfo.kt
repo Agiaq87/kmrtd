@@ -24,7 +24,7 @@ package kmrtd.lds.iso19794
 import kmrtd.lds.AbstractImageInfo
 import kmrtd.lds.ImageInfo
 import kmrtd.lds.iso19794.FingerInfo.Companion.toMimeType
-import org.jmrtd.cbeff.CBEFFInfo
+import kmrtd.cbeff.CBEFFInfo
 import java.io.*
 
 /*

@@ -28,10 +28,10 @@
 package kmrtd
 
 import net.sf.scuba.smartcards.CardServiceException
-import org.jmrtd.AccessKeySpec
-import org.jmrtd.cert.CVCPrincipal
-import org.jmrtd.cert.CardVerifiableCertificate
-import org.jmrtd.protocol.*
+import kmrtd.AccessKeySpec
+import kmrtd.cert.CVCPrincipal
+import kmrtd.cert.CardVerifiableCertificate
+import kmrtd.protocol.*
 import java.math.BigInteger
 import java.security.GeneralSecurityException
 import java.security.PrivateKey

@@ -29,8 +29,8 @@ package kmrtd.protocol
 
 import net.sf.scuba.smartcards.*
 import net.sf.scuba.util.Hex
-import org.jmrtd.Util
-import org.jmrtd.WrappedAPDUEvent
+import kmrtd.Util
+import kmrtd.WrappedAPDUEvent
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.logging.Level

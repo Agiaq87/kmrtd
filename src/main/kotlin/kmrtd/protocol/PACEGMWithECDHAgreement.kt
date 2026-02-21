@@ -27,7 +27,7 @@
  */
 package kmrtd.protocol
 
-import org.jmrtd.Util
+import kmrtd.Util
 import java.security.InvalidKeyException
 import java.security.PrivateKey
 import java.security.PublicKey

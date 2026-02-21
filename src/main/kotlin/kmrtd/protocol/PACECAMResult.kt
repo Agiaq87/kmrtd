@@ -28,8 +28,8 @@
 package kmrtd.protocol
 
 import net.sf.scuba.util.Hex
-import org.jmrtd.AccessKeySpec
-import org.jmrtd.lds.PACEInfo.MappingType
+import kmrtd.AccessKeySpec
+import kmrtd.lds.PACEInfo.MappingType
 import java.security.KeyPair
 import java.security.PublicKey
 

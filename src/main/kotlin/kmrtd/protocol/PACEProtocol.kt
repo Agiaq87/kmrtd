@@ -33,10 +33,10 @@ import net.sf.scuba.tlv.TLVOutputStream
 import net.sf.scuba.tlv.TLVUtil
 import net.sf.scuba.util.Hex
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
-import org.jmrtd.*
-import org.jmrtd.lds.PACEInfo
-import org.jmrtd.lds.PACEInfo.DHCParameterSpec
-import org.jmrtd.lds.PACEInfo.MappingType
+import kmrtd.*
+import kmrtd.lds.PACEInfo
+import kmrtd.lds.PACEInfo.DHCParameterSpec
+import kmrtd.lds.PACEInfo.MappingType
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException

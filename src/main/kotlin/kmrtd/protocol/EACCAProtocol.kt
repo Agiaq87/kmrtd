@@ -29,11 +29,11 @@ package kmrtd.protocol
 
 import net.sf.scuba.smartcards.CardServiceException
 import net.sf.scuba.tlv.TLVUtil
-import org.jmrtd.APDULevelEACCACapable
-import org.jmrtd.CardServiceProtocolException
-import org.jmrtd.Util
-import org.jmrtd.lds.ChipAuthenticationInfo
-import org.jmrtd.lds.SecurityInfo
+import kmrtd.APDULevelEACCACapable
+import kmrtd.CardServiceProtocolException
+import kmrtd.Util
+import kmrtd.lds.ChipAuthenticationInfo
+import kmrtd.lds.SecurityInfo
 import java.math.BigInteger
 import java.security.*
 import java.security.interfaces.ECPublicKey

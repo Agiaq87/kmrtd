@@ -28,7 +28,7 @@
 package kmrtd.protocol
 
 import net.sf.scuba.util.Hex
-import org.jmrtd.Util
+import kmrtd.Util
 import java.io.Serializable
 import java.math.BigInteger
 import java.security.PrivateKey

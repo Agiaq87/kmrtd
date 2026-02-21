@@ -28,7 +28,7 @@
 package kmrtd.protocol
 
 import net.sf.scuba.smartcards.*
-import org.jmrtd.APDULevelEACTACapable
+import kmrtd.APDULevelEACTACapable
 
 /**
  * A low-level APDU sender to support the (EAC) Terminal Authentication protocol.

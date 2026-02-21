@@ -33,7 +33,7 @@ import kmrtd.lds.iso19794.IrisInfo
 import kmrtd.lds.iso39794.IrisImageDataBlock
 import net.sf.scuba.tlv.TLVInputStream
 import net.sf.scuba.tlv.TLVOutputStream
-import org.jmrtd.cbeff.*
+import kmrtd.cbeff.*
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
