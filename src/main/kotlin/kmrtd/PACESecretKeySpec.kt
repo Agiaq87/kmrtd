@@ -27,7 +27,6 @@
  */
 package kmrtd
 
-import kmrtd.AccessKeySpec
 import javax.crypto.spec.SecretKeySpec
 
 /**
@@ -39,7 +38,10 @@ import javax.crypto.spec.SecretKeySpec
  * 
  * (Contributions by g.giorkhelidze.)
  */
-class PACESecretKeySpec : SecretKeySpec, AccessKeySpec {
+class PACESecretKeySpec(
+    override val key: ByteArray,
+    override val algorithm: String
+    ) : SecretKeySpec(key, algorithm), AccessKeySpec {
     /**
      * Returns reference specifying the type of key from BSI TR-03110 (Appendix B).
      * 
@@ -101,12 +103,12 @@ class PACESecretKeySpec : SecretKeySpec, AccessKeySpec {
 
     /**
      * Returns the encoded key (key seed) used in key derivation.
-     * 
+     *
      * @return the encoded key
      */
-    override fun getKey(): ByteArray? {
+    /*override fun getKey(): ByteArray? {
         return super.getEncoded()
-    }
+    }*/
 
     companion object {
         private val serialVersionUID = -5181060361947453857L

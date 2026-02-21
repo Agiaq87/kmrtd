@@ -36,7 +36,7 @@ package kmrtd.cbeff
  * 
  * @since 0.4.7
  */
-interface CBEFFInfo<R : BiometricDataBlock?> {
+interface CBEFFInfo<R : BiometricDataBlock> {
     companion object {
         /*
    * Biometric type value, based on

@@ -1,5 +1,10 @@
 package kmrtd
-
+/*
+ * Modified work Copyright (C) 2026 Alessandro Giaquinto
+ * Kotlin port of JMRTD
+ *
+ * Licensed under LGPL 3.0
+ */
 import kmrtd.protocol.PACEProtocol
 import kotlinx.serialization.Serializable
 import net.sf.scuba.util.Hex

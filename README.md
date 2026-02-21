@@ -29,7 +29,10 @@ JMRTD is an excellent library, but it was designed in a Java SE world. Integrati
 - Catching generic exceptions instead of handling typed errors
 - Writing boilerplate adapters for Compose/Flow-based UIs
 
-KMRTD solves all of this at the library level, so you don't have to, also, Kmrtd offer helper and utility methods for simplify develop (also allow to jsonify all!)
+KMRTD also offer many utils:
+- Serialization (with Kotlin standard lib)
+- Advanced logger with SharedFlow
+
 
 ## Quick Start
 

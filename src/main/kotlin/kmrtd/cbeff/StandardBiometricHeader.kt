@@ -40,8 +40,8 @@ import java.util.*
  * 
  * @since 0.4.7
  */
-class StandardBiometricHeader(elements: MutableMap<Int?, ByteArray?>?) : Serializable {
-    private val elements: SortedMap<Int?, ByteArray?>? = TreeMap<Int?, ByteArray?>(elements)
+class StandardBiometricHeader(elements: MutableMap<Int, ByteArray>) : Serializable {
+    private val elements: SortedMap<Int, ByteArray> = TreeMap<Int, ByteArray>(elements)
 
     /**
      * Returns the elements of this standard biometric header.
@@ -60,10 +60,7 @@ class StandardBiometricHeader(elements: MutableMap<Int?, ByteArray?>?) : Seriali
      * @return a boolean indicating the format type is present and equal to the given value
      */
     fun hasFormatType(formatTypeValue: Int): Boolean {
-        val actualFormatTypeValue = elements!![ISO781611.FORMAT_TYPE_TAG]
-        if (actualFormatTypeValue == null) {
-            return false
-        }
+        val actualFormatTypeValue = elements[ISO781611.FORMAT_TYPE_TAG] ?: return false
         if (actualFormatTypeValue.size != 2) {
             return false
         }
@@ -77,7 +74,7 @@ class StandardBiometricHeader(elements: MutableMap<Int?, ByteArray?>?) : Seriali
         val result = StringBuilder()
         result.append("StandardBiometricHeader [")
         var isFirst = true
-        for (entry in elements!!.entries) {
+        for (entry in elements.entries) {
             if (isFirst) {
                 isFirst = false
             } else {
@@ -92,7 +89,7 @@ class StandardBiometricHeader(elements: MutableMap<Int?, ByteArray?>?) : Seriali
     override fun hashCode(): Int {
         val prime = 31
         var result = 1
-        result = prime * result + (elements?.hashCode() ?: 0)
+        result = prime * result + (elements.hashCode() ?: 0)
         return result
     }
 
@@ -169,12 +166,13 @@ class StandardBiometricHeader(elements: MutableMap<Int?, ByteArray?>?) : Seriali
          * @return a boolean indicating equality
          */
         private fun equals(
-            elements1: MutableMap<Int?, ByteArray?>?,
-            elements2: MutableMap<Int?, ByteArray?>?
+            elements1: MutableMap<Int, ByteArray>?,
+            elements2: MutableMap<Int, ByteArray>?
         ): Boolean {
             if (elements1 == null && elements2 != null) {
                 return false
             }
+
             if (elements1 != null && elements2 == null) {
                 return false
             }
@@ -183,16 +181,20 @@ class StandardBiometricHeader(elements: MutableMap<Int?, ByteArray?>?) : Seriali
                 return true
             }
 
-            if (elements1!!.keys != elements2!!.keys) {
-                return false
-            }
+            elements1?.let { e1 ->
+                elements2?.let { e2 ->
+                    if (e1.keys != e2.keys) {
+                        return false
+                    }
 
-            for (entry in elements1.entries) {
-                val key: Int = entry.key!!
-                val bytes = entry.value
-                val otherBytes = elements2.get(key)
-                if (!bytes.contentEquals(otherBytes)) {
-                    return false
+                    for (entry in elements1.entries) {
+                        val key: Int = entry.key
+                        val bytes = entry.value
+                        val otherBytes = elements2[key]
+                        if (!bytes.contentEquals(otherBytes)) {
+                            return false
+                        }
+                    }
                 }
             }
 

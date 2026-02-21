@@ -44,5 +44,5 @@ interface BiometricDataBlock : Serializable {
      * 
      * @return the standard biometric header
      */
-    val standardBiometricHeader: StandardBiometricHeader?
+    val standardBiometricHeader: StandardBiometricHeader
 }

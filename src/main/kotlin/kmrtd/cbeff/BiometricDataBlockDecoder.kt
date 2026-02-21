@@ -41,7 +41,7 @@ import java.io.InputStream
  * 
  * @since 0.4.7
 </B> */
-interface BiometricDataBlockDecoder<B : BiometricDataBlock?> {
+interface BiometricDataBlockDecoder<B : BiometricDataBlock> {
     /**
      * Reads a biometric data block from an input stream.
      * 
@@ -55,5 +55,5 @@ interface BiometricDataBlockDecoder<B : BiometricDataBlock?> {
      * @throws IOException if reading failed
      */
     @Throws(IOException::class)
-    fun decode(inputStream: InputStream?, sbh: StandardBiometricHeader?, index: Int, length: Int): B?
+    fun decode(inputStream: InputStream, sbh: StandardBiometricHeader, index: Int, length: Int): B
 }

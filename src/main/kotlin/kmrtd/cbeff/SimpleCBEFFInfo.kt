@@ -39,7 +39,7 @@ package kmrtd.cbeff
  * 
  * @since 0.4.7
 </B> */
-class SimpleCBEFFInfo<B : BiometricDataBlock?>
+class SimpleCBEFFInfo<B : BiometricDataBlock>
 /**
  * Constructs a simple CBEFF info from the given BDB.
  * 
@@ -50,5 +50,5 @@ class SimpleCBEFFInfo<B : BiometricDataBlock?>
      * 
      * @return a biometric data block
      */
-    val biometricDataBlock: B?
-) : CBEFFInfo<B?>
+    val biometricDataBlock: B
+) : CBEFFInfo<B>

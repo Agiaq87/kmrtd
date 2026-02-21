@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation("net.sf.scuba:scuba-smartcards:0.0.20")
     implementation("org.bouncycastle:bcprov-jdk18on:1.83")
     implementation("org.bouncycastle:bcutil-jdk18on:1.83")

@@ -41,7 +41,7 @@ import java.io.OutputStream
  * 
  * @since 0.4.7
 </B> */
-interface BiometricDataBlockEncoder<B : BiometricDataBlock?> {
+interface BiometricDataBlockEncoder<B : BiometricDataBlock> {
     /**
      * Writes the biometric data block in `bdb` to the output stream.
      * 
@@ -51,12 +51,12 @@ interface BiometricDataBlockEncoder<B : BiometricDataBlock?> {
      * @throws IOException if writing fails
      */
     @Throws(IOException::class)
-    fun encode(bdb: B?, out: OutputStream?)
+    fun encode(bdb: B, out: OutputStream)
 
     /**
      * Returns the biometric encoding type to be used when encoding BITs.
      * 
      * @return the biometric encoding type, either ISO-19794 or ISO-39794
      */
-    val encodingType: BiometricEncodingType?
+    val encodingType: BiometricEncodingType
 }
