@@ -27,11 +27,11 @@
  */
 package kmrtd.lds.iso39794
 
-internal interface EncodableEnum<T : Enum<T?>?> {
+internal interface EncodableEnum<T : Enum<T>> {
     val code: Int
 
     companion object {
-        fun <T> fromCode(code: Int, c: Class<T?>): T? {
+        fun <T> fromCode(code: Int, c: Class<T>): T? {
             for (value in c.getEnumConstants()) {
                 if (value is EncodableEnum<*>) {
                     if ((value as EncodableEnum<*>).code == code) {
