@@ -9,12 +9,18 @@ package kmrtd
 import javax.crypto.spec.SecretKeySpec
 
 class PACESecretKeySpec(
-    override val key: ByteArray,
+    key: ByteArray,
     offset: Int,
     len: Int,
-    override val algorithm: String,
+    algorithm: String,
     val keyReference: Byte
 ) : SecretKeySpec(key, offset, len, algorithm), AccessKeySpec {
+
+    override val key: ByteArray
+        get() = super.getEncoded()
+
+    override val algorithm: String
+        get() = super.getAlgorithm()
 
     constructor(
         key: ByteArray,
