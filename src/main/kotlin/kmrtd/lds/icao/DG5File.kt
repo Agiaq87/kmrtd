@@ -46,7 +46,7 @@ class DG5File : DisplayedImageDataGroup {
      * @param images the displayed images, all of which should be of type *Portrait*
      */
     constructor(images: MutableList<DisplayedImageInfo?>) : super(
-        LDSFile.Companion.EF_DG5_TAG,
+        LDSFile.EF_DG5_TAG,
         images,
         DisplayedImageInfo.DISPLAYED_PORTRAIT_TAG
     )
@@ -58,7 +58,7 @@ class DG5File : DisplayedImageDataGroup {
      * 
      * @throws IOException on error reading input stream
      */
-    constructor(inputStream: InputStream?) : super(LDSFile.Companion.EF_DG5_TAG, inputStream)
+    constructor(inputStream: InputStream?) : super(LDSFile.EF_DG5_TAG, inputStream)
 
     companion object {
         private const val serialVersionUID = 923840683207218244L

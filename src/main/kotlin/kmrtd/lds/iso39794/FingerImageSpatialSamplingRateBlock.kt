@@ -41,7 +41,7 @@
 package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class FingerImageSpatialSamplingRateBlock : Block {
@@ -49,7 +49,7 @@ class FingerImageSpatialSamplingRateBlock : Block {
     //    inch(0),
     //    cm(1)
     //  }
-    enum class UnitDimensionCode(private val code: Int) : EncodableEnum<UnitDimensionCode?> {
+    enum class UnitDimensionCode(override val code: Int) : EncodableEnum<UnitDimensionCode?> {
         INCH(0),
         CM(1);
 
@@ -109,13 +109,13 @@ class FingerImageSpatialSamplingRateBlock : Block {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         /* PACKAGE */
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, ASN1Util.encodeInt(samplesPerUnit))
-            taggedObjects.put(1, ASN1Util.encodeInt(unitDimension!!.getCode()))
+            taggedObjects[0] = ASN1Util.encodeInt(samplesPerUnit)
+            taggedObjects[1] = ASN1Util.encodeInt(unitDimension!!.getCode())
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }
 

@@ -70,7 +70,7 @@ class COMFile : AbstractTaggedLDSFile {
         versionLDS: String, updateLevelLDS: String,
         majorVersionUnicode: String, minorVersionUnicode: String,
         releaseLevelUnicode: String, tagList: IntArray
-    ) : super(LDSFile.Companion.EF_COM_TAG) {
+    ) : super(LDSFile.EF_COM_TAG) {
         initialize(versionLDS, updateLevelLDS, majorVersionUnicode, minorVersionUnicode, releaseLevelUnicode, tagList)
     }
 
@@ -81,7 +81,7 @@ class COMFile : AbstractTaggedLDSFile {
      * @param unicodeVer a "x.y.z" version number
      * @param tagList list of tags
      */
-    constructor(ldsVer: String, unicodeVer: String, tagList: IntArray) : super(LDSFile.Companion.EF_COM_TAG) {
+    constructor(ldsVer: String, unicodeVer: String, tagList: IntArray) : super(LDSFile.EF_COM_TAG) {
         try {
             requireNotNull(ldsVer) { "Null versionLDS" }
             requireNotNull(unicodeVer) { "Null versionUnicode" }
@@ -176,7 +176,7 @@ class COMFile : AbstractTaggedLDSFile {
             try {
                 val major = versionLDS!!.toInt()
                 val minor = updateLevelLDS!!.toInt()
-                ldsVersion = major.toString() + "." + minor
+                ldsVersion = "$major.$minor"
             } catch (nfe: NumberFormatException) {
                 /* NOTE: leave ldsVersion as is. */
             }
@@ -199,7 +199,7 @@ class COMFile : AbstractTaggedLDSFile {
                 val major = majorVersionUnicode!!.toInt()
                 val minor = minorVersionUnicode!!.toInt()
                 val releaseLevel = releaseLevelUnicode!!.toInt()
-                unicodeVersion = major.toString() + "." + minor + "." + releaseLevel
+                unicodeVersion = "$major.$minor.$releaseLevel"
             } catch (nfe: NumberFormatException) {
                 /* NOTE: leave unicodeVersion as is. */
             }
@@ -236,7 +236,7 @@ class COMFile : AbstractTaggedLDSFile {
 
     @Throws(IOException::class)
     override fun writeContent(out: OutputStream?) {
-        val tlvOut = if (out is TLVOutputStream) out else TLVOutputStream(out)
+        val tlvOut = out as? TLVOutputStream ?: TLVOutputStream(out)
         tlvOut.writeTag(VERSION_LDS_TAG)
         tlvOut.writeValue((versionLDS + updateLevelLDS).toByteArray())
         tlvOut.writeTag(VERSION_UNICODE_TAG)
@@ -257,9 +257,9 @@ class COMFile : AbstractTaggedLDSFile {
     public override fun toString(): String {
         val result = StringBuilder()
         result.append("COMFile ")
-        result.append("LDS " + versionLDS + "." + updateLevelLDS)
+        result.append("LDS $versionLDS.$updateLevelLDS")
         result.append(", ")
-        result.append("Unicode " + majorVersionUnicode + "." + minorVersionUnicode + "." + releaseLevelUnicode)
+        result.append("Unicode $majorVersionUnicode.$minorVersionUnicode.$releaseLevelUnicode")
         result.append(", ")
         var i = 0
         result.append("[")

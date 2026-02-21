@@ -22,16 +22,7 @@ import java.util.logging.Logger
  * @since 0.7.0
  */
 class ReadBinaryAPDUSender(private val service: CardService) : APDULevelReadBinaryCapable {
-    private val secureMessagingSender: SecureMessagingAPDUSender
-
-    /**
-     * Creates an APDU sender.
-     * 
-     * @param service the card service for tranceiving APDUs
-     */
-    init {
-        this.secureMessagingSender = SecureMessagingAPDUSender(service)
-    }
+    private val secureMessagingSender: SecureMessagingAPDUSender = SecureMessagingAPDUSender(service)
 
     /**
      * Sends a `SELECT APPLET` command to the card.
@@ -180,7 +171,7 @@ class ReadBinaryAPDUSender(private val service: CardService) : APDULevelReadBina
         var sw = ISO7816.SW_UNKNOWN
         try {
             responseAPDU = secureMessagingSender.transmit(wrapper, commandAPDU)
-            sw = responseAPDU.getSW().toShort()
+            sw = responseAPDU.sw.toShort()
         } catch (cse: CardServiceException) {
             if (service.isConnectionLost(cse)) {
                 /*
@@ -269,37 +260,37 @@ class ReadBinaryAPDUSender(private val service: CardService) : APDULevelReadBina
             }
 
             val data = responseAPDU.getData()
-            val sw = responseAPDU.getSW().toShort()
+            val sw = responseAPDU.sw.toShort()
             val commandResponseMessage =
-                "CAPDU = " + Hex.bytesToHexString(commandAPDU.getBytes()) + ", RAPDU = " + Hex.bytesToHexString(
-                    responseAPDU.getBytes()
+                "CAPDU = " + Hex.bytesToHexString(commandAPDU.bytes) + ", RAPDU = " + Hex.bytesToHexString(
+                    responseAPDU.bytes
                 )
 
             /* If wrong length (6700) and no data. We abort. */
             if ((sw.toInt() and ISO7816.SW_WRONG_LENGTH.toInt()) == ISO7816.SW_WRONG_LENGTH.toInt() && (data == null || data.size == 0)) {
-                throw CardServiceException("Wrong length, " + commandResponseMessage, sw.toInt())
+                throw CardServiceException("Wrong length, $commandResponseMessage", sw.toInt())
             }
 
             when (sw) {
                 ISO7816.SW_NO_ERROR -> return
                 ISO7816.SW_END_OF_FILE -> if (data == null || data.size == 0) {
-                    throw CardServiceException("End of file, " + commandResponseMessage, sw.toInt())
+                    throw CardServiceException("End of file, $commandResponseMessage", sw.toInt())
                 } else {
                     /* May have data. Caller should check SW and stop calling on EOF. */
                     return
                 }
 
                 ISO7816.SW_FILE_NOT_FOUND -> throw CardServiceException(
-                    "File not found, " + commandResponseMessage,
+                    "File not found, $commandResponseMessage",
                     sw.toInt()
                 )
 
                 ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED, ISO7816.SW_CONDITIONS_NOT_SATISFIED, ISO7816.SW_COMMAND_NOT_ALLOWED -> throw CardServiceException(
-                    "Access to file denied, " + commandResponseMessage,
+                    "Access to file denied, $commandResponseMessage",
                     sw.toInt()
                 )
 
-                else -> throw CardServiceException("Error occured, " + commandResponseMessage, sw.toInt())
+                else -> throw CardServiceException("Error occured, $commandResponseMessage", sw.toInt())
             }
         }
     }

@@ -28,10 +28,10 @@ import javax.crypto.spec.IvParameterSpec
  */
 class BACAPDUSender(private val service: CardService) : APDULevelBACCapable {
     /** DESede encryption/decryption cipher.  */
-    private val cipher: Cipher? = null
+    private var cipher: Cipher? = null
 
     /** ISO9797Alg3Mac.  */
-    private val mac: Mac? = null
+    private var mac: Mac? = null
 
     /**
      * Creates an APDU sender for tranceiving BAC protocol APDUs.

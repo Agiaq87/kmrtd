@@ -40,8 +40,8 @@
  */
 package kmrtd.lds.iso39794
 
+import kmrtd.ASN1Util
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
 import java.util.*
 
 class DateTimeBlock : Block {
@@ -87,7 +87,7 @@ class DateTimeBlock : Block {
     //  Millisecond ::= INTEGER (0..999)
     internal constructor(asn1Encodable: ASN1Encodable?) {
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        year = ASN1Util.decodeInt(taggedObjects.get(0))
+        year = ASN1Util.decodeInt(taggedObjects[0])
         month = if (taggedObjects.containsKey(1)) ASN1Util.decodeInt(taggedObjects.get(1)) else -1
         day = if (taggedObjects.containsKey(2)) ASN1Util.decodeInt(taggedObjects.get(2)) else -1
         hour = if (taggedObjects.containsKey(3)) ASN1Util.decodeInt(taggedObjects.get(3)) else -1
@@ -127,29 +127,29 @@ class DateTimeBlock : Block {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         /* PACKAGE */
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, ASN1Util.encodeInt(year))
+            taggedObjects[0] = ASN1Util.encodeInt(year)
             if (month >= 0) {
-                taggedObjects.put(1, ASN1Util.encodeInt(month))
+                taggedObjects[1] = ASN1Util.encodeInt(month)
             }
             if (day >= 0) {
-                taggedObjects.put(2, ASN1Util.encodeInt(day))
+                taggedObjects[2] = ASN1Util.encodeInt(day)
             }
             if (hour >= 0) {
-                taggedObjects.put(3, ASN1Util.encodeInt(hour))
+                taggedObjects[3] = ASN1Util.encodeInt(hour)
             }
             if (minute >= 0) {
-                taggedObjects.put(4, ASN1Util.encodeInt(minute))
+                taggedObjects[4] = ASN1Util.encodeInt(minute)
             }
             if (second >= 0) {
-                taggedObjects.put(5, ASN1Util.encodeInt(second))
+                taggedObjects[5] = ASN1Util.encodeInt(second)
             }
             if (millisecond >= 0) {
-                taggedObjects.put(6, ASN1Util.encodeInt(millisecond))
+                taggedObjects[6] = ASN1Util.encodeInt(millisecond)
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }

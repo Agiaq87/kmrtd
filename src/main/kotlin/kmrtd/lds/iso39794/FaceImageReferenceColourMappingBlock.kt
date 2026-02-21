@@ -44,7 +44,7 @@ import net.sf.scuba.util.Hex
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.DEROctetString
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class FaceImageReferenceColourMappingBlock : Block {
@@ -109,10 +109,10 @@ class FaceImageReferenceColourMappingBlock : Block {
         override fun getASN1Object(): ASN1Encodable? {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
             if (referenceColourDefinition != null) {
-                taggedObjects.put(0, DEROctetString(referenceColourDefinition))
+                taggedObjects[0] = DEROctetString(referenceColourDefinition)
             }
             if (referenceColourValue != null) {
-                taggedObjects.put(1, DEROctetString(referenceColourValue))
+                taggedObjects[1] = DEROctetString(referenceColourValue)
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }
@@ -208,10 +208,10 @@ class FaceImageReferenceColourMappingBlock : Block {
     override fun getASN1Object(): ASN1Encodable? {
         val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
         if (referenceColourSchema != null) {
-            taggedObjects.put(0, DEROctetString(referenceColourSchema))
+            taggedObjects[0] = DEROctetString(referenceColourSchema)
         }
         if (referenceColourDefinitionAndValueBlocks != null) {
-            taggedObjects.put(1, ISO39794Util.encodeBlocks(referenceColourDefinitionAndValueBlocks))
+            taggedObjects[1] = ISO39794Util.encodeBlocks(referenceColourDefinitionAndValueBlocks)
         }
         return ASN1Util.encodeTaggedObjects(taggedObjects)
     }

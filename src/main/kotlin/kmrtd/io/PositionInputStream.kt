@@ -82,7 +82,7 @@ class PositionInputStream(private val carrier: InputStream) : InputStream() {
     override fun skip(n: Long): Long {
         val skippedBytes = carrier.skip(n)
         if (skippedBytes <= 0) {
-            LOGGER.warning("Carrier (" + carrier.javaClass.getCanonicalName() + ")'s skip(" + n + ") only skipped " + skippedBytes + ", position = " + position)
+            LOGGER.warning("Carrier (${carrier.javaClass.canonicalName})'s skip($n) only skipped $skippedBytes, position = $position")
         }
 
         position += skippedBytes
@@ -107,7 +107,7 @@ class PositionInputStream(private val carrier: InputStream) : InputStream() {
     }
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("org.giaquinto.kmrtd")
 
         private val MARK_NOT_SET = -1L
     }

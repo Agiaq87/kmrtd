@@ -41,7 +41,7 @@
 package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class FaceImagePropertiesBlock : Block {
@@ -200,42 +200,42 @@ class FaceImagePropertiesBlock : Block {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
             if (hasGlasses != null) {
-                taggedObjects.put(0, ASN1Util.encodeBoolean(hasGlasses!!))
+                taggedObjects[0] = ASN1Util.encodeBoolean(hasGlasses!!)
             }
             if (hasMoustache != null) {
-                taggedObjects.put(1, ASN1Util.encodeBoolean(hasMoustache!!))
+                taggedObjects[1] = ASN1Util.encodeBoolean(hasMoustache!!)
             }
             if (hasBeard != null) {
-                taggedObjects.put(2, ASN1Util.encodeBoolean(hasBeard!!))
+                taggedObjects[2] = ASN1Util.encodeBoolean(hasBeard!!)
             }
             if (isTeethVisible != null) {
-                taggedObjects.put(3, ASN1Util.encodeBoolean(isTeethVisible!!))
+                taggedObjects[3] = ASN1Util.encodeBoolean(isTeethVisible!!)
             }
             if (isPupilOrIrisNotVisible != null) {
-                taggedObjects.put(4, ASN1Util.encodeBoolean(isPupilOrIrisNotVisible!!))
+                taggedObjects[4] = ASN1Util.encodeBoolean(isPupilOrIrisNotVisible!!)
             }
             if (isMouthOpen != null) {
-                taggedObjects.put(5, ASN1Util.encodeBoolean(isMouthOpen!!))
+                taggedObjects[5] = ASN1Util.encodeBoolean(isMouthOpen!!)
             }
             if (hasLeftEyePatch != null) {
-                taggedObjects.put(6, ASN1Util.encodeBoolean(hasLeftEyePatch!!))
+                taggedObjects[6] = ASN1Util.encodeBoolean(hasLeftEyePatch!!)
             }
             if (hasRightEyePatch != null) {
-                taggedObjects.put(7, ASN1Util.encodeBoolean(hasRightEyePatch!!))
+                taggedObjects[7] = ASN1Util.encodeBoolean(hasRightEyePatch!!)
             }
             if (hasDarkGlasses != null) {
-                taggedObjects.put(8, ASN1Util.encodeBoolean(hasDarkGlasses!!))
+                taggedObjects[8] = ASN1Util.encodeBoolean(hasDarkGlasses!!)
             }
             if (isBiometricAbsent != null) {
-                taggedObjects.put(9, ASN1Util.encodeBoolean(isBiometricAbsent!!))
+                taggedObjects[9] = ASN1Util.encodeBoolean(isBiometricAbsent!!)
             }
             if (isHeadCoveringsPresent != null) {
-                taggedObjects.put(10, ASN1Util.encodeBoolean(isHeadCoveringsPresent!!))
+                taggedObjects[10] = ASN1Util.encodeBoolean(isHeadCoveringsPresent!!)
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }

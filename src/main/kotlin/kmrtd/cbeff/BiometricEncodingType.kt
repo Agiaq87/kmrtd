@@ -53,15 +53,16 @@ enum class BiometricEncodingType {
          * 
          * @return the corresponding type
          */
+        @JvmStatic
         fun fromBDBTag(bioDataBlockTag: Int): BiometricEncodingType {
-            when (bioDataBlockTag) {
+            return when (bioDataBlockTag) {
                 ISO781611.BIOMETRIC_DATA_BLOCK_TAG ->       /* 5F2E */
-                    return BiometricEncodingType.ISO_19794
+                    BiometricEncodingType.ISO_19794
 
                 ISO781611.BIOMETRIC_DATA_BLOCK_CONSTRUCTED_TAG ->       /* 7F2E */
-                    return BiometricEncodingType.ISO_39794
+                    BiometricEncodingType.ISO_39794
 
-                else -> return BiometricEncodingType.UNKNOWN
+                else -> BiometricEncodingType.UNKNOWN
             }
         }
 
@@ -73,16 +74,17 @@ enum class BiometricEncodingType {
          * 
          * @return either `0x5F2E` or `0x7F2E`
          */
+        @JvmStatic
         fun toBDBTag(encodingType: BiometricEncodingType): Int {
-            when (encodingType) {
+            return when (encodingType) {
                 BiometricEncodingType.ISO_39794 ->       /* 7F2E */
-                    return ISO781611.BIOMETRIC_DATA_BLOCK_CONSTRUCTED_TAG
+                    ISO781611.BIOMETRIC_DATA_BLOCK_CONSTRUCTED_TAG
 
                 BiometricEncodingType.ISO_19794 ->       /* 5F2E */
-                    return ISO781611.BIOMETRIC_DATA_BLOCK_TAG
+                    ISO781611.BIOMETRIC_DATA_BLOCK_TAG
 
                 else ->
-                    return ISO781611.BIOMETRIC_DATA_BLOCK_TAG
+                    ISO781611.BIOMETRIC_DATA_BLOCK_TAG
             }
         }
     }

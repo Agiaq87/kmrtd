@@ -27,8 +27,6 @@
  */
 package kmrtd
 
-import org.jmrtd.AccessKeySpec
-
 /**
  * A BAC key.
  * 

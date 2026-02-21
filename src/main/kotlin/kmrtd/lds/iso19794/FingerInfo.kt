@@ -27,11 +27,11 @@
  */
 package kmrtd.lds.iso19794
 
+import kmrtd.cbeff.BiometricDataBlock
+import kmrtd.cbeff.CBEFFInfo
+import kmrtd.cbeff.ISO781611
+import kmrtd.cbeff.StandardBiometricHeader
 import kmrtd.lds.AbstractListInfo
-import org.jmrtd.cbeff.BiometricDataBlock
-import org.jmrtd.cbeff.CBEFFInfo
-import org.jmrtd.cbeff.ISO781611
-import org.jmrtd.cbeff.StandardBiometricHeader
 import java.io.*
 import java.util.*
 import java.util.logging.Logger
@@ -235,7 +235,7 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
     override fun readObject(inputStream: InputStream) {
         /* General record header (32) according to Table 2 in Section 7.1 of ISO/IEC 19794-4. */
 
-        val dataIn = if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+        val dataIn = inputStream as? DataInputStream ?: DataInputStream(inputStream)
 
         val fir0 = dataIn.readInt() /* header (e.g. "FIR", 0x00) (4) */
         require(fir0 == FORMAT_IDENTIFIER) { "'FIR' marker expected! Found " + Integer.toHexString(fir0) }
@@ -303,7 +303,7 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
         val recordLength = headerLength + dataLength
 
         /* General record header, should be 32... */
-        val dataOut = if (outputStream is DataOutputStream) outputStream else DataOutputStream(outputStream)
+        val dataOut = outputStream as? DataOutputStream ?: DataOutputStream(outputStream)
 
         dataOut.writeInt(FORMAT_IDENTIFIER) /* 4 */
         dataOut.writeInt(VERSION_NUMBER) /* + 4 = 8 */
@@ -389,10 +389,10 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
             )
 
             val elements: SortedMap<Int?, ByteArray?> = TreeMap<Int?, ByteArray?>()
-            elements.put(ISO781611.BIOMETRIC_TYPE_TAG, biometricType)
-            elements.put(ISO781611.BIOMETRIC_SUBTYPE_TAG, biometricSubtype)
-            elements.put(ISO781611.FORMAT_OWNER_TAG, formatOwner)
-            elements.put(ISO781611.FORMAT_TYPE_TAG, formatType)
+            elements[ISO781611.BIOMETRIC_TYPE_TAG] = biometricType
+            elements[ISO781611.BIOMETRIC_SUBTYPE_TAG] = biometricSubtype
+            elements[ISO781611.FORMAT_OWNER_TAG] = formatOwner
+            elements[ISO781611.FORMAT_TYPE_TAG] = formatType
 
             sbh = StandardBiometricHeader(elements)
         }
@@ -495,7 +495,7 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
          */
         @Throws(IOException::class)
         private fun readUnsignedLong(inputStream: InputStream, byteCount: Int): Long {
-            val dataIn = if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+            val dataIn = inputStream as? DataInputStream ?: DataInputStream(inputStream)
             val buf = ByteArray(byteCount)
             dataIn.readFully(buf)
             var result = 0L
@@ -554,6 +554,7 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
          * 
          * @return a mime-type string
          */
+        @JvmStatic
         fun toMimeType(imageDataType: Int): String? {
             when (imageDataType) {
                 COMPRESSION_UNCOMPRESSED_NO_BIT_PACKING -> return "image/raw"

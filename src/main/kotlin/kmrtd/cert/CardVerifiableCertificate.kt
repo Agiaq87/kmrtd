@@ -128,8 +128,8 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
                 notAfter
             )
             this.cvCertificate = CVCertificate(body)
-            this.cvCertificate.setSignature(signatureData)
-            cvCertificate.getTBS()
+            this.cvCertificate.signature = signatureData
+            cvCertificate.tbs
         } catch (ce: ConstructionException) {
             throw IllegalArgumentException(ce)
         }
@@ -143,7 +143,7 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
          */
         get() {
             try {
-                val oid = cvCertificate.getCertificateBody().getPublicKey().getObjectIdentifier()
+                val oid = cvCertificate.certificateBody.publicKey.objectIdentifier
                 return AlgorithmUtil.getAlgorithmName(oid)
             } catch (nsfe: NoSuchFieldException) {
                 LOGGER.log(
@@ -163,8 +163,8 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
          */
         get() {
             try {
-                val oid = cvCertificate.getCertificateBody().getPublicKey().getObjectIdentifier()
-                return oid.getAsText()
+                val oid = cvCertificate.certificateBody.publicKey.objectIdentifier
+                return oid.asText
             } catch (nsfe: NoSuchFieldException) {
                 LOGGER.log(
                     Level.WARNING,
@@ -201,14 +201,14 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
      */
     override fun getPublicKey(): PublicKey? {
         try {
-            val publicKey = cvCertificate.getCertificateBody().getPublicKey()
-            if ("RSA" == publicKey.getAlgorithm()) { // TODO: something similar for EC / ECDSA?
+            val publicKey = cvCertificate.certificateBody.publicKey
+            if ("RSA" == publicKey.algorithm) { // TODO: something similar for EC / ECDSA?
                 val rsaPublicKey = publicKey as RSAPublicKey
                 try {
                     return rsaKeyFactory!!.generatePublic(
                         RSAPublicKeySpec(
-                            rsaPublicKey.getModulus(),
-                            rsaPublicKey.getPublicExponent()
+                            rsaPublicKey.modulus,
+                            rsaPublicKey.publicExponent
                         )
                     )
                 } catch (gse: GeneralSecurityException) {
@@ -259,7 +259,7 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
         var foundProvider = false
         for (provider in providers) {
             try {
-                cvCertificate.verify(key, provider.getName())
+                cvCertificate.verify(key, provider.name)
                 foundProvider = true
                 break
             } catch (nse: NoSuchAlgorithmException) {
@@ -310,7 +310,7 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
          */
         get() {
             try {
-                return cvCertificate.getCertificateBody().getDEREncoded()
+                return cvCertificate.certificateBody.getDEREncoded()
             } catch (nsfe: NoSuchFieldException) {
                 throw CertificateException("No such field", nsfe)
             }
@@ -327,7 +327,7 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
          */
         get() {
             try {
-                return cvCertificate.getCertificateBody().getValidFrom()
+                return cvCertificate.certificateBody.validFrom
             } catch (nsfe: NoSuchFieldException) {
                 throw CertificateException("No such field", nsfe)
             }
@@ -344,7 +344,7 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
          */
         get() {
             try {
-                return cvCertificate.getCertificateBody().getValidTo()
+                return cvCertificate.certificateBody.validTo
             } catch (nsfe: NoSuchFieldException) {
                 throw CertificateException("No such field", nsfe)
             }
@@ -361,10 +361,10 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
          */
         get() {
             try {
-                val rf: ReferenceField = cvCertificate.getCertificateBody().getAuthorityReference()
-                val countryCode = rf.getCountry().uppercase(Locale.getDefault())
+                val rf: ReferenceField = cvCertificate.certificateBody.authorityReference
+                val countryCode = rf.country.uppercase(Locale.getDefault())
                 val country = Country.getInstance(countryCode)
-                return CVCPrincipal(country, rf.getMnemonic(), rf.getSequence())
+                return CVCPrincipal(country, rf.mnemonic, rf.sequence)
             } catch (nsfe: NoSuchFieldException) {
                 throw CertificateException("No such field", nsfe)
             }
@@ -381,11 +381,11 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
          */
         get() {
             try {
-                val rf: ReferenceField = cvCertificate.getCertificateBody().getHolderReference()
+                val rf: ReferenceField = cvCertificate.certificateBody.holderReference
                 return CVCPrincipal(
                     Country.getInstance(
-                        rf.getCountry().uppercase(Locale.getDefault())
-                    ), rf.getMnemonic(), rf.getSequence()
+                        rf.country.uppercase(Locale.getDefault())
+                    ), rf.mnemonic, rf.sequence
                 )
             } catch (nsfe: NoSuchFieldException) {
                 throw CertificateException("No such field", nsfe)
@@ -422,7 +422,7 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
          */
         get() {
             try {
-                return cvCertificate.getSignature()
+                return cvCertificate.signature
             } catch (nsfe: NoSuchFieldException) {
                 throw CertificateException("No such field", nsfe)
             }

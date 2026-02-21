@@ -48,16 +48,7 @@ import java.util.logging.Logger
  * @since 0.7.0
  */
 class EACCAAPDUSender(service: CardService) : APDULevelEACCACapable {
-    private val secureMessagingSender: SecureMessagingAPDUSender
-
-    /**
-     * Creates an APDU sender for the EAC-CA protocol.
-     * 
-     * @param service the card service for tranceiving APDUs
-     */
-    init {
-        this.secureMessagingSender = SecureMessagingAPDUSender(service)
-    }
+    private val secureMessagingSender: SecureMessagingAPDUSender = SecureMessagingAPDUSender(service)
 
     /**
      * The MSE KAT APDU, see EAC 1.11 spec, Section B.1.
@@ -127,7 +118,7 @@ class EACCAAPDUSender(service: CardService) : APDULevelEACCACapable {
             )
             rapdu = secureMessagingSender.transmit(wrapper, capdu)
         }
-        val sw = if (rapdu == null) -1 else rapdu.getSW().toShort()
+        val sw = if (rapdu == null) -1 else rapdu.sw.toShort()
         if (sw != ISO7816.SW_NO_ERROR) {
             throw CardServiceException("Sending MSE AT failed", sw.toInt())
         }
@@ -186,7 +177,7 @@ class EACCAAPDUSender(service: CardService) : APDULevelEACCACapable {
         var rapdu = secureMessagingSender.transmit(wrapper, capdu)
 
         /* Handle error status word. */
-        val sw = rapdu.getSW().toShort()
+        val sw = rapdu.sw.toShort()
 
         if (sw == ISO7816.SW_WRONG_LENGTH) {
             capdu = CommandAPDU(

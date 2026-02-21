@@ -27,8 +27,14 @@
  */
 package kmrtd.lds
 
+import kmrtd.cbeff.BiometricDataBlock
+import kmrtd.cbeff.BiometricEncodingType
+import kmrtd.cbeff.ComplexCBEFFInfo
+import kmrtd.cbeff.ISO781611
+import kmrtd.cbeff.ISO781611Decoder
+import kmrtd.cbeff.ISO781611Encoder
+import kmrtd.cbeff.SimpleCBEFFInfo
 import net.sf.scuba.tlv.TLVOutputStream
-import org.jmrtd.cbeff.*
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -53,6 +59,7 @@ abstract class CBEFFDataGroup : DataGroup {
     /** Records in the BIT group. Each record represents a single BIT.  */
     private var subRecords: MutableList<BiometricDataBlock?>? = null
 
+    @JvmField
     protected var shouldAddRandomDataIfEmpty: Boolean
 
     var encodingType: BiometricEncodingType? = null
@@ -273,6 +280,7 @@ abstract class CBEFFDataGroup : DataGroup {
     companion object {
         private const val serialVersionUID = 2702959939408371946L
 
+        @JvmField
         protected val LOGGER: Logger = Logger.getLogger("org.jmrtd.lds")
     }
 }

@@ -28,6 +28,7 @@
 package kmrtd.lds.icao
 
 import kmrtd.lds.DataGroup
+import kmrtd.lds.LDSFile.Companion.EF_DG11_TAG
 import net.sf.scuba.tlv.TLVInputStream
 import net.sf.scuba.tlv.TLVOutputStream
 import net.sf.scuba.tlv.TLVUtil
@@ -71,7 +72,7 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
 
     @Throws(IOException::class)
     override fun readContent(inputStream: InputStream?) {
-        val tlvInputStream = if (inputStream is TLVInputStream) inputStream else TLVInputStream(inputStream)
+        val tlvInputStream = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
         val tagList: MutableList<Int?> = readTagList(tlvInputStream)
         /* Now read the fields in order. */
         for (t in tagList) {
@@ -82,7 +83,7 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
 
     @Throws(IOException::class)
     override fun writeContent(out: OutputStream?) {
-        val tlvOut = if (out is TLVOutputStream) out else TLVOutputStream(out)
+        val tlvOut = out as? TLVOutputStream ?: TLVOutputStream(out)
         val tagList = this.tagPresenceList
         writeTagList(tagList, tlvOut)
         for (tag in tagList) {
@@ -138,11 +139,13 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
             tlvOut.writeValueEnd() /* TAG_LIST_TAG */
         }
 
+        @JvmStatic
         @Throws(IOException::class)
         protected fun readBytes(tlvInputStream: TLVInputStream): ByteArray {
             return tlvInputStream.readValue()
         }
 
+        @JvmStatic
         @Throws(IOException::class)
         protected fun writeBytes(tag: Int, value: ByteArray?, tlvOut: TLVOutputStream) {
             tlvOut.writeTag(tag)
@@ -154,6 +157,7 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
             }
         }
 
+        @JvmStatic
         @Throws(IOException::class)
         protected fun readString(tlvIn: TLVInputStream): String {
             val value = tlvIn.readValue()
@@ -166,11 +170,13 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
             }
         }
 
+        @JvmStatic
         @Throws(IOException::class)
         protected fun writeString(tag: Int, value: String?, tlvOut: TLVOutputStream) {
             writeBytes(tag, if (value == null) null else value.trim { it <= ' ' }.toByteArray(charset("UTF-8")), tlvOut)
         }
 
+        @JvmStatic
         @Throws(IOException::class)
         protected fun readFullDate(tlvInputStream: TLVInputStream): String {
             val value = tlvInputStream.readValue()
@@ -190,6 +196,7 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
             return field
         }
 
+        @JvmStatic
         @Throws(IOException::class)
         protected fun readContentSpecificFieldsList(tlvInputStream: TLVInputStream): MutableList<String?> {
             val countTag = tlvInputStream.readTag()
@@ -199,7 +206,7 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
                 )
             }
             val countLength = tlvInputStream.readLength()
-            require(countLength == 1) { "Expected length 1 count length, found " + countLength }
+            require(countLength == 1) { "Expected length 1 count length, found $countLength" }
             val countValue = tlvInputStream.readValue()
             require(!(countValue == null || countValue.size != 1)) { "Number of content specific fields should be encoded in single byte, found " + countValue.contentToString() }
             val count = countValue[0].toInt() and 0xFF
@@ -226,6 +233,7 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
             tlvOut.writeValueEnd() /* CONTENT_SPECIFIC_CONSTRUCTED_TAG */
         }
 
+        @JvmStatic
         @Throws(IOException::class)
         protected fun readList(tlvInputStream: TLVInputStream): MutableList<String?> {
             val field: String = readString(tlvInputStream)

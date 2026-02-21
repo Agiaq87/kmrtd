@@ -58,7 +58,7 @@ class DG7File : DisplayedImageDataGroup {
      * 
      * @throws IOException on error reading input stream
      */
-    constructor(inputStream: InputStream?) : super(LDSFile.Companion.EF_DG7_TAG, inputStream)
+    constructor(inputStream: InputStream?) : super(LDSFile.EF_DG7_TAG, inputStream)
 
     companion object {
         private const val serialVersionUID = 7189545112850471359L

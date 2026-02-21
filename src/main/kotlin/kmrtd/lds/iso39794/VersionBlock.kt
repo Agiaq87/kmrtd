@@ -42,7 +42,7 @@ package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1Sequence
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.io.Serializable
 import java.util.*
 
@@ -65,8 +65,8 @@ class VersionBlock : Block, Serializable {
         require(asn1Encodable is ASN1Sequence) { "Cannot decode!" }
 
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        generation = ASN1Util.decodeInt(taggedObjects.get(0))
-        year = ASN1Util.decodeInt(taggedObjects.get(1))
+        generation = ASN1Util.decodeInt(taggedObjects[0])
+        year = ASN1Util.decodeInt(taggedObjects[1])
     }
 
     override fun hashCode(): Int {
@@ -96,8 +96,8 @@ class VersionBlock : Block, Serializable {
 
     override fun getASN1Object(): ASN1Encodable? {
         val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        taggedObjects.put(0, ASN1Util.encodeInt(generation))
-        taggedObjects.put(1, ASN1Util.encodeInt(year))
+        taggedObjects[0] = ASN1Util.encodeInt(generation)
+        taggedObjects[1] = ASN1Util.encodeInt(year)
         return ASN1Util.encodeTaggedObjects(taggedObjects)
     }
 

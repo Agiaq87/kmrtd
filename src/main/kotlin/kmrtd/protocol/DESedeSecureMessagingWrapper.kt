@@ -128,7 +128,7 @@ class DESedeSecureMessagingWrapper
     constructor(wrapper: DESedeSecureMessagingWrapper) : this(
         wrapper.getEncryptionKey(),
         wrapper.getMACKey(),
-        wrapper.getMaxTranceiveLength(),
+        wrapper.maxTranceiveLength,
         wrapper.shouldCheckMAC(),
         wrapper.getSendSequenceCounter()
     )
@@ -179,7 +179,7 @@ class DESedeSecureMessagingWrapper
             .append(", kEnc: ").append(getEncryptionKey())
             .append(", kMac: ").append(getMACKey())
             .append(", shouldCheckMAC: ").append(shouldCheckMAC())
-            .append(", maxTranceiveLength: ").append(getMaxTranceiveLength())
+            .append(", maxTranceiveLength: ").append(maxTranceiveLength)
             .append("]")
             .toString()
     }

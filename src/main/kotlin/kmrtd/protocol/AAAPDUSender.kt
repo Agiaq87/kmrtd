@@ -43,16 +43,7 @@ import java.util.logging.Logger
  * @since 0.7.0
  */
 class AAAPDUSender(service: CardService) : APDULevelAACapable {
-    private val secureMessagingSender: SecureMessagingAPDUSender
-
-    /**
-     * Creates an APDU sender for tranceiving Active Authentication protocol APDUs.
-     * 
-     * @param service the card service for tranceiving APDUs
-     */
-    init {
-        this.secureMessagingSender = SecureMessagingAPDUSender(service)
-    }
+    private val secureMessagingSender: SecureMessagingAPDUSender = SecureMessagingAPDUSender(service)
 
     /**
      * Sends an `INTERNAL AUTHENTICATE` command to the passport.
@@ -79,7 +70,7 @@ class AAAPDUSender(service: CardService) : APDULevelAACapable {
         var sw: Short = -1
         try {
             responseAPDU = secureMessagingSender.transmit(wrapper, commandAPDU)
-            sw = responseAPDU.getSW().toShort()
+            sw = responseAPDU.sw.toShort()
         } catch (cse: CardServiceException) {
             LOGGER.log(
                 Level.INFO,

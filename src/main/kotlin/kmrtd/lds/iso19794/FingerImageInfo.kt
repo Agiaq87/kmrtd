@@ -52,7 +52,7 @@ class FingerImageInfo : AbstractImageInfo {/* Should be equal to (getImageLength
      * 
      * @return the record length
      */
-    var recordLength: Long = 0
+    override var recordLength: Long = 0
         private set
 
     /**
@@ -171,7 +171,7 @@ class FingerImageInfo : AbstractImageInfo {/* Should be equal to (getImageLength
 
     @Throws(IOException::class)
     override fun readObject(inputStream: InputStream) {
-        val dataIn = if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+        val dataIn = inputStream as? DataInputStream ?: DataInputStream(inputStream)
 
         /* Finger image header (14), see Table 4, 7.2 in Annex F. */
         /* NOTE: sometimes called "finger header", "finger record header" */
@@ -210,7 +210,7 @@ class FingerImageInfo : AbstractImageInfo {/* Should be equal to (getImageLength
 
         val fingerDataBlockLength = imageBytes.size + 14L
 
-        val dataOut = if (out is DataOutputStream) out else DataOutputStream(out)
+        val dataOut = out as? DataOutputStream ?: DataOutputStream(out)
 
         /* Finger Information (14) */
         dataOut.writeInt((fingerDataBlockLength and 0xFFFFFFFFL).toInt())

@@ -41,16 +41,7 @@ import java.util.*
  * @since 0.4.7
  */
 class StandardBiometricHeader(elements: MutableMap<Int?, ByteArray?>?) : Serializable {
-    private val elements: SortedMap<Int?, ByteArray?>?
-
-    /**
-     * Constructs a standard biometric header.
-     * 
-     * @param elements the elements, consisting of a tag and value
-     */
-    init {
-        this.elements = TreeMap<Int?, ByteArray?>(elements)
-    }
+    private val elements: SortedMap<Int?, ByteArray?>? = TreeMap<Int?, ByteArray?>(elements)
 
     /**
      * Returns the elements of this standard biometric header.
@@ -69,7 +60,7 @@ class StandardBiometricHeader(elements: MutableMap<Int?, ByteArray?>?) : Seriali
      * @return a boolean indicating the format type is present and equal to the given value
      */
     fun hasFormatType(formatTypeValue: Int): Boolean {
-        val actualFormatTypeValue = elements!!.get(ISO781611.FORMAT_TYPE_TAG)
+        val actualFormatTypeValue = elements!![ISO781611.FORMAT_TYPE_TAG]
         if (actualFormatTypeValue == null) {
             return false
         }
@@ -101,7 +92,7 @@ class StandardBiometricHeader(elements: MutableMap<Int?, ByteArray?>?) : Seriali
     override fun hashCode(): Int {
         val prime = 31
         var result = 1
-        result = prime * result + (if (elements == null) 0 else elements.hashCode())
+        result = prime * result + (elements?.hashCode() ?: 0)
         return result
     }
 

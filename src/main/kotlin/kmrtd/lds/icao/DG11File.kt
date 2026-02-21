@@ -159,7 +159,7 @@ class DG11File : AdditionalDetailDataGroup {
     var custodyInformation: String? = null
         private set
 
-    private var tagPresenceList: MutableList<Int?>? = null
+    override var tagPresenceList: MutableList<Int?>? = null
 
     /**
      * Constructs a file from binary representation.

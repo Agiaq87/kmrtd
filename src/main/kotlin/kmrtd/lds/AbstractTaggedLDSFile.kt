@@ -52,7 +52,7 @@ abstract class AbstractTaggedLDSFile : AbstractLDSFile {
      */
     open var tag: Int
         private set
-    private var length = 0
+    override var length = 0
 
     /**
      * Constructs a data group. This constructor
@@ -87,7 +87,7 @@ abstract class AbstractTaggedLDSFile : AbstractLDSFile {
      */
     @Throws(IOException::class)
     override fun readObject(inputStream: InputStream?) {
-        val tlvIn = if (inputStream is TLVInputStream) inputStream else TLVInputStream(inputStream)
+        val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
         val inputTag = tlvIn.readTag()
         require(inputTag == tag) {
             "Was expecting tag " + Integer.toHexString(tag) + ", found " + Integer.toHexString(

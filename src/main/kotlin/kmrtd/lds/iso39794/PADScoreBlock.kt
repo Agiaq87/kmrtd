@@ -41,7 +41,7 @@
 package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class PADScoreBlock : Block {
@@ -87,13 +87,13 @@ class PADScoreBlock : Block {
     }
 
     override fun toString(): String {
-        return "PADScoreBlock [mechanismIdBlock: " + mechanismIdBlock + ", score: " + score + "]"
+        return "PADScoreBlock [mechanismIdBlock: $mechanismIdBlock, score: $score]"
     }
 
     override fun getASN1Object(): ASN1Encodable? {
         val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        taggedObjects.put(0, mechanismIdBlock.getASN1Object())
-        taggedObjects.put(1, ISO39794Util.encodeScoreOrError(score))
+        taggedObjects[0] = mechanismIdBlock.getASN1Object()
+        taggedObjects[1] = ISO39794Util.encodeScoreOrError(score)
         return ASN1Util.encodeTaggedObjects(taggedObjects)
     }
 

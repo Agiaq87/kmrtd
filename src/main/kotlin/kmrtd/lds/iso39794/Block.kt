@@ -27,6 +27,7 @@
  */
 package kmrtd.lds.iso39794
 
+import org.bouncycastle.asn1.ASN1Encodable
 import java.io.IOException
 import java.io.Serializable
 import java.util.logging.Level
@@ -52,6 +53,7 @@ internal abstract class Block : Serializable {
     companion object {
         private val serialVersionUID = -8585852930916738115L
 
+        @JvmField
         protected val LOGGER: Logger = Logger.getLogger("org.jmrtd.lds.iso39794")
     }
 }

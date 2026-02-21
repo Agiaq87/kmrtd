@@ -86,15 +86,15 @@ class DG3File : CBEFFDataGroup {
      */
     constructor(inputStream: InputStream?) : super(LDSFile.Companion.EF_DG3_TAG, inputStream, false)
 
-    val encoder: ISO781611Encoder<BiometricDataBlock?>
+    override val encoder: ISO781611Encoder<BiometricDataBlock?>
         get() {
             if (encodingType == null) {
                 return ISO_19794_ENCODER
             }
-            when (encodingType) {
-                BiometricEncodingType.ISO_19794 -> return ISO_19794_ENCODER
-                BiometricEncodingType.ISO_39794 -> return ISO_39794_ENCODER
-                else -> return ISO_19794_ENCODER
+            return when (encodingType) {
+                BiometricEncodingType.ISO_19794 -> ISO_19794_ENCODER
+                BiometricEncodingType.ISO_39794 -> ISO_39794_ENCODER
+                else -> ISO_19794_ENCODER
             }
         }
 
@@ -152,54 +152,42 @@ class DG3File : CBEFFDataGroup {
                     HashMap<Int?, BiometricDataBlockDecoder<BiometricDataBlock?>?>()
 
                 /* 5F2E */
-                decoders.put(
-                    ISO781611.BIOMETRIC_DATA_BLOCK_TAG,
-                    object : BiometricDataBlockDecoder<BiometricDataBlock?> {
-                        @Throws(IOException::class)
-                        override fun decode(
-                            inputStream: InputStream,
-                            sbh: StandardBiometricHeader?,
-                            index: Int,
-                            length: Int
-                        ): BiometricDataBlock {
-                            return FingerInfo(sbh, inputStream)
-                        }
-                    })
+                decoders[ISO781611.BIOMETRIC_DATA_BLOCK_TAG] =
+                    BiometricDataBlockDecoder<BiometricDataBlock?> { inputStream, sbh, index, length -> FingerInfo(sbh, inputStream) }
 
                 /* 7F2E */
-                decoders.put(
-                    ISO781611.BIOMETRIC_DATA_BLOCK_CONSTRUCTED_TAG,
-                    object : BiometricDataBlockDecoder<BiometricDataBlock?> {
-                        @Throws(IOException::class)
-                        override fun decode(
-                            inputStream: InputStream,
-                            sbh: StandardBiometricHeader?,
-                            index: Int,
-                            length: Int
-                        ): BiometricDataBlock {
-                            if (sbh != null && sbh.hasFormatType(StandardBiometricHeader.ISO_19794_FINGER_IMAGE_FORMAT_TYPE_VALUE)) {
-                                return FingerInfo(sbh, inputStream)
-                            }
-                            if (sbh != null && !sbh.hasFormatType(StandardBiometricHeader.ISO_39794_FINGER_IMAGE_FORMAT_TYPE_VALUE)) {
-                                LOGGER.warning("Unexpected format type in standard biometric header " + sbh + ", assuming ISO-39794 encoding")
-                            }
-                            val tlvInputStream =
-                                if (inputStream is TLVInputStream) inputStream else TLVInputStream(
+                decoders[ISO781611.BIOMETRIC_DATA_BLOCK_CONSTRUCTED_TAG] = object : BiometricDataBlockDecoder<BiometricDataBlock?> {
+                    @Throws(IOException::class)
+                    override fun decode(
+                        inputStream: InputStream,
+                        sbh: StandardBiometricHeader?,
+                        index: Int,
+                        length: Int
+                    ): BiometricDataBlock {
+                        if (sbh != null && sbh.hasFormatType(StandardBiometricHeader.ISO_19794_FINGER_IMAGE_FORMAT_TYPE_VALUE)) {
+                            return FingerInfo(sbh, inputStream)
+                        }
+                        if (sbh != null && !sbh.hasFormatType(StandardBiometricHeader.ISO_39794_FINGER_IMAGE_FORMAT_TYPE_VALUE)) {
+                            LOGGER.warning("Unexpected format type in standard biometric header " + sbh + ", assuming ISO-39794 encoding")
+                        }
+                        val tlvInputStream =
+                            inputStream as? TLVInputStream
+                                ?: TLVInputStream(
                                     inputStream
                                 )
-                            val tag = tlvInputStream.readTag() // 0xA1
-                            if (tag != ISO781611.BIOMETRIC_HEADER_TEMPLATE_BASE_TAG) {
-                                /* ISO/IEC 39794-5 Application Profile for eMRTDs Version – 1.00: Table 2: Data Structure under DO7F2E. */
-                                LOGGER.warning(
-                                    "Expected tag A1, found " + Integer.toHexString(
-                                        tag
-                                    )
+                        val tag = tlvInputStream.readTag() // 0xA1
+                        if (tag != ISO781611.BIOMETRIC_HEADER_TEMPLATE_BASE_TAG) {
+                            /* ISO/IEC 39794-5 Application Profile for eMRTDs Version – 1.00: Table 2: Data Structure under DO7F2E. */
+                            LOGGER.warning(
+                                "Expected tag A1, found " + Integer.toHexString(
+                                    tag
                                 )
-                            }
-                            tlvInputStream.readLength()
-                            return FingerImageDataBlock(sbh, inputStream)
+                            )
                         }
-                    })
+                        tlvInputStream.readLength()
+                        return FingerImageDataBlock(sbh, inputStream)
+                    }
+                }
 
                 return decoders
             }
@@ -224,7 +212,7 @@ class DG3File : CBEFFDataGroup {
                 override fun encode(info: BiometricDataBlock?, outputStream: OutputStream?) {
                     if (info is FingerImageDataBlock) {
                         val tlvOutputStream =
-                            if (outputStream is TLVOutputStream) outputStream else TLVOutputStream(outputStream)
+                            outputStream as? TLVOutputStream ?: TLVOutputStream(outputStream)
                         tlvOutputStream.writeTag(0xA1)
                         tlvOutputStream.writeValue(info.encoded)
                     }

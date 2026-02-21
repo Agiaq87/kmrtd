@@ -27,9 +27,9 @@
  */
 package kmrtd.lds
 
+import kmrtd.Util
 import org.bouncycastle.asn1.*
 import org.bouncycastle.jce.ECNamedCurveTable
-import org.jmrtd.Util
 import java.math.BigInteger
 import java.security.spec.AlgorithmParameterSpec
 import java.security.spec.ECParameterSpec
@@ -89,7 +89,7 @@ class PACEInfo(oid: String?, version: Int, parameterId: BigInteger?) : SecurityI
      * 
      * @return the PACE protocol object identifier
      */
-    val objectIdentifier: String?
+    override val objectIdentifier: String?
 
     /**
      * Returns the version.
@@ -137,7 +137,7 @@ class PACEInfo(oid: String?, version: Int, parameterId: BigInteger?) : SecurityI
         this.parameterId = parameterId
     }
 
-    val protocolOIDString: String?
+    override val protocolOIDString: String?
         /**
          * Returns the protocol object identifier as a human readable string.
          * 
@@ -146,7 +146,7 @@ class PACEInfo(oid: String?, version: Int, parameterId: BigInteger?) : SecurityI
         get() = toProtocolOIDString(this.objectIdentifier)
 
     @get:Deprecated("this method will be removed from visible interface (because of dependency on BC API)")
-    val dERObject: ASN1Primitive
+    override val dERObject: ASN1Primitive
         /**
          * Returns a DER object with this SecurityInfo data (DER sequence).
          * 
@@ -183,7 +183,7 @@ class PACEInfo(oid: String?, version: Int, parameterId: BigInteger?) : SecurityI
 
     override fun hashCode(): Int {
         return (1234567891
-                + 7 * objectIdentifier.hashCode() + 5 * version + 3 * (if (parameterId == null) 1991 else parameterId.hashCode()))
+                + 7 * objectIdentifier.hashCode() + 5 * version + 3 * (parameterId?.hashCode() ?: 1991))
     }
 
     override fun equals(other: Any?): Boolean {
@@ -368,7 +368,7 @@ class PACEInfo(oid: String?, version: Int, parameterId: BigInteger?) : SecurityI
             Util.toExplicitECParameterSpec(ECNamedCurveTable.getParameterSpec("brainpoolp512r1"))
 
         private val ALLOWED_REQUIRED_IDENTIFIERS: MutableSet<String?> = TreeSet<String?>(
-            Arrays.asList<String?>(
+            listOf<String?>(
                 *arrayOf<String>(
                     ID_PACE_DH_GM_3DES_CBC_CBC,
                     ID_PACE_DH_GM_AES_CBC_CMAC_128,
@@ -413,10 +413,10 @@ class PACEInfo(oid: String?, version: Int, parameterId: BigInteger?) : SecurityI
                 optionalData = sequence.getObjectAt(2).toASN1Primitive()
             }
 
-            val version = (requiredData as ASN1Integer).getValue().toInt()
+            val version = (requiredData as ASN1Integer).value.toInt()
             var parameterId: BigInteger? = null
             if (optionalData != null) {
-                parameterId = (optionalData as ASN1Integer).getValue()
+                parameterId = (optionalData as ASN1Integer).value
             }
 
             return PACEInfo(oid, version, parameterId)
@@ -472,7 +472,7 @@ class PACEInfo(oid: String?, version: Int, parameterId: BigInteger?) : SecurityI
                 return MappingType.CAM
             }
 
-            throw NumberFormatException("Unknown OID: \"" + oid + "\"")
+            throw NumberFormatException("Unknown OID: \"$oid\"")
         }
 
         /**
@@ -509,7 +509,7 @@ class PACEInfo(oid: String?, version: Int, parameterId: BigInteger?) : SecurityI
                 return "ECDH"
             }
 
-            throw NumberFormatException("Unknown OID: \"" + oid + "\"")
+            throw NumberFormatException("Unknown OID: \"$oid\"")
         }
 
         /**
@@ -545,7 +545,7 @@ class PACEInfo(oid: String?, version: Int, parameterId: BigInteger?) : SecurityI
                 return "AES"
             }
 
-            throw NumberFormatException("Unknown OID: \"" + oid + "\"")
+            throw NumberFormatException("Unknown OID: \"$oid\"")
         }
 
         /**
@@ -581,7 +581,7 @@ class PACEInfo(oid: String?, version: Int, parameterId: BigInteger?) : SecurityI
                 return "SHA-256"
             }
 
-            throw NumberFormatException("Unknown OID: \"" + oid + "\"")
+            throw NumberFormatException("Unknown OID: \"$oid\"")
         }
 
         /**
@@ -619,7 +619,7 @@ class PACEInfo(oid: String?, version: Int, parameterId: BigInteger?) : SecurityI
                 return 256
             }
 
-            throw NumberFormatException("Unknown OID: \"" + oid + "\"")
+            throw NumberFormatException("Unknown OID: \"$oid\"")
         }
 
         /**
@@ -656,7 +656,7 @@ class PACEInfo(oid: String?, version: Int, parameterId: BigInteger?) : SecurityI
                 PARAM_ID_ECP_BRAINPOOL_P384_R1 -> return PARAMS_ECP_BRAINPOOL_P384_R1
                 PARAM_ID_ECP_BRAINPOOL_P512_R1 -> return PARAMS_ECP_BRAINPOOL_P512_R1
                 PARAM_ID_ECP_NIST_P521_R1 -> return PARAMS_ECP_NIST_P521_R1
-                else -> throw NumberFormatException("Unknown standardized domain parameters " + stdDomainParam)
+                else -> throw NumberFormatException("Unknown standardized domain parameters $stdDomainParam")
             }
         }
 

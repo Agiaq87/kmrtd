@@ -30,6 +30,7 @@ package kmrtd.lds
 import org.bouncycastle.asn1.ASN1EncodableVector
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.ASN1OctetString
+import org.bouncycastle.asn1.ASN1Primitive
 import org.bouncycastle.asn1.DLSequence
 
 /*
@@ -66,7 +67,7 @@ class EFDIRInfo(efDIR: ByteArray) : SecurityInfo() {
          */
         get() = efDIR.copyOf(efDIR.size)
 
-    val dERObject: ASN1Primitive?
+    override val dERObject: ASN1Primitive?
         get() {
             val v = ASN1EncodableVector()
             v.add(ASN1ObjectIdentifier(Companion.objectIdentifier))
@@ -74,7 +75,7 @@ class EFDIRInfo(efDIR: ByteArray) : SecurityInfo() {
             return DLSequence.getInstance(v)
         }
 
-    val protocolOIDString: String?
+    override val protocolOIDString: String?
         get() = "id-EFDIR"
 
     companion object {

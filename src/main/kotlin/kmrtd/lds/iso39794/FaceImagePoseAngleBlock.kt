@@ -41,7 +41,7 @@
 package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class FaceImagePoseAngleBlock : Block {
@@ -96,7 +96,7 @@ class FaceImagePoseAngleBlock : Block {
 
         override fun getASN1Object(): ASN1Encodable? {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, ASN1Util.encodeInt(angleValue))
+            taggedObjects[0] = ASN1Util.encodeInt(angleValue)
             if (angleUncertainty >= 0) {
                 taggedObjects.put(1, ASN1Util.encodeInt(angleUncertainty))
             }
@@ -177,18 +177,18 @@ class FaceImagePoseAngleBlock : Block {
     override fun getASN1Object(): ASN1Encodable? {
         val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
         if (yawAngleDataBlock != null) {
-            taggedObjects.put(0, yawAngleDataBlock.getASN1Object())
+            taggedObjects[0] = yawAngleDataBlock.getASN1Object()
         }
         if (pitchAngleDataBlock != null) {
-            taggedObjects.put(1, pitchAngleDataBlock.getASN1Object())
+            taggedObjects[1] = pitchAngleDataBlock.getASN1Object()
         }
         if (rollAngleDataBlock != null) {
-            taggedObjects.put(2, rollAngleDataBlock.getASN1Object())
+            taggedObjects[2] = rollAngleDataBlock.getASN1Object()
         }
         return ASN1Util.encodeTaggedObjects(taggedObjects)
     }
 
     companion object {
-        val serialversionuid: Long = -7526271037214134760L
+        const val serialversionuid: Long = -7526271037214134760L
     }
 }

@@ -41,7 +41,7 @@
 package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class FaceImageExpressionBlock : Block {
@@ -141,28 +141,28 @@ class FaceImageExpressionBlock : Block {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         /* PACKAGE */
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
             if (isNeutral != null) {
-                taggedObjects.put(0, ASN1Util.encodeBoolean(isNeutral!!))
+                taggedObjects[0] = ASN1Util.encodeBoolean(isNeutral!!)
             }
             if (isSmile != null) {
-                taggedObjects.put(1, ASN1Util.encodeBoolean(isSmile!!))
+                taggedObjects[1] = ASN1Util.encodeBoolean(isSmile!!)
             }
             if (isRaisedEyebrows != null) {
-                taggedObjects.put(2, ASN1Util.encodeBoolean(isRaisedEyebrows!!))
+                taggedObjects[2] = ASN1Util.encodeBoolean(isRaisedEyebrows!!)
             }
             if (isEyesLookingAwayFromTheCamera != null) {
-                taggedObjects.put(3, ASN1Util.encodeBoolean(isEyesLookingAwayFromTheCamera!!))
+                taggedObjects[3] = ASN1Util.encodeBoolean(isEyesLookingAwayFromTheCamera!!)
             }
             if (isSquinting != null) {
-                taggedObjects.put(4, ASN1Util.encodeBoolean(isSquinting!!))
+                taggedObjects[4] = ASN1Util.encodeBoolean(isSquinting!!)
             }
             if (isFrowning != null) {
-                taggedObjects.put(5, ASN1Util.encodeBoolean(isFrowning!!))
+                taggedObjects[5] = ASN1Util.encodeBoolean(isFrowning!!)
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }

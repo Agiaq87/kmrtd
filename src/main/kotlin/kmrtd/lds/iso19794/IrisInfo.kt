@@ -27,11 +27,11 @@
  */
 package kmrtd.lds.iso19794
 
+import kmrtd.cbeff.BiometricDataBlock
+import kmrtd.cbeff.CBEFFInfo
+import kmrtd.cbeff.ISO781611
+import kmrtd.cbeff.StandardBiometricHeader
 import kmrtd.lds.AbstractListInfo
-import org.jmrtd.cbeff.BiometricDataBlock
-import org.jmrtd.cbeff.CBEFFInfo
-import org.jmrtd.cbeff.ISO781611
-import org.jmrtd.cbeff.StandardBiometricHeader
 import java.io.*
 import java.util.*
 import java.util.logging.Logger
@@ -295,7 +295,7 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
     public override fun readObject(inputStream: InputStream) {
         /* Iris Record Header (45) */
 
-        val dataIn = if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+        val dataIn = inputStream as? DataInputStream ?: DataInputStream(inputStream)
 
         val iir0 = dataIn.readInt() /* format id (e.g. "IIR" 0x00) */ /* 4 */
         require(iir0 == FORMAT_IDENTIFIER) { "'IIR' marker expected! Found " + Integer.toHexString(iir0) }
@@ -311,7 +311,7 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
         val count = dataIn.readUnsignedByte() /* + 1 = 15 */
 
         val recordHeaderLength = dataIn.readUnsignedShort() /* Should be 45. */ /* + 2 = 17 */
-        require(recordHeaderLength.toLong() == headerLength) { "Expected header length " + headerLength + ", found " + recordHeaderLength }
+        require(recordHeaderLength.toLong() == headerLength) { "Expected header length $headerLength, found $recordHeaderLength" }
 
         /*
      *  16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1
@@ -387,7 +387,7 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
         val recordLength = headerLength + dataLength
 
         /* Iris Record Header (45) */
-        val dataOut = if (outputStream is DataOutputStream) outputStream else DataOutputStream(outputStream)
+        val dataOut = outputStream as? DataOutputStream ?: DataOutputStream(outputStream)
 
         dataOut.writeInt(FORMAT_IDENTIFIER) /* header (e.g. "IIR", 0x00) */ /* 4 */
         dataOut.writeInt(VERSION_NUMBER) /* version in ASCII (e.g. "010" 0x00) */ /* +4 = 8 */
@@ -440,10 +440,10 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
             )
 
             val elements: SortedMap<Int?, ByteArray?> = TreeMap<Int?, ByteArray?>()
-            elements.put(ISO781611.BIOMETRIC_TYPE_TAG, biometricType)
-            elements.put(ISO781611.BIOMETRIC_SUBTYPE_TAG, biometricSubtype)
-            elements.put(ISO781611.FORMAT_OWNER_TAG, formatOwner)
-            elements.put(ISO781611.FORMAT_TYPE_TAG, formatType)
+            elements[ISO781611.BIOMETRIC_TYPE_TAG] = biometricType
+            elements[ISO781611.BIOMETRIC_SUBTYPE_TAG] = biometricSubtype
+            elements[ISO781611.FORMAT_OWNER_TAG] = formatOwner
+            elements[ISO781611.FORMAT_TYPE_TAG] = formatType
 
             sbh = StandardBiometricHeader(elements)
         }

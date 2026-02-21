@@ -177,14 +177,14 @@ class EACTAProtocol
        * Check if first cert is/has the expected CVCA, and remove it from chain if it
        * is the CVCA.
        */
-            val firstCert = terminalCertificates.get(0)
-            val firstCertRole = firstCert.getAuthorizationTemplate().getRole()
+            val firstCert = terminalCertificates[0]
+            val firstCertRole = firstCert.authorizationTemplate.role
             if (CVCAuthorizationTemplate.Role.CVCA == firstCertRole) {
-                val firstCertHolderReference = firstCert.getHolderReference()
+                val firstCertHolderReference = firstCert.holderReference
                 if (caReference != null && caReference != firstCertHolderReference) {
                     throw CardServiceException(
                         ("First certificate holds wrong authority, found \""
-                                + firstCertHolderReference.getName() + "\", expected \"" + caReference.getName() + "\"")
+                                + firstCertHolderReference.name + "\", expected \"" + caReference.name + "\"")
                     )
                 }
                 if (caReference == null) {
@@ -192,11 +192,11 @@ class EACTAProtocol
                 }
                 terminalCertificates.removeAt(0)
             }
-            val firstCertAuthorityReference = firstCert.getAuthorityReference()
+            val firstCertAuthorityReference = firstCert.authorityReference
             if (caReference != null && caReference != firstCertAuthorityReference) {
                 throw CardServiceException(
                     ("First certificate not signed by expected CA, found "
-                            + firstCertAuthorityReference.getName() + ", expected " + caReference.getName())
+                            + firstCertAuthorityReference.name + ", expected " + caReference.name)
                 )
             }
             if (caReference == null) {
@@ -204,11 +204,11 @@ class EACTAProtocol
             }
 
             /* Check if the last cert is an IS cert. */
-            val lastCert = terminalCertificates.get(terminalCertificates.size - 1)
-            val lastCertRole = lastCert.getAuthorizationTemplate().getRole()
+            val lastCert = terminalCertificates[terminalCertificates.size - 1]
+            val lastCertRole = lastCert.authorizationTemplate.role
             if (CVCAuthorizationTemplate.Role.IS != lastCertRole) {
                 throw CardServiceException(
-                    ("Last certificate in chain (" + lastCert.getHolderReference().getName()
+                    ("Last certificate in chain (" + lastCert.holderReference.name
                             + ") does not have role IS, but has role " + lastCertRole)
                 )
             }
@@ -217,7 +217,7 @@ class EACTAProtocol
             /* Have the MRTD check our chain. */
             for (cert in terminalCertificates) {
                 try {
-                    val authorityReference = cert.getAuthorityReference()
+                    val authorityReference = cert.authorityReference
 
                     /* Step 1: MSE:SetDST */
                     /*
@@ -225,7 +225,7 @@ class EACTAProtocol
            * Template, indicate authority of cert to check.
            */
                     val authorityRefBytes =
-                        TLVUtil.wrapDO(0x83, authorityReference.getName().toByteArray(charset("ISO-8859-1")))
+                        TLVUtil.wrapDO(0x83, authorityReference.name.toByteArray(charset("ISO-8859-1")))
                     service.sendMSESetDST(wrapper, authorityRefBytes)
                 } catch (e: Exception) {
                     throw CardServiceProtocolException("Exception in MSE:SetDST", 1, e)
@@ -233,10 +233,10 @@ class EACTAProtocol
 
                 try {
                     /* Cert body is already in TLV format. */
-                    val body = cert.getCertBodyData()
+                    val body = cert.certBodyData
 
                     /* Signature not yet in TLV format, prefix it with tag and length. */
-                    var signature = cert.getSignature()
+                    var signature = cert.signature
                     val sigOut = ByteArrayOutputStream()
                     val tlvSigOut = TLVOutputStream(sigOut)
                     tlvSigOut.writeTag(TAG_CVCERTIFICATE_SIGNATURE)
@@ -258,7 +258,7 @@ class EACTAProtocol
 
             /* Step 3: MSE Set AT */
             try {
-                val holderRef = terminalCert.getHolderReference()
+                val holderRef = terminalCert.holderReference
                 val holderRefBytes = TLVUtil.wrapDO(0x83, holderRef.getName().toByteArray(charset("ISO-8859-1")))
                 /*
          * Manage Security Environment: Set for external authentication: Authentication
@@ -286,10 +286,10 @@ class EACTAProtocol
                 dtbs.close()
                 val dtbsBytes = dtbs.toByteArray()
 
-                val sigAlg = terminalCert.getSigAlgName()
+                val sigAlg = terminalCert.sigAlgName
                 checkNotNull(sigAlg) {
-                    "Could not determine signature algorithm for terminal certificate " + terminalCert.getHolderReference()
-                        .getName()
+                    "Could not determine signature algorithm for terminal certificate " + terminalCert.holderReference
+                        .name
                 }
                 val sig: Signature = Signature.getInstance(sigAlg, BC_PROVIDER)
                 sig.initSign(terminalKey)
@@ -297,7 +297,7 @@ class EACTAProtocol
                 var signedData = sig.sign()
                 if (sigAlg.uppercase(Locale.getDefault()).endsWith("ECDSA")) {
                     val keySize = ceil(
-                        (terminalKey as ECPrivateKey).getParameters().getCurve().getFieldSize() / 8.0
+                        (terminalKey as ECPrivateKey).parameters.curve.fieldSize / 8.0
                     ).toInt() //TODO: Interop Ispra 20170925
                     signedData = Util.getRawECDSASignature(signedData, keySize)
                 }
@@ -366,22 +366,22 @@ class EACTAProtocol
             if (publicKey == null) {
                 return null
             }
-            val publicKeyAlg = publicKey.getAlgorithm()
+            val publicKeyAlg = publicKey.algorithm
             if ("DH" == publicKeyAlg || publicKey is DHPublicKey) {
                 /* TODO: this is probably wrong, what should be hashed? */
                 val md = MessageDigest.getInstance("SHA-1")
                 val dhPublicKey = publicKey as DHPublicKey
-                return md.digest(Util.i2os(dhPublicKey.getY()))
+                return md.digest(Util.i2os(dhPublicKey.y))
             } else if ("ECDH" == publicKeyAlg || publicKey is ECPublicKey) {
                 val piccECPublicKey = publicKey as org.bouncycastle.jce.interfaces.ECPublicKey
-                val t = Util.i2os(piccECPublicKey.getQ().getAffineXCoord().toBigInteger())
+                val t = Util.i2os(piccECPublicKey.q.getAffineXCoord().toBigInteger())
                 return Util.alignKeyDataToSize(
                     t,
-                    ceil(piccECPublicKey.getParameters().getCurve().getFieldSize() / 8.0).toInt()
+                    ceil(piccECPublicKey.parameters.curve.fieldSize / 8.0).toInt()
                 ) // TODO: Interop Ispra for SecP521r1 20170925.
             }
 
-            throw NoSuchAlgorithmException("Unsupported agreement algorithm " + publicKeyAlg)
+            throw NoSuchAlgorithmException("Unsupported agreement algorithm $publicKeyAlg")
         }
     }
 }

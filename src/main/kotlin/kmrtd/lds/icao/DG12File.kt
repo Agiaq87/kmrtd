@@ -116,7 +116,7 @@ class DG12File : AdditionalDetailDataGroup {
     var personalizationSystemSerialNumber: String? = null
         private set
 
-    private var tagPresenceList: MutableList<Int?>? = null
+    override var tagPresenceList: MutableList<Int?>? = null
 
     /**
      * Constructs a new file.

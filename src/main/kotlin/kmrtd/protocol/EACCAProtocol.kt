@@ -102,7 +102,7 @@ class EACCAProtocol
         try {
             agreementAlg = ChipAuthenticationInfo.toKeyAgreementAlgorithm(oid)
         } catch (nfe: NumberFormatException) {
-            LOGGER.log(Level.WARNING, "Unknown object identifier " + oid, nfe)
+            LOGGER.log(Level.WARNING, "Unknown object identifier $oid", nfe)
         }
 
         require("ECDH" == agreementAlg || "DH" == agreementAlg) { "Unsupported agreement algorithm, expected ECDH or DH, found " + agreementAlg }
@@ -329,7 +329,7 @@ class EACCAProtocol
                 return pcdECPublicKey.getQ().getEncoded(false)
             }
 
-            throw IllegalArgumentException("Unsupported agreement algorithm " + agreementAlg)
+            throw IllegalArgumentException("Unsupported agreement algorithm $agreementAlg")
         }
 
         /**
@@ -355,7 +355,7 @@ class EACCAProtocol
                 LOGGER.warning("Could not determine ChipAuthentication algorithm, defaulting to id-CA-DH-3DES-CBC-CBC")
                 return SecurityInfo.ID_CA_DH_3DES_CBC_CBC
             } else {
-                LOGGER.warning("No ChipAuthenticationInfo and unsupported ChipAuthenticationPublicKeyInfo public key OID " + publicKeyOID)
+                LOGGER.warning("No ChipAuthenticationInfo and unsupported ChipAuthenticationPublicKeyInfo public key OID $publicKeyOID")
             }
 
             return null

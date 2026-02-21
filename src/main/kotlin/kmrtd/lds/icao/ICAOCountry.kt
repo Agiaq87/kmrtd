@@ -181,7 +181,7 @@ class ICAOCountry : Country {
                 /* NOTE: ignore this exception if it's not a legal 3 digit code. */
                 LOGGER.log(Level.FINE, "Unknown country", e)
             }
-            throw IllegalArgumentException("Illegal ICAO country alpha 3 code " + alpha3Code)
+            throw IllegalArgumentException("Illegal ICAO country alpha 3 code $alpha3Code")
         }
     }
 }

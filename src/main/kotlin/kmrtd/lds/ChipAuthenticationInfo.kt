@@ -30,6 +30,7 @@ package kmrtd.lds
 import org.bouncycastle.asn1.ASN1EncodableVector
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
+import org.bouncycastle.asn1.ASN1Primitive
 import org.bouncycastle.asn1.DLSequence
 import java.math.BigInteger
 import java.util.logging.Level
@@ -61,7 +62,7 @@ class ChipAuthenticationInfo @JvmOverloads constructor(
      * 
      * @return the `ID_CA_` object identifier indicating the Chip Authentication protocol
      */
-    val objectIdentifier: String?,
+    override val objectIdentifier: String?,
     /**
      * Returns the Chip Authentication version (either 1 or 2).
      * 
@@ -74,7 +75,7 @@ class ChipAuthenticationInfo @JvmOverloads constructor(
      * 
      * @return key identifier stored in this ChipAuthenticationInfo structure
      */
-    val keyId: BigInteger? = null
+    @JvmField val keyId: BigInteger? = null
 ) : SecurityInfo() {
     /**
      * Constructs a new object.
@@ -94,7 +95,7 @@ class ChipAuthenticationInfo @JvmOverloads constructor(
     }
 
     @get:Deprecated("Remove this method from visible interface (because of dependency on BC API)")
-    val dERObject: ASN1Primitive
+    override val dERObject: ASN1Primitive
         /**
          * Returns a DER object with this SecurityInfo data (DER sequence).
          * 
@@ -111,7 +112,7 @@ class ChipAuthenticationInfo @JvmOverloads constructor(
             return DLSequence(v)
         }
 
-    val protocolOIDString: String?
+    override val protocolOIDString: String?
         /**
          * Returns the protocol object identifier as a human readable string.
          * 

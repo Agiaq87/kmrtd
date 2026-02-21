@@ -42,7 +42,7 @@ package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1Sequence
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class RegistryIdBlock : Block {
@@ -93,8 +93,8 @@ class RegistryIdBlock : Block {
 
     override fun getASN1Object(): ASN1Encodable? {
         val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        taggedObjects.put(0, ASN1Util.encodeInt(organization))
-        taggedObjects.put(1, ASN1Util.encodeInt(id))
+        taggedObjects[0] = ASN1Util.encodeInt(organization)
+        taggedObjects[1] = ASN1Util.encodeInt(id)
         return ASN1Util.encodeTaggedObjects(taggedObjects)
     }
 
@@ -110,6 +110,7 @@ class RegistryIdBlock : Block {
         // CertificationIdBlock ::= RegistryIdBlock
         //
         // CertificationIdBlocks ::= SEQUENCE OF CertificationIdBlock
+        @JvmStatic
         fun decodeRegistryIdBlocks(asn1Encodable: ASN1Encodable?): MutableList<RegistryIdBlock?> {
             if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
                 val blockASN1Objects = ASN1Util.list(asn1Encodable)

@@ -72,7 +72,7 @@ class BACResult
     override fun toString(): String {
         return StringBuilder()
             .append("BACResult [bacKey: " + (if (this.bACKey == null) "-" else this.bACKey))
-            .append(", wrapper: " + wrapper)
+            .append(", wrapper: $wrapper")
             .append("]")
             .toString()
     }

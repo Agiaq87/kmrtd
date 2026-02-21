@@ -40,8 +40,8 @@
  */
 package kmrtd.lds.iso39794
 
+import kmrtd.ASN1Util
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
 import java.util.*
 
 class CoordinateCartesian3DUnsignedShortBlock : Block, FaceImageLandmarkCoordinates {
@@ -94,14 +94,14 @@ class CoordinateCartesian3DUnsignedShortBlock : Block, FaceImageLandmarkCoordina
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         /* PACKAGE */
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, ASN1Util.encodeInt(x))
-            taggedObjects.put(1, ASN1Util.encodeInt(y))
-            taggedObjects.put(2, ASN1Util.encodeInt(z))
+            taggedObjects[0] = ASN1Util.encodeInt(x)
+            taggedObjects[1] = ASN1Util.encodeInt(y)
+            taggedObjects[2] = ASN1Util.encodeInt(z)
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }
 

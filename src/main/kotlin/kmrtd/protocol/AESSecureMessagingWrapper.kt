@@ -55,7 +55,7 @@ class AESSecureMessagingWrapper(
 ) : SecureMessagingWrapper(ksEnc, ksMac, "AES/CBC/NoPadding", "AESCMAC", maxTranceiveLength, shouldCheckMAC, ssc),
     Serializable {
     @Transient
-    private val sscIVCipher: Cipher
+    private val sscIVCipher: Cipher = Util.getCipher("AES/ECB/NoPadding", Cipher.ENCRYPT_MODE, ksEnc)
 
     /**
      * Constructs a secure messaging wrapper based on the secure messaging
@@ -81,27 +81,10 @@ class AESSecureMessagingWrapper(
     constructor(wrapper: AESSecureMessagingWrapper) : this(
         wrapper.getEncryptionKey(),
         wrapper.getMACKey(),
-        wrapper.getMaxTranceiveLength(),
+        wrapper.maxTranceiveLength,
         wrapper.shouldCheckMAC(),
         wrapper.getSendSequenceCounter()
     )
-
-    /**
-     * Constructs a secure messaging wrapper based on the secure messaging
-     * session keys and the initial value of the send sequence counter.
-     * Used in BAC and EAC 1.
-     * 
-     * @param ksEnc the session key for encryption
-     * @param ksMac the session key for macs
-     * @param maxTranceiveLength the maximum tranceive length, typical values are 256 or 65536
-     * @param shouldCheckMAC a boolean indicating whether this wrapper will check the MAC in wrapped response APDUs
-     * @param ssc the initial value of the send sequence counter
-     * 
-     * @throws GeneralSecurityException when the available JCE providers cannot provide the necessary cryptographic primitives
-     */
-    init {
-        sscIVCipher = Util.getCipher("AES/ECB/NoPadding", Cipher.ENCRYPT_MODE, ksEnc)
-    }
 
     /**
      * Returns the type of secure messaging wrapper (in this case `"AES"`).
@@ -165,7 +148,7 @@ class AESSecureMessagingWrapper(
             .append(", kEnc: ").append(getEncryptionKey())
             .append(", kMac: ").append(getMACKey())
             .append(", shouldCheckMAC: ").append(shouldCheckMAC())
-            .append(", maxTranceiveLength: ").append(getMaxTranceiveLength())
+            .append(", maxTranceiveLength: ").append(maxTranceiveLength)
             .append("]")
             .toString()
     }
@@ -206,6 +189,6 @@ class AESSecureMessagingWrapper(
     companion object {
         private const val serialVersionUID = 2086301081448345496L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
     }
 }

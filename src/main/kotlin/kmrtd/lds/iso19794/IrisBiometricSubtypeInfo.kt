@@ -91,7 +91,7 @@ class IrisBiometricSubtypeInfo : AbstractListInfo<IrisImageInfo?> {
      */
     @Throws(IOException::class)
     public override fun readObject(inputStream: InputStream) {
-        val dataIn = if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+        val dataIn = inputStream as? DataInputStream ?: DataInputStream(inputStream)
 
         /* Iris biometric subtype header */
         this.biometricSubtype = dataIn.readUnsignedByte() /* 1 */
@@ -118,7 +118,7 @@ class IrisBiometricSubtypeInfo : AbstractListInfo<IrisImageInfo?> {
      */
     @Throws(IOException::class)
     public override fun writeObject(outputStream: OutputStream?) {
-        val dataOut = if (outputStream is DataOutputStream) outputStream else DataOutputStream(outputStream)
+        val dataOut = outputStream as? DataOutputStream ?: DataOutputStream(outputStream)
 
         dataOut.writeByte(biometricSubtype and 0xFF) /* 1 */
 

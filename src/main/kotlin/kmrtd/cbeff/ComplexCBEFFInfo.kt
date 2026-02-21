@@ -38,14 +38,7 @@ package kmrtd.cbeff
  * @since 0.4.7
  */
 class ComplexCBEFFInfo<R : BiometricDataBlock?> : CBEFFInfo<R?> {
-    private val subRecords: MutableList<CBEFFInfo<R?>?>
-
-    /**
-     * Constructs a default complex info, with an empty list of sub-records.
-     */
-    init {
-        this.subRecords = ArrayList<CBEFFInfo<R?>?>()
-    }
+    private val subRecords: MutableList<CBEFFInfo<R?>?> = ArrayList<CBEFFInfo<R?>?>()
 
     /**
      * Returns the records inside this complex CBEFF info.
@@ -53,7 +46,7 @@ class ComplexCBEFFInfo<R : BiometricDataBlock?> : CBEFFInfo<R?> {
      * @return a list of CBEFF infos
      */
     fun getSubRecords(): MutableList<CBEFFInfo<R?>?> {
-        return ArrayList<CBEFFInfo<R?>?>(this.subRecords)
+        return ArrayList(this.subRecords)
     }
 
     /**
@@ -97,7 +90,7 @@ class ComplexCBEFFInfo<R : BiometricDataBlock?> : CBEFFInfo<R?> {
         if (other === this) {
             return true
         }
-        if (!(other.javaClass == ComplexCBEFFInfo::class.java)) {
+        if (other.javaClass != ComplexCBEFFInfo::class.java) {
             return false
         }
 

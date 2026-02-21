@@ -41,7 +41,7 @@
 package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class FaceImagePostAcquisitionProcessingBlock : Block {
@@ -199,40 +199,40 @@ class FaceImagePostAcquisitionProcessingBlock : Block {
     override fun getASN1Object(): ASN1Encodable? {
         val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
         if (isRotated != null) {
-            taggedObjects.put(0, ASN1Util.encodeBoolean(isRotated!!))
+            taggedObjects[0] = ASN1Util.encodeBoolean(isRotated!!)
         }
         if (isCropped != null) {
-            taggedObjects.put(1, ASN1Util.encodeBoolean(isCropped!!))
+            taggedObjects[1] = ASN1Util.encodeBoolean(isCropped!!)
         }
         if (isDownSampled != null) {
-            taggedObjects.put(2, ASN1Util.encodeBoolean(isDownSampled!!))
+            taggedObjects[2] = ASN1Util.encodeBoolean(isDownSampled!!)
         }
         if (isWhiteBalanceAdjusted != null) {
-            taggedObjects.put(3, ASN1Util.encodeBoolean(isWhiteBalanceAdjusted!!))
+            taggedObjects[3] = ASN1Util.encodeBoolean(isWhiteBalanceAdjusted!!)
         }
         if (isMultiplyCompressed != null) {
-            taggedObjects.put(4, ASN1Util.encodeBoolean(isMultiplyCompressed!!))
+            taggedObjects[4] = ASN1Util.encodeBoolean(isMultiplyCompressed!!)
         }
         if (isInterpolated != null) {
-            taggedObjects.put(5, ASN1Util.encodeBoolean(isInterpolated!!))
+            taggedObjects[5] = ASN1Util.encodeBoolean(isInterpolated!!)
         }
         if (isContrastStretched != null) {
-            taggedObjects.put(6, ASN1Util.encodeBoolean(isContrastStretched!!))
+            taggedObjects[6] = ASN1Util.encodeBoolean(isContrastStretched!!)
         }
         if (isPoseCorrected != null) {
-            taggedObjects.put(7, ASN1Util.encodeBoolean(isPoseCorrected!!))
+            taggedObjects[7] = ASN1Util.encodeBoolean(isPoseCorrected!!)
         }
         if (isMultiViewImage != null) {
-            taggedObjects.put(8, ASN1Util.encodeBoolean(isMultiViewImage!!))
+            taggedObjects[8] = ASN1Util.encodeBoolean(isMultiViewImage!!)
         }
         if (isAgeProgressed != null) {
-            taggedObjects.put(9, ASN1Util.encodeBoolean(isAgeProgressed!!))
+            taggedObjects[9] = ASN1Util.encodeBoolean(isAgeProgressed!!)
         }
         if (isSuperResolutionProcessed != null) {
-            taggedObjects.put(10, ASN1Util.encodeBoolean(isSuperResolutionProcessed!!))
+            taggedObjects[10] = ASN1Util.encodeBoolean(isSuperResolutionProcessed!!)
         }
         if (isNormalised != null) {
-            taggedObjects.put(11, ASN1Util.encodeBoolean(isNormalised!!))
+            taggedObjects[11] = ASN1Util.encodeBoolean(isNormalised!!)
         }
         return ASN1Util.encodeTaggedObjects(taggedObjects)
     }

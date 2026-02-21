@@ -30,7 +30,7 @@ package kmrtd.lds.iso39794
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.DERSequence
 import org.bouncycastle.asn1.DERTaggedObject
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 
 internal object ISO39794Util {
     fun decodeCodeFromChoiceExtensionBlockFallback(asn1Encodable: ASN1Encodable?): Int? {
@@ -55,6 +55,7 @@ internal object ISO39794Util {
     //    score   [0] Score,
     //    error   [1] ScoringError
     //  }
+    @JvmStatic
     fun decodeScoreOrError(asn1Encodable: ASN1Encodable?): Int {
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
         if (taggedObjects.containsKey(0)) {
@@ -65,6 +66,7 @@ internal object ISO39794Util {
         return -1
     }
 
+    @JvmStatic
     fun encodeScoreOrError(score: Int): ASN1Encodable? {
         val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
         if (score >= 0) {

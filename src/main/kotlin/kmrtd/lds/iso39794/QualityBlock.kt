@@ -40,10 +40,10 @@
  */
 package kmrtd.lds.iso39794
 
+import kmrtd.ASN1Util
 import kmrtd.lds.iso39794.ISO39794Util.decodeScoreOrError
 import kmrtd.lds.iso39794.ISO39794Util.encodeScoreOrError
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
 import java.util.*
 
 class QualityBlock : Block {
@@ -67,11 +67,11 @@ class QualityBlock : Block {
         score = decodeScoreOrError(taggedObjects.get(1))
     }
 
-    public override fun hashCode(): Int {
+    override fun hashCode(): Int {
         return Objects.hash(algorithmIdBlock, score)
     }
 
-    public override fun equals(obj: Any?): Boolean {
+    override fun equals(obj: Any?): Boolean {
         if (this === obj) {
             return true
         }
@@ -93,13 +93,13 @@ class QualityBlock : Block {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, algorithmIdBlock.getASN1Object())
+            taggedObjects[0] = algorithmIdBlock.getASN1Object()
             if (score >= 0) {
-                taggedObjects.put(1, encodeScoreOrError(score))
+                taggedObjects[1] = encodeScoreOrError(score)
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }

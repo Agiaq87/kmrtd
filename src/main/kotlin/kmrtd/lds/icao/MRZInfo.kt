@@ -456,7 +456,7 @@ class MRZInfo : AbstractLDSInfo {
      */
     override fun toString(): String {
         try {
-            val str = kotlin.text.String(encoded!!, charset("UTF-8"))
+            val str = String(encoded!!, charset("UTF-8"))
             when (str.length) {
                 90 -> return (str.substring(0, 30) + "\n"
                         + str.substring(30, 60) + "\n"
@@ -528,7 +528,7 @@ class MRZInfo : AbstractLDSInfo {
      */
     @Throws(IOException::class)
     private fun readObject(inputStream: InputStream, length: Int) {
-        val dataIn = if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+        val dataIn = inputStream as? DataInputStream ?: DataInputStream(inputStream)
 
         /* line 1, pos 1 to 2, Document code, all types. */
         this.documentCode = trimTrailingFillerChars(readString(dataIn, 2))
@@ -623,7 +623,7 @@ class MRZInfo : AbstractLDSInfo {
      */
     @Throws(IOException::class)
     private fun readObjectTD2orMRVB(inputStream: InputStream) {
-        val dataIn = if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+        val dataIn = inputStream as? DataInputStream ?: DataInputStream(inputStream)
 
         /* line 1, pos 3 to 5 */
         this.issuingState = readCountryCode(dataIn)
@@ -669,7 +669,7 @@ class MRZInfo : AbstractLDSInfo {
      */
     @Throws(IOException::class)
     private fun readObjectTD3OrMRVA(inputStream: InputStream) {
-        val dataIn = if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+        val dataIn = inputStream as? DataInputStream ?: DataInputStream(inputStream)
 
         /* line 1, pos 3 to 5 */
         this.issuingState = readCountryCode(dataIn)
@@ -720,7 +720,7 @@ class MRZInfo : AbstractLDSInfo {
      */
     @Throws(IOException::class)
     private fun writeObjectTD1(outputStream: OutputStream?) {
-        val dataOut = if (outputStream is DataOutputStream) outputStream else DataOutputStream(outputStream)
+        val dataOut = outputStream as? DataOutputStream ?: DataOutputStream(outputStream)
 
         /* top line */
         writeDocumentType(dataOut)
@@ -778,7 +778,7 @@ class MRZInfo : AbstractLDSInfo {
      */
     @Throws(IOException::class)
     private fun writeObjectTD2OrMRVB(outputStream: OutputStream?) {
-        val dataOut = if (outputStream is DataOutputStream) outputStream else DataOutputStream(outputStream)
+        val dataOut = outputStream as? DataOutputStream ?: DataOutputStream(outputStream)
 
         /* top line */
         writeDocumentType(dataOut)
@@ -825,7 +825,7 @@ class MRZInfo : AbstractLDSInfo {
      */
     @Throws(IOException::class)
     private fun writeObjectTD3OrMRVA(outputStream: OutputStream?) {
-        val dataOut = if (outputStream is DataOutputStream) outputStream else DataOutputStream(outputStream)
+        val dataOut = outputStream as? DataOutputStream ?: DataOutputStream(outputStream)
 
         /* top line */
         writeDocumentType(dataOut)
@@ -1487,10 +1487,7 @@ class MRZInfo : AbstractLDSInfo {
          * @return the reformatted string
          */
         private fun mrzFormat(str: String?, width: Int): String {
-            var str = str
-            if (str == null) {
-                return ""
-            }
+            var str = str ?: return ""
             require(str.length <= width) { "Argument too wide (" + str.length + " > " + width + ")" }
             str = str.uppercase(Locale.getDefault()).trim { it <= ' ' }
             val result = StringBuilder()
@@ -1517,7 +1514,7 @@ class MRZInfo : AbstractLDSInfo {
          * @return the document-type enum value
          */
         private fun getDocumentType(documentCode: String, length: Int): DocumentType {
-            require(!(documentCode == null || documentCode.length < 1 || documentCode.length > 2)) { "Was expecting 1 or 2 digit document code, got " + documentCode }
+            require(!(documentCode.length < 1 || documentCode.length > 2)) { "Was expecting 1 or 2 digit document code, got $documentCode" }
 
             when (length) {
                 90 ->       /* Document-code must start with C, I, or A. */
@@ -1705,7 +1702,7 @@ class MRZInfo : AbstractLDSInfo {
          * @throws NumberFormatException if `ch` is not a valid MRZ character
          */
         private fun decodeMRZDigit(ch: Byte): Int {
-            when (ch) {
+            when (ch.toInt().toChar()) {
                 '<', '0' -> return 0
                 '1' -> return 1
                 '2' -> return 2
@@ -1743,9 +1740,7 @@ class MRZInfo : AbstractLDSInfo {
                 'y', 'Y' -> return 34
                 'z', 'Z' -> return 35
                 else -> throw NumberFormatException(
-                    "Could not decode MRZ character " + ch + " ('" + Character.toString(
-                        Char(ch.toUShort())
-                    ) + "')"
+                    "Could not decode MRZ character $ch ('" + Char(ch.toUShort()).toString() + "')"
                 )
             }
         }

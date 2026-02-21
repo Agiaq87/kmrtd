@@ -44,12 +44,13 @@ import kmrtd.lds.ImageInfo
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.DEROctetString
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.io.ByteArrayInputStream
+import java.io.InputStream
 import java.util.*
 
 class IrisImageRepresentationBlock(asn1Encodable: ASN1Encodable) : Block(), ImageInfo {
-    enum class EyeLabelCode(val code: Int) : EncodableEnum<EyeLabelCode?> {
+    enum class EyeLabelCode(override val code: Int) : EncodableEnum<EyeLabelCode?> {
         UNKNOWN(0),
         RIGHT_IRIS(1),
         LEFT_IRIS(2);
@@ -61,7 +62,7 @@ class IrisImageRepresentationBlock(asn1Encodable: ASN1Encodable) : Block(), Imag
         }
     }
 
-    enum class IrisImageKindCode(val code: Int) : EncodableEnum<IrisImageKindCode?> {
+    enum class IrisImageKindCode(override val code: Int) : EncodableEnum<IrisImageKindCode?> {
         UNCROPPED(1),
         VGA(2),
         CROPPED(3),
@@ -74,18 +75,12 @@ class IrisImageRepresentationBlock(asn1Encodable: ASN1Encodable) : Block(), Imag
         }
     }
 
-    enum class ImageDataFormatCode(val code: Int, mimeType: String) : EncodableEnum<ImageDataFormatCode?> {
+    enum class ImageDataFormatCode(override val code: Int, val mimeType: String) : EncodableEnum<ImageDataFormatCode?> {
         PGM(0, "image/pgm"),
         PPM(1, "image/ppm"),
         PNG(2, "image/png"),
         JPEG2000_LOSSLESS(3, "image/jp2"),
         JPEG2000_LOSSY(4, "image/jp2");
-
-        val mimeType: String?
-
-        init {
-            this.mimeType = mimeType
-        }
 
         companion object {
             fun fromCode(code: Int): ImageDataFormatCode {
@@ -94,7 +89,7 @@ class IrisImageRepresentationBlock(asn1Encodable: ASN1Encodable) : Block(), Imag
         }
     }
 
-    enum class HorizontalOrientationCode(val code: Int) : EncodableEnum<HorizontalOrientationCode?> {
+    enum class HorizontalOrientationCode(override val code: Int) : EncodableEnum<HorizontalOrientationCode?> {
         UNDEFINED(0),
         LEFT_TO_RIGHT(1),
         RIGHT_TO_LEFT(2);
@@ -106,7 +101,7 @@ class IrisImageRepresentationBlock(asn1Encodable: ASN1Encodable) : Block(), Imag
         }
     }
 
-    enum class VerticalOrientationCode(val code: Int) : EncodableEnum<VerticalOrientationCode?> {
+    enum class VerticalOrientationCode(override val code: Int) : EncodableEnum<VerticalOrientationCode?> {
         UNDEFINED(0),
         TOP_TO_BOTTOM(1),
         BOTTOM_TO_TOP(2);
@@ -118,7 +113,7 @@ class IrisImageRepresentationBlock(asn1Encodable: ASN1Encodable) : Block(), Imag
         }
     }
 
-    enum class CompressionHistoryCode(val code: Int) : EncodableEnum<CompressionHistoryCode?> {
+    enum class CompressionHistoryCode(override val code: Int) : EncodableEnum<CompressionHistoryCode?> {
         UNDEFINED(0),
         LOSSLESS_OR_NONE(1),
         LOSSY(2);
@@ -130,7 +125,7 @@ class IrisImageRepresentationBlock(asn1Encodable: ASN1Encodable) : Block(), Imag
         }
     }
 
-    enum class RangingErrorCode(val code: Int) : EncodableEnum<RangingErrorCode?> {
+    enum class RangingErrorCode(override val code: Int) : EncodableEnum<RangingErrorCode?> {
         UNASSIGNED(0),
         FAILED(1),
         OVERFLOW(2);
@@ -157,11 +152,11 @@ class IrisImageRepresentationBlock(asn1Encodable: ASN1Encodable) : Block(), Imag
             uncertainty = ASN1Util.decodeInt(taggedObjects.get(1))
         }
 
-        public override fun hashCode(): Int {
+        override fun hashCode(): Int {
             return Objects.hash(angle, uncertainty)
         }
 
-        public override fun equals(obj: Any?): Boolean {
+        override fun equals(obj: Any?): Boolean {
             if (this === obj) {
                 return true
             }
@@ -176,12 +171,12 @@ class IrisImageRepresentationBlock(asn1Encodable: ASN1Encodable) : Block(), Imag
             return angle == other.angle && uncertainty == other.uncertainty
         }
 
-        val aSN1Object: ASN1Encodable?
+        override val aSN1Object: ASN1Encodable?
             get() {
                 val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                     HashMap<Int?, ASN1Encodable?>()
-                taggedObjects.put(0, ASN1Util.encodeInt(angle))
-                taggedObjects.put(1, ASN1Util.encodeInt(uncertainty))
+                taggedObjects[0] = ASN1Util.encodeInt(angle)
+                taggedObjects[1] = ASN1Util.encodeInt(uncertainty)
                 return ASN1Util.encodeTaggedObjects(taggedObjects)
             }
 
@@ -350,10 +345,10 @@ class IrisImageRepresentationBlock(asn1Encodable: ASN1Encodable) : Block(), Imag
                 + "]")
     }
 
-    val type: Int
+    override val type: Int
         get() = ImageInfo.Companion.TYPE_IRIS
 
-    val mimeType: String?
+    override val mimeType: String?
         get() {
             if (this.imageDataFormat == null) {
                 return "image/raw"
@@ -362,59 +357,53 @@ class IrisImageRepresentationBlock(asn1Encodable: ASN1Encodable) : Block(), Imag
             return imageDataFormat.mimeType
         }
 
-    val width: Int
+    override val width: Int
         get() = 0
 
-    val height: Int
+    override val height: Int
         get() = 0
 
-    val recordLength: Long
+    override val recordLength: Long
         get() = 0
 
     val imageLength: Int
-        get() = if (imageData == null) 0 else imageData.size
+        get() = imageData?.size ?: 0
 
-    val imageInputStream: InputStream
+    override val imageInputStream: InputStream
         get() = ByteArrayInputStream(imageData)
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, ASN1Util.encodeInt(eyeLabelCode!!.code))
-            taggedObjects.put(
-                1,
-                ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(irisImageKind.code)
-            )
-            taggedObjects.put(2, ASN1Util.encodeInt(bitDepth))
-            taggedObjects.put(
-                3,
-                ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(imageDataFormat!!.code)
-            )
-            taggedObjects.put(4, ASN1Util.encodeInt(horizontalOrientationCode.code))
-            taggedObjects.put(5, ASN1Util.encodeInt(verticalOrientationCode.code))
-            taggedObjects.put(6, ASN1Util.encodeInt(compressionHistoryCode.code))
+            taggedObjects[0] = ASN1Util.encodeInt(eyeLabelCode!!.code)
+            taggedObjects[1] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(irisImageKind.code)
+            taggedObjects[2] = ASN1Util.encodeInt(bitDepth)
+            taggedObjects[3] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(imageDataFormat!!.code)
+            taggedObjects[4] = ASN1Util.encodeInt(horizontalOrientationCode.code)
+            taggedObjects[5] = ASN1Util.encodeInt(verticalOrientationCode.code)
+            taggedObjects[6] = ASN1Util.encodeInt(compressionHistoryCode.code)
             if (range != null) {
-                taggedObjects.put(7, ASN1Util.encodeInt(range!!))
+                taggedObjects[7] = ASN1Util.encodeInt(range!!)
             } else if (rangingErrorCode != null) {
-                taggedObjects.put(7, ASN1Util.encodeInt(rangingErrorCode!!.code))
+                taggedObjects[7] = ASN1Util.encodeInt(rangingErrorCode!!.code)
             }
-            taggedObjects.put(8, captureDateTimeBlock.aSN1Object)
-            taggedObjects.put(9, DEROctetString(imageData))
+            taggedObjects[8] = captureDateTimeBlock.aSN1Object
+            taggedObjects[9] = DEROctetString(imageData)
             if (captureDeviceBlock != null) {
-                taggedObjects.put(10, captureDeviceBlock!!.getASN1Object())
+                taggedObjects[10] = captureDeviceBlock!!.getASN1Object()
             }
             if (qualityBlocks != null) {
-                taggedObjects.put(10, ISO39794Util.encodeBlocks(qualityBlocks))
+                taggedObjects[10] = ISO39794Util.encodeBlocks(qualityBlocks)
             }
             if (rollAngleBlock != null) {
-                taggedObjects.put(12, rollAngleBlock!!.aSN1Object)
+                taggedObjects[12] = rollAngleBlock!!.aSN1Object
             }
             if (localisationBlock != null) {
-                taggedObjects.put(13, localisationBlock!!.aSN1Object)
+                taggedObjects[13] = localisationBlock!!.aSN1Object
             }
             if (this.pADDataBlock != null) {
-                taggedObjects.put(14, pADDataBlock!!.getASN1Object())
+                taggedObjects[14] = pADDataBlock!!.getASN1Object()
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }

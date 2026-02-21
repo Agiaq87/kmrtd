@@ -40,9 +40,9 @@
  */
 package kmrtd.lds.iso39794
 
+import kmrtd.ASN1Util
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1Sequence
-import org.jmrtd.ASN1Util
 import java.util.*
 
 class FaceImageCaptureDevice2DBlock : Block {
@@ -95,7 +95,7 @@ class FaceImageCaptureDevice2DBlock : Block {
         if (asn1Encodable is ASN1Sequence) {
             val taggedObjects = ASN1Util.decodeTaggedObjects(ASN1Sequence.getInstance(asn1Encodable))
             if (taggedObjects.containsKey(0)) {
-                captureDeviceSpectral2DBlock = FaceImageCaptureDeviceSpectral2DBlock(taggedObjects.get(0))
+                captureDeviceSpectral2DBlock = FaceImageCaptureDeviceSpectral2DBlock(taggedObjects[0])
             }
 
             if (taggedObjects.containsKey(1)) {
@@ -137,13 +137,10 @@ class FaceImageCaptureDevice2DBlock : Block {
     override fun getASN1Object(): ASN1Encodable? {
         val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
         if (captureDeviceSpectral2DBlock != null) {
-            taggedObjects.put(0, captureDeviceSpectral2DBlock!!.getASN1Object())
+            taggedObjects[0] = captureDeviceSpectral2DBlock!!.getASN1Object()
         }
         if (captureDeviceTechnologyId2D != null) {
-            taggedObjects.put(
-                1,
-                ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(captureDeviceTechnologyId2D!!.getCode())
-            )
+            taggedObjects[1] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(captureDeviceTechnologyId2D!!.getCode())
         }
         return ASN1Util.encodeTaggedObjects(taggedObjects)
     }

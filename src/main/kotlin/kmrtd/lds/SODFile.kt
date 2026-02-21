@@ -27,6 +27,7 @@
  */
 package kmrtd.lds
 
+import kmrtd.lds.LDSFile.Companion.EF_SOD_TAG
 import kmrtd.lds.SignedDataUtil.createSignedData
 import kmrtd.lds.SignedDataUtil.lookupMnemonicByOID
 import kmrtd.lds.SignedDataUtil.lookupOIDByMnemonic
@@ -44,6 +45,7 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.math.BigInteger
 import java.security.NoSuchAlgorithmException
 import java.security.PrivateKey
 import java.security.SignatureException
@@ -206,7 +208,7 @@ class SODFile : AbstractTaggedLDSFile {
                 provider
             )
 
-            signedData = SignedDataUtil.createSignedData(
+            signedData = createSignedData(
                 digestAlgorithm,
                 digestEncryptionAlgorithm,
                 digestEncryptionParameters,
@@ -397,11 +399,11 @@ class SODFile : AbstractTaggedLDSFile {
          */
         get() {
             val ldsVersionInfo: LDSVersionInfo? =
-                Companion.getLDSSecurityObject(signedData!!).getVersionInfo()
+                Companion.getLDSSecurityObject(signedData!!).versionInfo
             if (ldsVersionInfo == null) {
                 return null
             } else {
-                return ldsVersionInfo.getLdsVersion()
+                return ldsVersionInfo.ldsVersion
             }
         }
 
@@ -415,11 +417,11 @@ class SODFile : AbstractTaggedLDSFile {
          */
         get() {
             val ldsVersionInfo: LDSVersionInfo? =
-                Companion.getLDSSecurityObject(signedData!!).getVersionInfo()
+                Companion.getLDSSecurityObject(signedData!!).versionInfo
             if (ldsVersionInfo == null) {
                 return null
             } else {
-                return ldsVersionInfo.getUnicodeVersion()
+                return ldsVersionInfo.unicodeVersion
             }
         }
 
@@ -454,7 +456,7 @@ class SODFile : AbstractTaggedLDSFile {
                 return null
             }
 
-            return certificates.get(certificates.size - 1)
+            return certificates[certificates.size - 1]
         }
 
     val issuerX500Principal: X500Principal?
@@ -474,7 +476,7 @@ class SODFile : AbstractTaggedLDSFile {
                     return null
                 }
 
-                val name = issuerAndSerialNumber.getName()
+                val name = issuerAndSerialNumber.name
                 if (name == null) {
                     return null
                 }
@@ -502,7 +504,7 @@ class SODFile : AbstractTaggedLDSFile {
                 return null
             }
 
-            return issuerAndSerialNumber.getSerialNumber().getValue()
+            return issuerAndSerialNumber.serialNumber.value
         }
 
     val subjectKeyIdentifier: ByteArray?
@@ -528,7 +530,7 @@ class SODFile : AbstractTaggedLDSFile {
             val certificates =
                 this.docSigningCertificates
             for (certificate in certificates) {
-                result.append(certificate.getIssuerX500Principal().getName())
+                result.append(certificate.issuerX500Principal.name)
                 result.append(", ")
             }
             return result.toString()
@@ -674,19 +676,19 @@ class SODFile : AbstractTaggedLDSFile {
          */
         private fun getLDSSecurityObject(signedData: SignedData): LDSSecurityObject {
             try {
-                val encapContentInfo = signedData.getEncapContentInfo()
-                val contentType = encapContentInfo.getContentType().getId()
-                val eContent = encapContentInfo.getContent() as ASN1OctetString
+                val encapContentInfo = signedData.encapContentInfo
+                val contentType = encapContentInfo.contentType.getId()
+                val eContent = encapContentInfo.content as ASN1OctetString
                 if (!(ICAO_LDS_SOD_OID == contentType
                             || SDU_LDS_SOD_OID == contentType
                             || ICAO_LDS_SOD_ALT_OID == contentType)
                 ) {
-                    LOGGER.warning("SignedData does not appear to contain an LDS SOd. (content type is " + contentType + ", was expecting " + ICAO_LDS_SOD_OID + ")")
+                    LOGGER.warning("SignedData does not appear to contain an LDS SOd. (content type is $contentType, was expecting $ICAO_LDS_SOD_OID)")
                 }
-                val inputStream = ASN1InputStream(ByteArrayInputStream(eContent.getOctets()))
+                val inputStream = ASN1InputStream(ByteArrayInputStream(eContent.octets))
                 try {
                     val firstObject: Any = inputStream.readObject()
-                    check(firstObject is ASN1Sequence) { "Expected ASN1Sequence, found " + firstObject.javaClass.getSimpleName() }
+                    check(firstObject is ASN1Sequence) { "Expected ASN1Sequence, found " + firstObject.javaClass.simpleName }
                     val sod = LDSSecurityObject.getInstance(firstObject)
                     val nextObject: Any? = inputStream.readObject()
                     if (nextObject != null) {

@@ -44,7 +44,8 @@ import kmrtd.lds.ImageInfo
 import kmrtd.lds.iso39794.FaceImageLandmarkBlock.Companion.decodeLandmarkBlocks
 import kmrtd.lds.iso39794.PADDataBlock.Companion.decodePADDataBlocks
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
+import java.io.InputStream
 import java.math.BigInteger
 import java.util.*
 
@@ -189,10 +190,10 @@ class FaceImageRepresentationBlock : Block, ImageInfo {
     }
 
 
-    val type: Int
+    override val type: Int
         get() = ImageInfo.Companion.TYPE_PORTRAIT
 
-    val mimeType: String?
+    override val mimeType: String?
         get() {
             if (imageRepresentation2DBlock == null) {
                 return "image/raw"
@@ -200,7 +201,7 @@ class FaceImageRepresentationBlock : Block, ImageInfo {
             return imageRepresentation2DBlock.representationData2DInputMimeType
         }
 
-    val width: Int
+    override val width: Int
         get() {
             if (imageRepresentation2DBlock == null) {
                 return 0
@@ -218,7 +219,7 @@ class FaceImageRepresentationBlock : Block, ImageInfo {
             return imageSizeBlock.width
         }
 
-    val height: Int
+    override val height: Int
         get() {
             if (imageRepresentation2DBlock == null) {
                 return 0
@@ -236,10 +237,10 @@ class FaceImageRepresentationBlock : Block, ImageInfo {
             return imageSizeBlock.height
         }
 
-    val recordLength: Long
+    override val recordLength: Long
         get() = 0
 
-    val imageLength: Int
+    override val imageLength: Int
         get() {
             if (imageRepresentation2DBlock == null) {
                 return 0
@@ -247,7 +248,7 @@ class FaceImageRepresentationBlock : Block, ImageInfo {
             return imageRepresentation2DBlock.representationData2DInputLength.toInt()
         }
 
-    val imageInputStream: InputStream
+    override val imageInputStream: InputStream
         get() {
             if (imageRepresentation2DBlock == null) {
                 return null
@@ -255,41 +256,38 @@ class FaceImageRepresentationBlock : Block, ImageInfo {
             return imageRepresentation2DBlock.representationData2DInputStream
         }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         /* PACKAGE */
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, ASN1Util.encodeBigInteger(representationId))
-            taggedObjects.put(
-                1,
-                Companion.encodeImageRepresentation2DBlock(
-                    imageRepresentation2DBlock!!
-                )
+            taggedObjects[0] = ASN1Util.encodeBigInteger(representationId)
+            taggedObjects[1] = encodeImageRepresentation2DBlock(
+                imageRepresentation2DBlock!!
             )
             if (captureDateTimeBlock != null) {
-                taggedObjects.put(2, captureDateTimeBlock!!.aSN1Object)
+                taggedObjects[2] = captureDateTimeBlock!!.aSN1Object
             }
             if (qualityBlocks != null) {
-                taggedObjects.put(3, ISO39794Util.encodeBlocks(qualityBlocks))
+                taggedObjects[3] = ISO39794Util.encodeBlocks(qualityBlocks)
             }
             if (padDataBlocks != null) {
-                taggedObjects.put(4, ISO39794Util.encodeBlocks(padDataBlocks))
+                taggedObjects[4] = ISO39794Util.encodeBlocks(padDataBlocks)
             }
             if (sessionId != null) {
-                taggedObjects.put(5, ASN1Util.encodeBigInteger(sessionId))
+                taggedObjects[5] = ASN1Util.encodeBigInteger(sessionId)
             }
             if (derivedFrom != null) {
-                taggedObjects.put(6, ASN1Util.encodeBigInteger(derivedFrom))
+                taggedObjects[6] = ASN1Util.encodeBigInteger(derivedFrom)
             }
             if (captureDeviceBlock != null) {
-                taggedObjects.put(7, captureDeviceBlock!!.aSN1Object)
+                taggedObjects[7] = captureDeviceBlock!!.aSN1Object
             }
             if (identityMetadataBlock != null) {
-                taggedObjects.put(8, identityMetadataBlock!!.getASN1Object())
+                taggedObjects[8] = identityMetadataBlock!!.getASN1Object()
             }
             if (landmarkBlocks != null) {
-                taggedObjects.put(9, ISO39794Util.encodeBlocks(landmarkBlocks))
+                taggedObjects[9] = ISO39794Util.encodeBlocks(landmarkBlocks)
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }
@@ -340,10 +338,10 @@ class FaceImageRepresentationBlock : Block, ImageInfo {
 
         private fun encodeImageRepresentation2DBlock(faceImageRepresentation2DBlock: FaceImageRepresentation2DBlock): ASN1Encodable? {
             val baseTaggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-            baseTaggedObjects.put(0, faceImageRepresentation2DBlock.aSN1Object)
+            baseTaggedObjects[0] = faceImageRepresentation2DBlock.aSN1Object
 
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, ASN1Util.encodeTaggedObjects(baseTaggedObjects))
+            taggedObjects[0] = ASN1Util.encodeTaggedObjects(baseTaggedObjects)
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }
     }

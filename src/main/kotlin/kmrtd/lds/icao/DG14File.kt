@@ -56,7 +56,7 @@ class DG14File : DataGroup {
      * 
      * @param securityInfos a list of security infos
      */
-    constructor(securityInfos: MutableCollection<SecurityInfo?>) : super(LDSFile.Companion.EF_DG14_TAG) {
+    constructor(securityInfos: MutableCollection<SecurityInfo?>) : super(LDSFile.EF_DG14_TAG) {
         requireNotNull(securityInfos) { "Null securityInfos" }
         this.securityInfos = HashSet<SecurityInfo?>(securityInfos)
     }
@@ -68,7 +68,7 @@ class DG14File : DataGroup {
      * 
      * @throws IOException on error reading from input stream
      */
-    constructor(inputStream: InputStream?) : super(LDSFile.Companion.EF_DG14_TAG, inputStream)
+    constructor(inputStream: InputStream?) : super(LDSFile.EF_DG14_TAG, inputStream)
 
     @Throws(IOException::class)
     override fun readContent(inputStream: InputStream?) {
@@ -201,7 +201,7 @@ class DG14File : DataGroup {
     }
 
     public override fun toString(): String {
-        return "DG14File [" + securityInfos.toString() + "]"
+        return "DG14File [$securityInfos]"
     }
 
     override fun equals(obj: Any?): Boolean {

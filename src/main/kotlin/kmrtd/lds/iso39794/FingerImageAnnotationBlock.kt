@@ -41,11 +41,11 @@
 package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class FingerImageAnnotationBlock : Block {
-    enum class AnnotationReasonCode(val code: Int) : EncodableEnum<AnnotationReasonCode?> {
+    enum class AnnotationReasonCode(override val code: Int) : EncodableEnum<AnnotationReasonCode?> {
         UNKNOWN(0),
         OTHER(1),
         AMPUTATED(2),
@@ -110,23 +110,17 @@ class FingerImageAnnotationBlock : Block {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(
-                0,
-                ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(positionCode.code)
-            )
-            taggedObjects.put(
-                1,
-                ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(reasonCode.code)
-            )
+            taggedObjects[0] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(positionCode.code)
+            taggedObjects[1] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(reasonCode.code)
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }
 
     companion object {
-        val serialversionuid: Long = -716107883353729322L
+        const val serialversionuid: Long = -716107883353729322L
 
         /* PACKAGE */
         fun decodeFingerImageAnnotationBlocks(asn1Encodable: ASN1Encodable?): MutableList<FingerImageAnnotationBlock?> {

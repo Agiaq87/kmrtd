@@ -42,13 +42,14 @@ package kmrtd.lds.iso39794
 
 import kmrtd.lds.ImageInfo
 import org.bouncycastle.asn1.*
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import org.jmrtd.cbeff.CBEFFInfo
 import java.io.ByteArrayInputStream
+import java.io.InputStream
 import java.util.*
 
 class FingerImageRepresentationBlock : Block, ImageInfo {
-    enum class ImpressionCode(private val code: Int) : EncodableEnum<ImpressionCode?> {
+    enum class ImpressionCode(override val code: Int) : EncodableEnum<ImpressionCode?> {
         PLAIN_CONTACT(0),
         ROLLED_CONTACT(1),
         LATENT_IMAGE(4),
@@ -71,7 +72,7 @@ class FingerImageRepresentationBlock : Block, ImageInfo {
         }
     }
 
-    enum class ImageDataFormatCode(private val code: Int, mimeType: String) : EncodableEnum<ImageDataFormatCode?> {
+    enum class ImageDataFormatCode(override val code: Int, mimeType: String) : EncodableEnum<ImageDataFormatCode?> {
         PGM(0, "image/pgm"),
         WSQ(1, "image/x-wsq"),
         JPEG2000_LOSSY(2, "image/jp2"),
@@ -318,10 +319,10 @@ class FingerImageRepresentationBlock : Block, ImageInfo {
                 + "]")
     }
 
-    val type: Int
+    override val type: Int
         get() = ImageInfo.Companion.TYPE_FINGER
 
-    val mimeType: String?
+    override val mimeType: String?
         get() {
             if (imageDataFormat == null) {
                 return "image/raw"
@@ -329,16 +330,16 @@ class FingerImageRepresentationBlock : Block, ImageInfo {
             return imageDataFormat.mimeType
         }
 
-    val width: Int
+    override val width: Int
         get() = 0
 
-    val height: Int
+    override val height: Int
         get() = 0
 
-    val recordLength: Long
+    override val recordLength: Long
         get() = 0
 
-    val imageLength: Int
+    override val imageLength: Int
         get() = imageData.size
 
     val imageInputStream: InputStream
@@ -353,64 +354,52 @@ class FingerImageRepresentationBlock : Block, ImageInfo {
          */
         get() = toBiometricSubtype(position)
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(
-                0,
-                ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(position.getCode())
-            )
-            taggedObjects.put(
-                1,
-                ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(impression!!.getCode())
-            )
-            taggedObjects.put(
-                2,
-                ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(imageDataFormat!!.getCode())
-            )
-            taggedObjects.put(3, DEROctetString(imageData))
+            taggedObjects[0] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(position.getCode())
+            taggedObjects[1] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(impression!!.getCode())
+            taggedObjects[2] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(imageDataFormat!!.getCode())
+            taggedObjects[3] = DEROctetString(imageData)
             if (captureDateTimeBlock != null) {
-                taggedObjects.put(4, captureDateTimeBlock!!.aSN1Object)
+                taggedObjects[4] = captureDateTimeBlock!!.aSN1Object
             }
             if (captureDeviceBlock != null) {
-                taggedObjects.put(5, captureDeviceBlock!!.aSN1Object)
+                taggedObjects[5] = captureDeviceBlock!!.aSN1Object
             }
             if (qualityBlocks != null) {
-                taggedObjects.put(6, ISO39794Util.encodeBlocks(qualityBlocks))
+                taggedObjects[6] = ISO39794Util.encodeBlocks(qualityBlocks)
             }
             if (spatialSamplingRateBlock != null) {
-                taggedObjects.put(7, spatialSamplingRateBlock!!.aSN1Object)
+                taggedObjects[7] = spatialSamplingRateBlock!!.aSN1Object
             }
             if (isPositionComputedByCaptureSystem != null) {
-                taggedObjects.put(8, ASN1Util.encodeBoolean(isPositionComputedByCaptureSystem!!))
+                taggedObjects[8] = ASN1Util.encodeBoolean(isPositionComputedByCaptureSystem!!)
             }
             if (fingerRotation != null) {
-                taggedObjects.put(9, ASN1Util.encodeInt(fingerRotation!!))
+                taggedObjects[9] = ASN1Util.encodeInt(fingerRotation!!)
             }
             if (isImageRotatedToVertical != null) {
-                taggedObjects.put(10, ASN1Util.encodeBoolean(isImageRotatedToVertical!!))
+                taggedObjects[10] = ASN1Util.encodeBoolean(isImageRotatedToVertical!!)
             }
             if (isImageHasBeenLossilyCompressed != null) {
-                taggedObjects.put(11, ASN1Util.encodeBoolean(isImageHasBeenLossilyCompressed!!))
+                taggedObjects[11] = ASN1Util.encodeBoolean(isImageHasBeenLossilyCompressed!!)
             }
             if (segmentationBlocks != null) {
-                taggedObjects.put(12, ISO39794Util.encodeBlocks(segmentationBlocks))
+                taggedObjects[12] = ISO39794Util.encodeBlocks(segmentationBlocks)
             }
             if (annotationBlocks != null) {
-                taggedObjects.put(13, ISO39794Util.encodeBlocks(annotationBlocks))
+                taggedObjects[13] = ISO39794Util.encodeBlocks(annotationBlocks)
             }
             if (padDataBlock != null) {
-                taggedObjects.put(14, padDataBlock!!.getASN1Object())
+                taggedObjects[14] = padDataBlock!!.getASN1Object()
             }
             if (commentBlocks != null) {
-                taggedObjects.put(
-                    15,
-                    Companion.encodeCommentBlocks(commentBlocks!!)
-                )
+                taggedObjects[15] = encodeCommentBlocks(commentBlocks!!)
             }
             if (vendorSpecificDataBlocks != null) {
-                taggedObjects.put(16, ISO39794Util.encodeBlocks(vendorSpecificDataBlocks))
+                taggedObjects[16] = ISO39794Util.encodeBlocks(vendorSpecificDataBlocks)
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }

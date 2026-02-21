@@ -43,11 +43,11 @@ package kmrtd.lds.iso39794
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class FaceImageIdentityMetadataBlock : Block {
-    enum class GenderCode(private val code: Int) : EncodableEnum<GenderCode?> {
+    enum class GenderCode(override val code: Int) : EncodableEnum<GenderCode?> {
         UNKNOWN(0),
         OTHER(1),
         MALE(2),
@@ -64,7 +64,7 @@ class FaceImageIdentityMetadataBlock : Block {
         }
     }
 
-    enum class EyeColourCode(private val code: Int) : EncodableEnum<EyeColourCode?> {
+    enum class EyeColourCode(override val code: Int) : EncodableEnum<EyeColourCode?> {
         UNKNOWN(0),
         OTHER(1),
         BLACK(2),
@@ -87,7 +87,7 @@ class FaceImageIdentityMetadataBlock : Block {
         }
     }
 
-    enum class HairColourCode(private val code: Int) : EncodableEnum<HairColourCode?> {
+    enum class HairColourCode(override val code: Int) : EncodableEnum<HairColourCode?> {
         UNKNOWN(0),
         OTHER(1),
         BALD(2),
@@ -234,25 +234,25 @@ class FaceImageIdentityMetadataBlock : Block {
     override fun getASN1Object(): ASN1Encodable? {
         val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
         if (genderCode != null) {
-            taggedObjects.put(0, ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(genderCode!!.getCode()))
+            taggedObjects[0] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(genderCode!!.getCode())
         }
         if (eyeColourCode != null) {
-            taggedObjects.put(1, ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(eyeColourCode!!.getCode()))
+            taggedObjects[1] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(eyeColourCode!!.getCode())
         }
         if (hairColourCode != null) {
-            taggedObjects.put(2, ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(hairColourCode!!.getCode()))
+            taggedObjects[2] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(hairColourCode!!.getCode())
         }
         if (subjectHeight >= 0) {
-            taggedObjects.put(3, ASN1Util.encodeInt(subjectHeight))
+            taggedObjects[3] = ASN1Util.encodeInt(subjectHeight)
         }
         if (propertiesBlock != null) {
-            taggedObjects.put(4, propertiesBlock!!.getASN1Object())
+            taggedObjects[4] = propertiesBlock!!.getASN1Object()
         }
         if (expressionBlock != null) {
-            taggedObjects.put(5, expressionBlock!!.getASN1Object())
+            taggedObjects[5] = expressionBlock!!.getASN1Object()
         }
         if (poseAngleBlock != null) {
-            taggedObjects.put(6, poseAngleBlock.getASN1Object())
+            taggedObjects[6] = poseAngleBlock.getASN1Object()
         }
         return ASN1Util.encodeTaggedObjects(taggedObjects)
     }

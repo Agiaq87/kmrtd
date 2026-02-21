@@ -52,37 +52,37 @@ class EACCAResult
  * @param pCDPrivateKey the private key of the terminal
  * @param wrapper secure messaging wrapper
  */(
-    /**
+  /**
      * Returns the ICC's public key identifier.
      * 
      * @return the key id or `null`
      */
     val keyId: BigInteger?,
-    /**
+  /**
      * Returns the PICC's public key that was used as input to chip authentication protocol.
      * 
      * @return the public key
      */
     val publicKey: PublicKey?,
-    /**
+  /**
      * Returns the hash of the ephemeral public key of the terminal.
      * 
      * @return the hash of the ephemeral public key of the terminal
      */
-    val keyHash: ByteArray?,
-    /**
+  @JvmField val keyHash: ByteArray?,
+  /**
      * Returns the ephemeral public key of the terminal that was used in the key exchange.
      * 
      * @return the public key
      */
     val pCDPublicKey: PublicKey?,
-    /**
+  /**
      * The ephemeral private key of the terminal that was used in the key exchange.
      * 
      * @return the private key
      */
     val pCDPrivateKey: PrivateKey?,
-    /**
+  /**
      * Returns the resulting secure messaging wrapper.
      * 
      * @return the secure messaging wrapper

@@ -91,7 +91,7 @@ open class CardServiceProtocolException : CardServiceException {
         this.step = step
     }
 
-    val message: String
+    override val message: String
         get() = StringBuilder()
             .append(super.message)
             .append(" (").append("step: ").append(step).append(")")

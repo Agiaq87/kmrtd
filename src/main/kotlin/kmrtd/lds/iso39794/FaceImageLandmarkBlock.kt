@@ -41,7 +41,7 @@
 package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class FaceImageLandmarkBlock : Block {
@@ -98,9 +98,9 @@ class FaceImageLandmarkBlock : Block {
     /* PACKAGE */
     override fun getASN1Object(): ASN1Encodable? {
         val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        taggedObjects.put(0, FaceImageLandmarkKind.encodeLandmarkKind(landmarkKind))
+        taggedObjects[0] = FaceImageLandmarkKind.encodeLandmarkKind(landmarkKind)
         if (landmarkCoordinates != null) {
-            taggedObjects.put(1, FaceImageLandmarkCoordinates.encodeLandmarkCoordinates(landmarkCoordinates))
+            taggedObjects[1] = FaceImageLandmarkCoordinates.encodeLandmarkCoordinates(landmarkCoordinates)
         }
         return ASN1Util.encodeTaggedObjects(taggedObjects)
     }
@@ -108,6 +108,7 @@ class FaceImageLandmarkBlock : Block {
     companion object {
         private val serialVersionUID = -8008877005187206392L
 
+        @JvmStatic
         fun decodeLandmarkBlocks(asn1Encodable: ASN1Encodable?): MutableList<FaceImageLandmarkBlock?> {
             if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
                 val blockASN1Objects = ASN1Util.list(asn1Encodable)

@@ -27,7 +27,7 @@
  */
 package kmrtd.lds
 
-import org.jmrtd.io.SplittableInputStream
+import kmrtd.io.SplittableInputStream
 import java.io.*
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -58,7 +58,7 @@ abstract class AbstractImageInfo
      * 
      * @param type the new type
      */
-    var type: Int,
+  override var type: Int,
     /**
      * Sets the width of this image.
      * 
@@ -69,7 +69,7 @@ abstract class AbstractImageInfo
      * 
      * @param width the new width
      */
-    var width: Int,
+  override var width: Int,
     /**
      * Sets the height of this image.
      * 
@@ -80,7 +80,7 @@ abstract class AbstractImageInfo
      * 
      * @param height the new height
      */
-    var height: Int,
+  override var height: Int,
     /**
      * Sets the mime-type.
      * 
@@ -91,7 +91,7 @@ abstract class AbstractImageInfo
      * 
      * @param mimeType the new mime-type
      */
-    var mimeType: String?
+  override var mimeType: String?
 ) : ImageInfo {
     /**
      * Returns the content-type,
@@ -114,7 +114,7 @@ abstract class AbstractImageInfo
     @Transient
     private var splittableInputStream: SplittableInputStream? = null
     private var imagePositionInInputStream = 0
-    private var imageLength = 0
+    override var imageLength = 0
 
     /**
      * Returns the width of the image.
@@ -131,7 +131,7 @@ abstract class AbstractImageInfo
     /**
      * Constructs a default abstract image info.
      */
-    internal constructor() : this(ImageInfo.Companion.TYPE_UNKNOWN, 0, 0, null)
+    internal constructor() : this(ImageInfo.TYPE_UNKNOWN, 0, 0, null)
 
     /**
      * Constructs an abstract image info with a type.
@@ -198,7 +198,7 @@ abstract class AbstractImageInfo
      */
     override fun toString(): String {
         return StringBuilder()
-            .append(this.javaClass.getSimpleName())
+            .append(this.javaClass.simpleName)
             .append(" [")
             .append("type: ").append(typeToString(type) + ", ")
             .append("size: ").append(imageLength)
@@ -209,7 +209,7 @@ abstract class AbstractImageInfo
     override fun hashCode(): Int {
         var result = 1234567891
         result = 3 * result + 5 * type
-        result += 5 * (if (mimeType == null) 1337 else mimeType.hashCode()) + 7
+        result += 5 * (mimeType?.hashCode() ?: 1337) + 7
         result += 7 * imageLength + 11
         return result
     }
@@ -231,12 +231,12 @@ abstract class AbstractImageInfo
                     && (mimeType == null && otherImageInfo.mimeType == null || mimeType != null && mimeType == otherImageInfo.mimeType)
                     && type == otherImageInfo.type
         } catch (e: Exception) {
-            LOGGER.log(Level.WARNING, "Exception" + e)
+            LOGGER.log(Level.WARNING, "Exception $e")
             return false
         }
     }
 
-    val encoded: ByteArray?
+    override val encoded: ByteArray?
         /**
          * Encodes this image info.
          * 
@@ -253,7 +253,7 @@ abstract class AbstractImageInfo
             return out.toByteArray()
         }
 
-    val imageInputStream: InputStream
+    override val imageInputStream: InputStream
         /**
          * Returns the encoded image as an input stream.
          * 
@@ -261,11 +261,11 @@ abstract class AbstractImageInfo
          */
         get() {
             /* DEBUG: START */
-            if (splittableInputStream != null) {
-                return splittableInputStream!!.getInputStream(imagePositionInInputStream)
+            return if (splittableInputStream != null) {
+                splittableInputStream!!.getInputStream(imagePositionInInputStream)
                 /* DEBUG: END */
             } else if (imageBytes != null) {
-                return ByteArrayInputStream(imageBytes)
+                ByteArrayInputStream(imageBytes)
             } else {
                 throw IllegalStateException("Both the byte buffer and the stream are null")
             }
@@ -372,7 +372,7 @@ abstract class AbstractImageInfo
     companion object {
         private const val serialVersionUID = 2870092217269116309L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         /**
          * Returns a human readable string from the image type.
@@ -383,11 +383,11 @@ abstract class AbstractImageInfo
          */
         private fun typeToString(type: Int): String {
             when (type) {
-                ImageInfo.Companion.TYPE_PORTRAIT -> return "Portrait"
-                ImageInfo.Companion.TYPE_SIGNATURE_OR_MARK -> return "Signature or usual mark"
-                ImageInfo.Companion.TYPE_FINGER -> return "Finger"
-                ImageInfo.Companion.TYPE_IRIS -> return "Iris"
-                ImageInfo.Companion.TYPE_UNKNOWN -> return "Unknown"
+                ImageInfo.TYPE_PORTRAIT -> return "Portrait"
+                ImageInfo.TYPE_SIGNATURE_OR_MARK -> return "Signature or usual mark"
+                ImageInfo.TYPE_FINGER -> return "Finger"
+                ImageInfo.TYPE_IRIS -> return "Iris"
+                ImageInfo.TYPE_UNKNOWN -> return "Unknown"
                 else -> throw NumberFormatException("Unknown type: " + Integer.toHexString(type))
             }
         }

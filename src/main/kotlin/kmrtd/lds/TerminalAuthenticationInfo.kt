@@ -274,6 +274,7 @@ class TerminalAuthenticationInfo internal constructor(
          * object identifier
          * @return true if the match is positive
          */
+        @JvmStatic
         fun checkRequiredIdentifier(id: String?): Boolean {
             return ID_TA == id
         }
@@ -326,7 +327,7 @@ class TerminalAuthenticationInfo internal constructor(
             }
             val s: ASN1Sequence? = efCVCA
             val fid = s!!.getObjectAt(0) as ASN1OctetString
-            val bytes = fid.getOctets()
+            val bytes = fid.octets
             return (((bytes[0].toInt() and 0xFF) shl 8) or (bytes[1].toInt() and 0xFF)).toShort()
         }
 
@@ -344,7 +345,7 @@ class TerminalAuthenticationInfo internal constructor(
             if (efCVCA.size() != 2) {
                 return -1
             }
-            return (efCVCA.getObjectAt(1) as ASN1OctetString).getOctets()[0]
+            return (efCVCA.getObjectAt(1) as ASN1OctetString).octets[0]
         }
     }
 }

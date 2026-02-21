@@ -73,7 +73,7 @@ class PACEProtocol(
     private val maxTranceiveLengthForProtocol: Int,
     private val maxTranceiveLengthForSecureMessaging: Int, private val shouldCheckMAC: Boolean
 ) {
-    private val random: Random
+    private val random: Random = SecureRandom()
 
     /**
      * Constructs a PACE protocol instance.
@@ -92,21 +92,6 @@ class PACEProtocol(
         service: APDULevelPACECapable, wrapper: SecureMessagingWrapper?,
         maxTranceiveLength: Int, shouldCheckMAC: Boolean
     ) : this(service, wrapper, 256, maxTranceiveLength, shouldCheckMAC)
-
-    /**
-     * Constructs a PACE protocol instance.
-     * 
-     * @param service the service for sending APDUs
-     * @param wrapper the already established secure messaging channel (or `null`)
-     * @param maxTranceiveLengthForProtocol the maximal tranceive length PACE during protocol execution, `256` or `65536`
-     * @param maxTranceiveLengthForSecureMessaging the maximal tranceive length (on responses to `READ BINARY`)
-     * to use in the resulting secure messaging channel
-     * @param shouldCheckMAC whether the resulting secure messaging channel should apply strict MAC
-     * checking on response APDUs
-     */
-    init {
-        this.random = SecureRandom()
-    }
 
     /**
      * Performs the PACE 2.0 / SAC protocol.
@@ -238,11 +223,11 @@ class PACEProtocol(
      * Exchange PK_PCD~ and PK_PICC~ with PICC.
      * Check that PK_PCD~ and PK_PICC~ differ.
      */
-        val ephemeralPICCPublicKey = doPACEStep3ExchangePublicKeys(ephemeralPCDKeyPair.getPublic(), ephemeralParams!!)
+        val ephemeralPICCPublicKey = doPACEStep3ExchangePublicKeys(ephemeralPCDKeyPair.public, ephemeralParams!!)
 
         /* Key agreement K = KA(SK_PCD~, PK_PICC~, D~). */
         val sharedSecretBytes =
-            doPACEStep3KeyAgreement(agreementAlg, ephemeralPCDKeyPair.getPrivate(), ephemeralPICCPublicKey)
+            doPACEStep3KeyAgreement(agreementAlg, ephemeralPCDKeyPair.private, ephemeralPICCPublicKey)
 
         /* Derive secure messaging keys. */
         /* Compute session keys K_mac = KDF_mac(K), K_enc = KDF_enc(K). */
@@ -357,7 +342,7 @@ class PACEProtocol(
             staticPACECipher.init(
                 Cipher.DECRYPT_MODE,
                 staticPACEKey,
-                IvParameterSpec(ByteArray(staticPACECipher.getBlockSize()))
+                IvParameterSpec(ByteArray(staticPACECipher.blockSize))
             ) // Fix proposed by Halvdan Grelland (halvdanhg@gmail.com)
 
             piccNonce = staticPACECipher.doFinal(step1EncryptedNonce)

@@ -50,6 +50,7 @@ class CVCPrincipal : Principal, Serializable {
      * 
      * @return the mnemonic
      */
+    @JvmField
     val mnemonic: String
 
     /**
@@ -57,6 +58,7 @@ class CVCPrincipal : Principal, Serializable {
      * 
      * @return the seqNumber
      */
+    @JvmField
     val seqNumber: String
 
     /**
@@ -65,14 +67,13 @@ class CVCPrincipal : Principal, Serializable {
      * @param name a name with format Country (2F) | Mnemonic (9V) | SeqNum (5F).
      */
     constructor(name: String) {
-        requireNotNull(name) { "Name should be <Country (2F)><Mnemonic (9V)><SeqNum (5F)> formatted, found null" }
-        require(!(name.length < 2 + 5 || name.length > 2 + 9 + 5)) { "Name should be <Country (2F)><Mnemonic (9V)><SeqNum (5F)> formatted, found \"" + name + "\"" }
+        require(!(name.length < 2 + 5 || name.length > 2 + 9 + 5)) { "Name should be <Country (2F)><Mnemonic (9V)><SeqNum (5F)> formatted, found \"$name\"" }
 
         val alpha2Code = name.substring(0, 2).uppercase(Locale.getDefault())
         try {
             country = Country.getInstance(alpha2Code)
         } catch (iae: IllegalArgumentException) {
-            LOGGER.log(Level.FINE, "Could not find country for " + alpha2Code, iae)
+            LOGGER.log(Level.FINE, "Could not find country for $alpha2Code", iae)
             country = object : Country() {
                 private val serialVersionUID = 345841304964161797L
 
@@ -109,8 +110,8 @@ class CVCPrincipal : Principal, Serializable {
      * @param seqNumber the sequence number
      */
     constructor(country: Country, mnemonic: String, seqNumber: String) {
-        require(!(mnemonic == null || mnemonic.length > 9)) { "Wrong length mnemonic" }
-        require(!(seqNumber == null || seqNumber.length != 5)) { "Wrong length seqNumber" }
+        require(mnemonic.length <= 9) { "Wrong length mnemonic" }
+        require(seqNumber.length == 5) { "Wrong length seqNumber" }
         this.country = country
         this.mnemonic = mnemonic
         this.seqNumber = seqNumber
@@ -175,7 +176,7 @@ class CVCPrincipal : Principal, Serializable {
      * @return the hash code
      */
     override fun hashCode(): Int {
-        return 2 * getName().hashCode() + 1231211
+        return 2 * name.hashCode() + 1231211
     }
 
     companion object {

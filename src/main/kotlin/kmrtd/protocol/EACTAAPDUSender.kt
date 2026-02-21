@@ -40,16 +40,7 @@ import org.jmrtd.APDULevelEACTACapable
  * @since 0.7.0
  */
 class EACTAAPDUSender(service: CardService) : APDULevelEACTACapable {
-    private val secureMessagingSender: SecureMessagingAPDUSender
-
-    /**
-     * Creates an APDU sender.
-     * 
-     * @param service the card service for tranceiving APDUs
-     */
-    init {
-        this.secureMessagingSender = SecureMessagingAPDUSender(service)
-    }
+    private val secureMessagingSender: SecureMessagingAPDUSender = SecureMessagingAPDUSender(service)
 
     /**
      * The MSE DST APDU, see EAC 1.11 spec, Section B.2.
@@ -65,7 +56,7 @@ class EACTAAPDUSender(service: CardService) : APDULevelEACTACapable {
     override fun sendMSESetDST(wrapper: APDUWrapper?, data: ByteArray?) {
         val capdu = CommandAPDU(ISO7816.CLA_ISO7816.toInt(), ISO7816.INS_MSE.toInt(), 0x81, 0xB6, data)
         val rapdu = secureMessagingSender.transmit(wrapper, capdu)
-        val sw = rapdu.getSW().toShort()
+        val sw = rapdu.sw.toShort()
         if (sw != ISO7816.SW_NO_ERROR) {
             throw CardServiceException("Sending MSE Set DST failed", sw.toInt())
         }

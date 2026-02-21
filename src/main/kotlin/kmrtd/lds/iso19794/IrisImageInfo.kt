@@ -154,7 +154,7 @@ class IrisImageInfo : AbstractImageInfo {
         readObject(inputStream)
     }
 
-    val recordLength: Long
+    override val recordLength: Long
         /**
          * Returns the record length.
          * 

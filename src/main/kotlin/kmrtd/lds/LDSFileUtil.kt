@@ -27,8 +27,8 @@
  */
 package kmrtd.lds
 
+import kmrtd.PassportService
 import kmrtd.lds.icao.*
-import org.jmrtd.PassportService
 import java.io.BufferedInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -205,6 +205,7 @@ object LDSFileUtil {
      * 
      * @return a data group number (1-16)
      */
+    @JvmStatic
     fun lookupDataGroupNumberByTag(tag: Int): Int {
         when (tag) {
             LDSFile.EF_DG1_TAG -> return 1
@@ -530,25 +531,25 @@ object LDSFileUtil {
      */
     private fun createFIDToSFIMap(): MutableMap<Short?, Byte> {
         val fidToSFI: MutableMap<Short?, Byte?> = HashMap<Short?, Byte?>(20)
-        fidToSFI.put(PassportService.EF_COM, PassportService.SFI_COM)
-        fidToSFI.put(PassportService.EF_DG1, PassportService.SFI_DG1)
-        fidToSFI.put(PassportService.EF_DG2, PassportService.SFI_DG2)
-        fidToSFI.put(PassportService.EF_DG3, PassportService.SFI_DG3)
-        fidToSFI.put(PassportService.EF_DG4, PassportService.SFI_DG4)
-        fidToSFI.put(PassportService.EF_DG5, PassportService.SFI_DG5)
-        fidToSFI.put(PassportService.EF_DG6, PassportService.SFI_DG6)
-        fidToSFI.put(PassportService.EF_DG7, PassportService.SFI_DG7)
-        fidToSFI.put(PassportService.EF_DG8, PassportService.SFI_DG8)
-        fidToSFI.put(PassportService.EF_DG9, PassportService.SFI_DG9)
-        fidToSFI.put(PassportService.EF_DG10, PassportService.SFI_DG10)
-        fidToSFI.put(PassportService.EF_DG11, PassportService.SFI_DG11)
-        fidToSFI.put(PassportService.EF_DG12, PassportService.SFI_DG12)
-        fidToSFI.put(PassportService.EF_DG13, PassportService.SFI_DG13)
-        fidToSFI.put(PassportService.EF_DG14, PassportService.SFI_DG14)
-        fidToSFI.put(PassportService.EF_DG15, PassportService.SFI_DG15)
-        fidToSFI.put(PassportService.EF_DG16, PassportService.SFI_DG16)
-        fidToSFI.put(PassportService.EF_SOD, PassportService.SFI_SOD)
-        fidToSFI.put(PassportService.EF_CVCA, PassportService.SFI_CVCA)
+        fidToSFI[PassportService.EF_COM] = PassportService.SFI_COM
+        fidToSFI[PassportService.EF_DG1] = PassportService.SFI_DG1
+        fidToSFI[PassportService.EF_DG2] = PassportService.SFI_DG2
+        fidToSFI[PassportService.EF_DG3] = PassportService.SFI_DG3
+        fidToSFI[PassportService.EF_DG4] = PassportService.SFI_DG4
+        fidToSFI[PassportService.EF_DG5] = PassportService.SFI_DG5
+        fidToSFI[PassportService.EF_DG6] = PassportService.SFI_DG6
+        fidToSFI[PassportService.EF_DG7] = PassportService.SFI_DG7
+        fidToSFI[PassportService.EF_DG8] = PassportService.SFI_DG8
+        fidToSFI[PassportService.EF_DG9] = PassportService.SFI_DG9
+        fidToSFI[PassportService.EF_DG10] = PassportService.SFI_DG10
+        fidToSFI[PassportService.EF_DG11] = PassportService.SFI_DG11
+        fidToSFI[PassportService.EF_DG12] = PassportService.SFI_DG12
+        fidToSFI[PassportService.EF_DG13] = PassportService.SFI_DG13
+        fidToSFI[PassportService.EF_DG14] = PassportService.SFI_DG14
+        fidToSFI[PassportService.EF_DG15] = PassportService.SFI_DG15
+        fidToSFI[PassportService.EF_DG16] = PassportService.SFI_DG16
+        fidToSFI[PassportService.EF_SOD] = PassportService.SFI_SOD
+        fidToSFI[PassportService.EF_CVCA] = PassportService.SFI_CVCA
         return Collections.unmodifiableMap<Short?, Byte?>(fidToSFI)
     }
 }

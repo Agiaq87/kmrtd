@@ -44,11 +44,11 @@ import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.BERTags
 import org.bouncycastle.asn1.DERTaggedObject
-import org.jmrtd.ASN1Util
-import org.jmrtd.cbeff.BiometricDataBlock
-import org.jmrtd.cbeff.CBEFFInfo
-import org.jmrtd.cbeff.ISO781611
-import org.jmrtd.cbeff.StandardBiometricHeader
+import kmrtd.ASN1Util
+import kmrtd.cbeff.BiometricDataBlock
+import kmrtd.cbeff.CBEFFInfo
+import kmrtd.cbeff.ISO781611
+import kmrtd.cbeff.StandardBiometricHeader
 import java.io.InputStream
 import java.util.*
 
@@ -104,10 +104,10 @@ class FaceImageDataBlock : Block, BiometricDataBlock {
             )
 
             val elements: SortedMap<Int?, ByteArray?> = TreeMap<Int?, ByteArray?>()
-            elements.put(ISO781611.BIOMETRIC_TYPE_TAG, biometricType) // 81
-            elements.put(ISO781611.BIOMETRIC_SUBTYPE_TAG, biometricSubtype) // 82
-            elements.put(ISO781611.FORMAT_OWNER_TAG, formatOwner) // 87
-            elements.put(ISO781611.FORMAT_TYPE_TAG, formatType) // 88
+            elements[ISO781611.BIOMETRIC_TYPE_TAG] = biometricType // 81
+            elements[ISO781611.BIOMETRIC_SUBTYPE_TAG] = biometricSubtype // 82
+            elements[ISO781611.FORMAT_OWNER_TAG] = formatOwner // 87
+            elements[ISO781611.FORMAT_TYPE_TAG] = formatType // 88
             sbh = StandardBiometricHeader(elements)
         }
         return sbh!!
@@ -142,13 +142,13 @@ class FaceImageDataBlock : Block, BiometricDataBlock {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         /* PACKAGE */
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, versionBlock.getASN1Object())
-            taggedObjects.put(1, ISO39794Util.encodeBlocks(representationBlocks))
+            taggedObjects[0] = versionBlock.getASN1Object()
+            taggedObjects[1] = ISO39794Util.encodeBlocks(representationBlocks)
             return DERTaggedObject(
                 false,
                 BERTags.APPLICATION,

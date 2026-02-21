@@ -42,7 +42,7 @@ package kmrtd.lds.iso39794
 
 import kmrtd.lds.iso39794.RegistryIdBlock.Companion.decodeRegistryIdBlocks
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class FaceImageCaptureDeviceBlock : Block {
@@ -101,16 +101,16 @@ class FaceImageCaptureDeviceBlock : Block {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         /* PACKAGE */
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
             if (model != null) {
-                taggedObjects.put(0, model!!.getASN1Object())
+                taggedObjects[0] = model!!.getASN1Object()
             }
             if (certifications != null) {
-                taggedObjects.put(1, ISO39794Util.encodeBlocks(certifications))
+                taggedObjects[1] = ISO39794Util.encodeBlocks(certifications)
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }

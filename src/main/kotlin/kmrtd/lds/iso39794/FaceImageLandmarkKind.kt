@@ -41,10 +41,10 @@
 package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 
 interface FaceImageLandmarkKind {
-    enum class MPEGFeaturePointCode(private val code: Int) : EncodableEnum<MPEGFeaturePointCode?>,
+    enum class MPEGFeaturePointCode(override val code: Int) : EncodableEnum<MPEGFeaturePointCode?>,
         FaceImageLandmarkKind {
         MPEG4_POINT_CODE_02_01(0),
         MPEG4_POINT_CODE_02_02(1),
@@ -146,7 +146,7 @@ interface FaceImageLandmarkKind {
         }
     }
 
-    enum class AnthropometricLandmarkNameCode(private val code: Int) : EncodableEnum<AnthropometricLandmarkNameCode?>,
+    enum class AnthropometricLandmarkNameCode(override val code: Int) : EncodableEnum<AnthropometricLandmarkNameCode?>,
         FaceImageLandmarkKind {
         VERTEX(0),
         GLABELLA(1),
@@ -221,7 +221,7 @@ interface FaceImageLandmarkKind {
         }
     }
 
-    enum class AnthropometricLandmarkPointNameCode(private val code: Int) :
+    enum class AnthropometricLandmarkPointNameCode(override val code: Int) :
         EncodableEnum<AnthropometricLandmarkPointNameCode?>, FaceImageLandmarkKind {
         POINTCODE_01_01(0),
         POINTCODE_01_02(1),
@@ -272,7 +272,7 @@ interface FaceImageLandmarkKind {
         }
     }
 
-    enum class AnthropometricLandmarkPointIdCode(private val code: Int) :
+    enum class AnthropometricLandmarkPointIdCode(override val code: Int) :
         EncodableEnum<AnthropometricLandmarkPointIdCode?>, FaceImageLandmarkKind {
         V(0),
         G(1),
@@ -369,7 +369,7 @@ interface FaceImageLandmarkKind {
             val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
             if (taggedObjects.containsKey(0)) {
                 // base case...
-                val baseTaggedObjects = ASN1Util.decodeTaggedObjects(taggedObjects.get(0))
+                val baseTaggedObjects = ASN1Util.decodeTaggedObjects(taggedObjects[0])
                 if (baseTaggedObjects.containsKey(0)) {
                     // MPEG feature point case...
                     return MPEGFeaturePointCode.Companion.fromCode(
@@ -378,7 +378,7 @@ interface FaceImageLandmarkKind {
                         )
                     )
                 } else if (baseTaggedObjects.containsKey(1)) {
-                    decodeAnthropometricLandmark(baseTaggedObjects.get(1))
+                    decodeAnthropometricLandmark(baseTaggedObjects[1])
                 }
             }
 
@@ -389,7 +389,7 @@ interface FaceImageLandmarkKind {
             val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
             if (taggedObjects.containsKey(0)) {
                 // base case...
-                val baseTaggedObjects = ASN1Util.decodeTaggedObjects(taggedObjects.get(0))
+                val baseTaggedObjects = ASN1Util.decodeTaggedObjects(taggedObjects[0])
                 if (baseTaggedObjects.containsKey(0)) {
                     return AnthropometricLandmarkNameCode.Companion.fromCode(
                         ISO39794Util.decodeCodeFromChoiceExtensionBlockFallback(
@@ -417,28 +417,28 @@ interface FaceImageLandmarkKind {
         fun encodeLandmarkKind(landmarkKind: FaceImageLandmarkKind?): ASN1Encodable? {
             val baseTaggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
             if (landmarkKind is MPEGFeaturePointCode) {
-                baseTaggedObjects.put(0, ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(landmarkKind.code))
+                baseTaggedObjects[0] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(landmarkKind.code)
             } else {
-                baseTaggedObjects.put(1, encodeAnthropmetricLandmark(landmarkKind))
+                baseTaggedObjects[1] = encodeAnthropmetricLandmark(landmarkKind)
             }
 
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, ASN1Util.encodeTaggedObjects(baseTaggedObjects))
+            taggedObjects[0] = ASN1Util.encodeTaggedObjects(baseTaggedObjects)
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }
 
         fun encodeAnthropmetricLandmark(landmarkKind: FaceImageLandmarkKind?): ASN1Encodable? {
             val baseTaggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
             if (landmarkKind is AnthropometricLandmarkNameCode) {
-                baseTaggedObjects.put(0, ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(landmarkKind.code))
+                baseTaggedObjects[0] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(landmarkKind.code)
             } else if (landmarkKind is AnthropometricLandmarkPointNameCode) {
-                baseTaggedObjects.put(1, ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(landmarkKind.code))
+                baseTaggedObjects[1] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(landmarkKind.code)
             } else if (landmarkKind is AnthropometricLandmarkPointIdCode) {
-                baseTaggedObjects.put(2, ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(landmarkKind.code))
+                baseTaggedObjects[2] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(landmarkKind.code)
             }
 
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, ASN1Util.encodeTaggedObjects(baseTaggedObjects))
+            taggedObjects[0] = ASN1Util.encodeTaggedObjects(baseTaggedObjects)
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }
     }

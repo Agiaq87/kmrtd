@@ -41,7 +41,7 @@ import java.util.logging.Logger
  * @version $Revision: 1751 $
  */
 abstract class AbstractLDSInfo : LDSElement {
-    val encoded: ByteArray?
+    override val encoded: ByteArray?
         /**
          * Returns an encoding of this LDS info.
          * 

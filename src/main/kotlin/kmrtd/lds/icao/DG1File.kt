@@ -67,7 +67,7 @@ class DG1File : DataGroup {
 
     @Throws(IOException::class)
     override fun readContent(inputStream: InputStream?) {
-        val tlvIn = if (inputStream is TLVInputStream) inputStream else TLVInputStream(inputStream)
+        val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
         tlvIn.skipToTag(MRZ_INFO_TAG.toInt())
         val length = tlvIn.readLength()
         this.mrzInfo = MRZInfo(tlvIn, length)
@@ -94,7 +94,7 @@ class DG1File : DataGroup {
         if (obj == null) {
             return false
         }
-        if (!(obj.javaClass == this.javaClass)) {
+        if (obj.javaClass != this.javaClass) {
             return false
         }
 
@@ -108,7 +108,7 @@ class DG1File : DataGroup {
 
     @Throws(IOException::class)
     override fun writeContent(out: OutputStream?) {
-        val tlvOut = if (out is TLVOutputStream) out else TLVOutputStream(out)
+        val tlvOut = out as? TLVOutputStream ?: TLVOutputStream(out)
         tlvOut.writeTag(MRZ_INFO_TAG.toInt())
         val value = mrzInfo!!.encoded
         tlvOut.writeValue(value)

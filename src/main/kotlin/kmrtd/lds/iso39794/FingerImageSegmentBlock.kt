@@ -43,7 +43,7 @@ package kmrtd.lds.iso39794
 import kmrtd.lds.iso39794.CoordinateCartesian2DUnsignedShortBlock.Companion.decodeCoordinateCartesian2DUnsignedShortBlocks
 import kmrtd.lds.iso39794.FingerImagePositionCode.Companion.fromCode
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class FingerImageSegmentBlock : Block {
@@ -121,23 +121,20 @@ class FingerImageSegmentBlock : Block {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(
-                0,
-                ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(positionCode.code)
-            )
-            taggedObjects.put(1, ISO39794Util.encodeBlocks(enclosingCoordinatesBlock))
+            taggedObjects[0] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(positionCode.code)
+            taggedObjects[1] = ISO39794Util.encodeBlocks(enclosingCoordinatesBlock)
             if (orientation != null) {
-                taggedObjects.put(2, ASN1Util.encodeInt(orientation!!))
+                taggedObjects[2] = ASN1Util.encodeInt(orientation!!)
             }
             if (qualityBlocks != null) {
-                taggedObjects.put(3, ISO39794Util.encodeBlocks(qualityBlocks))
+                taggedObjects[3] = ISO39794Util.encodeBlocks(qualityBlocks)
             }
             if (confidence >= 0) {
-                taggedObjects.put(4, ISO39794Util.encodeScoreOrError(confidence))
+                taggedObjects[4] = ISO39794Util.encodeScoreOrError(confidence)
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }

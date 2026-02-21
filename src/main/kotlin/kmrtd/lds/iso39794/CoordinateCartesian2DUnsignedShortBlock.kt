@@ -40,8 +40,8 @@
  */
 package kmrtd.lds.iso39794
 
+import kmrtd.ASN1Util
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
 import java.util.*
 
 class CoordinateCartesian2DUnsignedShortBlock : Block, FaceImageLandmarkCoordinates {
@@ -91,8 +91,8 @@ class CoordinateCartesian2DUnsignedShortBlock : Block, FaceImageLandmarkCoordina
 
     override fun getASN1Object(): ASN1Encodable? {
         val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        taggedObjects.put(0, ASN1Util.encodeInt(x))
-        taggedObjects.put(1, ASN1Util.encodeInt(y))
+        taggedObjects[0] = ASN1Util.encodeInt(x)
+        taggedObjects[1] = ASN1Util.encodeInt(y)
         return ASN1Util.encodeTaggedObjects(taggedObjects)
     }
 
@@ -100,6 +100,7 @@ class CoordinateCartesian2DUnsignedShortBlock : Block, FaceImageLandmarkCoordina
         private val serialVersionUID = -3221155578581711766L
 
         /* PACKAGE */
+        @JvmStatic
         fun decodeCoordinateCartesian2DUnsignedShortBlocks(asn1Encodable: ASN1Encodable?): MutableList<CoordinateCartesian2DUnsignedShortBlock?> {
             if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
                 val blockASN1Objects = ASN1Util.list(asn1Encodable)

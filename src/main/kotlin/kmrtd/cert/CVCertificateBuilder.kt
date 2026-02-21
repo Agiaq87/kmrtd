@@ -29,7 +29,6 @@ package kmrtd.cert
 
 import org.ejbca.cvc.*
 import org.ejbca.cvc.exception.ConstructionException
-import org.jmrtd.cert.CVCAuthorizationTemplate
 import java.io.IOException
 import java.security.*
 import java.util.*
@@ -93,8 +92,8 @@ object CVCertificateBuilder {
                             .toAlpha2Code(), holderRef.mnemonic,
                         holderRef.seqNumber
                     ),
-                    CVCertificateBuilder.getRole(authZTemplate.getRole()),
-                    CVCertificateBuilder.getAccessRight(authZTemplate.getAccessRight()),
+                    CVCertificateBuilder.getRole(authZTemplate.role),
+                    CVCertificateBuilder.getAccessRight(authZTemplate.accessRight),
                     validFrom,
                     validTo,
                     provider

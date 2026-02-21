@@ -204,7 +204,7 @@ class FaceImageInfo : AbstractImageInfo {
      * 
      * @return the record length
      */
-    var recordLength: Long = 0
+    override var recordLength: Long = 0
         private set
 
     /**
@@ -367,7 +367,7 @@ class FaceImageInfo : AbstractImageInfo {
         this.colorSpace = colorSpace
         this.sourceType = sourceType
         this.deviceType = deviceType
-        val featurePointCount = if (featurePoints == null) 0 else featurePoints.size
+        val featurePointCount = featurePoints?.size ?: 0
         this.featurePoints = arrayOfNulls<FeaturePoint>(featurePointCount)
         if (featurePointCount > 0) {
             System.arraycopy(featurePoints, 0, this.featurePoints, 0, featurePointCount)
@@ -399,7 +399,7 @@ class FaceImageInfo : AbstractImageInfo {
 
     @Throws(IOException::class)
     override fun readObject(inputStream: InputStream) {
-        val dataIn = if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+        val dataIn = inputStream as? DataInputStream ?: DataInputStream(inputStream)
 
         /* Facial Information Block (20), see ISO 19794-5 5.5 */
         recordLength = dataIn.readInt().toLong() and 0xFFFFFFFFL /* 4 */

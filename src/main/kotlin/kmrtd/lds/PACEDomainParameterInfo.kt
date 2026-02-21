@@ -27,20 +27,20 @@
  */
 package kmrtd.lds
 
+import kmrtd.Util
 import org.bouncycastle.asn1.*
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier
 import org.bouncycastle.asn1.x9.X962NamedCurves
 import org.bouncycastle.asn1.x9.X962Parameters
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec
-import org.jmrtd.Util
 import java.math.BigInteger
+import java.security.spec.AlgorithmParameterSpec
 import java.security.spec.ECFieldFp
 import java.security.spec.ECParameterSpec
 import java.security.spec.EllipticCurve
 import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.text.StringBuilder
-import kotlin.text.equals
 
 /**
  * PACE Domain Parameter Info object as per SAC TR 1.01, November 11, 2010.
@@ -74,7 +74,7 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
     domainParameter: AlgorithmIdentifier,
     parameterId: BigInteger? = null
 ) : SecurityInfo() {
-    val objectIdentifier: String
+    override val objectIdentifier: String
 
     /*
    * FIXME: This field is now transient, but should not be.
@@ -118,7 +118,7 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
         this.parameterId = parameterId
     }
 
-    val protocolOIDString: String?
+    override val protocolOIDString: String?
         /**
          * Returns the protocol object identifier as a human readable string.
          * 
@@ -144,7 +144,7 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
         }
 
     @get:Deprecated("Remove this method from visible interface (because of dependency on BC API)")
-    val dERObject: ASN1Primitive
+    override val dERObject: ASN1Primitive
         /**
          * Returns a DER object with this `SecurityInfo` data (DER sequence).
          * 
@@ -177,7 +177,7 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
             .append("algorithm: ").append(domainParameter.getAlgorithm().getId()) // e.g. ID_EC_PUBLIC_KEY
             .append(", ")
             .append("parameters: ").append(domainParameter.getParameters()) // e.g. ASN1 sequence of length 6
-            .append(if (parameterId == null) "" else ", parameterId: " + parameterId)
+            .append(if (parameterId == null) "" else ", parameterId: $parameterId")
             .append("]")
             .toString()
     }
@@ -262,23 +262,23 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
             val fieldIdObject: ASN1Sequence = DLSequence(arrayOf<ASN1Encodable>(fieldIdOID, p))
             paramSequenceList.add(fieldIdObject)
 
-            val aObject: ASN1OctetString = DEROctetString(Util.i2os(curve.getA()))
-            val bObject: ASN1OctetString = DEROctetString(Util.i2os(curve.getB()))
+            val aObject: ASN1OctetString = DEROctetString(Util.i2os(curve.a))
+            val bObject: ASN1OctetString = DEROctetString(Util.i2os(curve.b))
             val curveObject: ASN1Sequence = DLSequence(arrayOf<ASN1Encodable>(aObject, bObject))
             paramSequenceList.add(curveObject)
 
             val basePointObject: ASN1OctetString = DEROctetString(
                 Util.ecPoint2OS(
-                    ecParameterSpec.getGenerator(),
-                    ecParameterSpec.getCurve().getField().getFieldSize()
+                    ecParameterSpec.generator,
+                    ecParameterSpec.curve.field.fieldSize
                 )
             )
             paramSequenceList.add(basePointObject)
 
-            val orderObject = ASN1Integer(ecParameterSpec.getOrder())
+            val orderObject = ASN1Integer(ecParameterSpec.order)
             paramSequenceList.add(orderObject)
 
-            val coFactorObject = ASN1Integer(ecParameterSpec.getCofactor().toLong())
+            val coFactorObject = ASN1Integer(ecParameterSpec.cofactor.toLong())
             paramSequenceList.add(coFactorObject)
 
             val paramSequenceArray = arrayOfNulls<ASN1Encodable>(paramSequenceList.size)
@@ -298,20 +298,20 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
          */
         @Deprecated("Visibility will be restricted")
         fun toECParameterSpec(domainParameter: AlgorithmIdentifier): ECParameterSpec {
-            val parameters = domainParameter.getParameters()
+            val parameters = domainParameter.parameters
 
             require(parameters is ASN1Sequence) { "Was expecting an ASN.1 sequence" }
 
             /* We support named EC curves, even though they are actually not allowed here. */
             try {
                 val x962params = X962Parameters.getInstance(parameters)
-                if (x962params.isNamedCurve()) {
-                    val x96ParamsOID = x962params.getParameters() as ASN1ObjectIdentifier?
+                if (x962params.isNamedCurve) {
+                    val x96ParamsOID = x962params.parameters as ASN1ObjectIdentifier?
                     val x9ECParams = X962NamedCurves.getByOID(x96ParamsOID)
                     val bcECNamedCurveParams =
                         ECNamedCurveParameterSpec(
-                            X962NamedCurves.getName(x96ParamsOID), x9ECParams.getCurve(), x9ECParams.getG(),
-                            x9ECParams.getN(), x9ECParams.getH(), x9ECParams.getSeed()
+                            X962NamedCurves.getName(x96ParamsOID), x9ECParams.curve, x9ECParams.g,
+                            x9ECParams.n, x9ECParams.h, x9ECParams.seed
                         )
                     return Util.toECNamedCurveSpec(bcECNamedCurveParams)
                 }
@@ -347,19 +347,19 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
                 /* String fieldIdOID = */
                 (fieldIdObject.getObjectAt(0) as ASN1ObjectIdentifier).getId()
                 //        assert ID_PRIME_FIELD.equals(fieldIdOID);
-                val p = (fieldIdObject.getObjectAt(1) as ASN1Integer).getPositiveValue()
+                val p = (fieldIdObject.getObjectAt(1) as ASN1Integer).positiveValue
 
                 val curveObject = paramSequence.getObjectAt(2) as ASN1Sequence
                 //        assert 2 == curveObject.size();
                 val aObject = curveObject.getObjectAt(0) as ASN1OctetString
                 val bObject = curveObject.getObjectAt(1) as ASN1OctetString
-                val a = Util.os2i(aObject.getOctets())
-                val b = Util.os2i(bObject.getOctets())
+                val a = Util.os2i(aObject.octets)
+                val b = Util.os2i(bObject.octets)
 
                 val basePointObject = paramSequence.getObjectAt(3) as ASN1OctetString
-                val g = Util.os2ECPoint(basePointObject.getOctets())
-                val x = g.getAffineX()
-                val y = g.getAffineY()
+                val g = Util.os2ECPoint(basePointObject.octets)
+                val x = g.affineX
+                val y = g.affineY
                 // assert G is on the curve
                 val lhs = y.pow(2).mod(p)
                 val xPow3 = x.pow(3)
@@ -368,13 +368,13 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
                 val curve = EllipticCurve(ECFieldFp(p), a, b)
 
                 val orderObject = paramSequence.getObjectAt(4) as ASN1Integer
-                val n = orderObject.getPositiveValue()
+                val n = orderObject.positiveValue
 
                 if (paramSequence.size() <= 5) {
                     return ECParameterSpec(curve, g, n, 1)
                 } else {
                     val coFactorObject = paramSequence.getObjectAt(5) as ASN1Integer
-                    val coFactor = coFactorObject.getValue()
+                    val coFactor = coFactorObject.value
                     return ECParameterSpec(curve, g, n, coFactor.toInt())
                 }
             } catch (e: Exception) {
@@ -403,7 +403,7 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
             ) {
                 return AlgorithmIdentifier(ASN1ObjectIdentifier(ID_EC_PUBLIC_KEY), parameters)
             }
-            throw IllegalArgumentException("Cannot infer algorithm OID from protocol OID: " + protocolOID)
+            throw IllegalArgumentException("Cannot infer algorithm OID from protocol OID: $protocolOID")
         }
 
         /**

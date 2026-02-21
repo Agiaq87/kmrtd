@@ -42,11 +42,11 @@ package kmrtd.lds.iso39794
 
 import kmrtd.lds.iso39794.RegistryIdBlock.Companion.decodeRegistryIdBlocks
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class FingerImageCaptureDeviceBlock : Block {
-    enum class CaptureDeviceTechnologyIdCode(val code: Int) : EncodableEnum<CaptureDeviceTechnologyIdCode?> {
+    enum class CaptureDeviceTechnologyIdCode(override val code: Int) : EncodableEnum<CaptureDeviceTechnologyIdCode?> {
         UNKNOWN_CAPTURE_DEVICE_TECHNOLOGY(0),
         OTHER_CAPTURE_DEVICE_TECHNOLOGY(1),
         SCANNED_INK_ON_PAPER(2),
@@ -147,7 +147,7 @@ class FingerImageCaptureDeviceBlock : Block {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         /* PACKAGE */
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
@@ -156,15 +156,12 @@ class FingerImageCaptureDeviceBlock : Block {
                 taggedObjects.put(0, model!!.getASN1Object())
             }
             if (captureDeviceTechnologyIdCode != null) {
-                taggedObjects.put(
-                    1,
-                    ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(
-                        captureDeviceTechnologyIdCode!!.code
-                    )
+                taggedObjects[1] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(
+                    captureDeviceTechnologyIdCode!!.code
                 )
             }
             if (certifications != null) {
-                taggedObjects.put(2, ISO39794Util.encodeBlocks(certifications))
+                taggedObjects[2] = ISO39794Util.encodeBlocks(certifications)
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }

@@ -42,14 +42,16 @@ package kmrtd.lds.iso39794
 
 import kmrtd.lds.iso39794.Block.aSN1Object
 import org.bouncycastle.asn1.*
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import org.jmrtd.lds.iso39794.FaceImageInformation2DBlock
 import java.io.ByteArrayInputStream
+import java.io.InputStream
 import java.util.*
 
 class FaceImageRepresentation2DBlock : Block {
     private val representationData2DBytes: ByteArray?
 
+    @JvmField
     val imageInformation2DBlock: FaceImageInformation2DBlock
 
     var captureDevice2DBlock: FaceImageCaptureDevice2DBlock? = null
@@ -82,11 +84,11 @@ class FaceImageRepresentation2DBlock : Block {
     }
 
     val representationData2DInputLength: Long
-        get() = (if (representationData2DBytes == null) 0 else representationData2DBytes.size).toLong()
+        get() = (representationData2DBytes?.size ?: 0).toLong()
 
     val representationData2DInputMimeType: String?
         get() = FaceImageInformation2DBlock.ImageDataFormatCode.toMimeType(
-            imageInformation2DBlock.getImageDataFormatCode()
+            imageInformation2DBlock.imageDataFormatCode
         )
 
     val representationData2DInputStream: InputStream
@@ -125,15 +127,15 @@ class FaceImageRepresentation2DBlock : Block {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         /* PACKAGE */
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, DEROctetString(representationData2DBytes))
-            taggedObjects.put(1, imageInformation2DBlock.aSN1Object)
+            taggedObjects[0] = DEROctetString(representationData2DBytes)
+            taggedObjects[1] = imageInformation2DBlock.aSN1Object
             if (captureDevice2DBlock != null) {
-                taggedObjects.put(2, captureDevice2DBlock!!.getASN1Object())
+                taggedObjects[2] = captureDevice2DBlock!!.getASN1Object()
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }

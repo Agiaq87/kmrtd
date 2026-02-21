@@ -40,7 +40,7 @@
  */
 package kmrtd.lds.iso39794
 
-enum class FingerImagePositionCode(val code: Int) : EncodableEnum<FingerImagePositionCode?> {
+enum class FingerImagePositionCode(override val code: Int) : EncodableEnum<FingerImagePositionCode?> {
     UNKNOWN_POSITION(0),
     RIGHT_THUMB_FINGER(1),
     RIGHT_INDEX_FINGER(2),
@@ -123,6 +123,7 @@ enum class FingerImagePositionCode(val code: Int) : EncodableEnum<FingerImagePos
     OTHER_POSITION(999);
 
     companion object {
+        @JvmStatic
         fun fromCode(code: Int): FingerImagePositionCode {
             return EncodableEnum.fromCode(code, FingerImagePositionCode::class.java)
         }

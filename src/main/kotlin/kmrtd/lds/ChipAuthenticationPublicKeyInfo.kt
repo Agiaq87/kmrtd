@@ -30,6 +30,7 @@ package kmrtd.lds
 import org.bouncycastle.asn1.ASN1EncodableVector
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
+import org.bouncycastle.asn1.ASN1Primitive
 import org.bouncycastle.asn1.DLSequence
 import org.jmrtd.Util
 import java.math.BigInteger
@@ -57,7 +58,7 @@ import java.util.logging.Logger
  * @version $Revision: 1819 $
  */
 class ChipAuthenticationPublicKeyInfo @JvmOverloads constructor(
-    val objectIdentifier: String, publicKey: PublicKey?,
+    override val objectIdentifier: String, publicKey: PublicKey?,
     /**
      * Returns a key identifier stored in this ChipAuthenticationPublicKeyInfo
      * structure, `null` if not present.
@@ -73,7 +74,7 @@ class ChipAuthenticationPublicKeyInfo @JvmOverloads constructor(
      * @return SubjectPublicKeyInfo contained in this
      * ChipAuthenticationPublicKeyInfo structure
      */
-    val subjectPublicKey: PublicKey?
+    val subjectPublicKey: PublicKey? = Util.reconstructPublicKey(publicKey)
 
     /**
      * Creates a public key info structure.
@@ -107,12 +108,11 @@ class ChipAuthenticationPublicKeyInfo @JvmOverloads constructor(
      * @param publicKey appropriate public key
      */
     init {
-        this.subjectPublicKey = Util.reconstructPublicKey(publicKey)
         checkFields()
     }
 
     @get:Deprecated("Remove this method from visible interface (because of dependency on BC API)")
-    val dERObject: ASN1Primitive
+    override val dERObject: ASN1Primitive
         /**
          * Returns a DER object with this SecurityInfo data (DER sequence).
          * 
@@ -138,7 +138,7 @@ class ChipAuthenticationPublicKeyInfo @JvmOverloads constructor(
             return DLSequence(vector)
         }
 
-    val protocolOIDString: String?
+    override val protocolOIDString: String?
         /**
          * Returns the protocol object identifier as a human readable string.
          * 
@@ -162,7 +162,7 @@ class ChipAuthenticationPublicKeyInfo @JvmOverloads constructor(
         return ("ChipAuthenticationPublicKeyInfo ["
                 + "protocol: " + toProtocolOIDString(this.objectIdentifier) + ", "
                 + "chipAuthenticationPublicKey: " + Util.getDetailedPublicKeyAlgorithm(this.subjectPublicKey) + ", "
-                + "keyId: " + (if (keyId == null) "-" else keyId.toString())
+                + "keyId: " + (keyId?.toString() ?: "-")
                 + "]")
     }
 

@@ -41,7 +41,7 @@
 package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class IrisImageLocalisationBlock(asn1Encodable: ASN1Encodable?) : Block() {
@@ -129,28 +129,28 @@ class IrisImageLocalisationBlock(asn1Encodable: ASN1Encodable?) : Block() {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         /* PACKAGE. */
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
             if (irisCenterXSmallest >= 0) {
-                taggedObjects.put(0, ASN1Util.encodeInt(irisCenterXSmallest))
+                taggedObjects[0] = ASN1Util.encodeInt(irisCenterXSmallest)
             }
             if (irisCenterXLargest >= 0) {
-                taggedObjects.put(1, ASN1Util.encodeInt(irisCenterXLargest))
+                taggedObjects[1] = ASN1Util.encodeInt(irisCenterXLargest)
             }
             if (irisCenterYSmallest >= 0) {
-                taggedObjects.put(2, ASN1Util.encodeInt(irisCenterYSmallest))
+                taggedObjects[2] = ASN1Util.encodeInt(irisCenterYSmallest)
             }
             if (irisCenterYLargest >= 0) {
-                taggedObjects.put(3, ASN1Util.encodeInt(irisCenterYLargest))
+                taggedObjects[3] = ASN1Util.encodeInt(irisCenterYLargest)
             }
             if (irisDiameterSmallest >= 0) {
-                taggedObjects.put(4, ASN1Util.encodeInt(irisDiameterSmallest))
+                taggedObjects[4] = ASN1Util.encodeInt(irisDiameterSmallest)
             }
             if (irisDiameterLargest >= 0) {
-                taggedObjects.put(5, ASN1Util.encodeInt(irisDiameterLargest))
+                taggedObjects[5] = ASN1Util.encodeInt(irisDiameterLargest)
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }

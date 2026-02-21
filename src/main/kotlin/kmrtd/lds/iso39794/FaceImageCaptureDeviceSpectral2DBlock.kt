@@ -43,7 +43,7 @@ package kmrtd.lds.iso39794
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.util.*
 
 class FaceImageCaptureDeviceSpectral2DBlock : Block {
@@ -111,13 +111,13 @@ class FaceImageCaptureDeviceSpectral2DBlock : Block {
     override fun getASN1Object(): ASN1Encodable? {
         val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
         if (isWhiteLight != null) {
-            taggedObjects.put(0, ASN1Util.encodeBoolean(isWhiteLight!!))
+            taggedObjects[0] = ASN1Util.encodeBoolean(isWhiteLight!!)
         }
         if (isNearInfrared != null) {
-            taggedObjects.put(1, ASN1Util.encodeBoolean(isNearInfrared!!))
+            taggedObjects[1] = ASN1Util.encodeBoolean(isNearInfrared!!)
         }
         if (isThermal != null) {
-            taggedObjects.put(2, ASN1Util.encodeBoolean(isThermal!!))
+            taggedObjects[2] = ASN1Util.encodeBoolean(isThermal!!)
         }
         return ASN1Util.encodeTaggedObjects(taggedObjects)
     }

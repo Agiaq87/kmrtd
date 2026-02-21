@@ -27,12 +27,12 @@
  */
 package kmrtd.protocol
 
+import kmrtd.Util
 import net.sf.scuba.smartcards.APDUWrapper
 import net.sf.scuba.smartcards.CommandAPDU
 import net.sf.scuba.smartcards.ISO7816
 import net.sf.scuba.smartcards.ResponseAPDU
 import net.sf.scuba.tlv.TLVUtil
-import org.jmrtd.Util
 import java.io.*
 import java.security.GeneralSecurityException
 import java.util.logging.Level
@@ -76,29 +76,10 @@ abstract class SecureMessagingWrapper protected constructor(
     var sendSequenceCounter: Long
 ) : Serializable, APDUWrapper {
     @Transient
-    private val cipher: Cipher
+    private val cipher: Cipher = Util.getCipher(cipherAlg)
 
     @Transient
-    private val mac: Mac
-
-    /**
-     * Constructs a secure messaging wrapper based on the secure messaging
-     * session keys and the initial value of the send sequence counter.
-     * 
-     * @param encryptionKey the session key for encryption
-     * @param mACKey the session key for message authenticity
-     * @param cipherAlg the mnemonic Java string describing the cipher algorithm
-     * @param macAlg the mnemonic Java string describing the message authenticity checking algorithm
-     * @param maxTranceiveLength the maximum tranceive length, typical values are 256 or 65536
-     * @param shouldCheckMAC a boolean indicating whether this wrapper will check the MAC in wrapped response APDUs
-     * @param sendSequenceCounter the initial value of the send sequence counter
-     * 
-     * @throws GeneralSecurityException when the available JCE providers cannot provide the necessary cryptographic primitives
-     */
-    init {
-        this.cipher = Util.getCipher(cipherAlg)
-        this.mac = Util.getMac(macAlg)
-    }
+    private val mac: Mac = Util.getMac(macAlg)
 
     /**
      * Returns a boolean indicating whether this wrapper will check the MAC in wrapped response APDUs.
@@ -142,7 +123,7 @@ abstract class SecureMessagingWrapper protected constructor(
             val data = responseAPDU.getData()
             check(!(data == null || data.size <= 0)) {
                 "Card indicates SM error, SW = " + Integer.toHexString(
-                    responseAPDU.getSW() and 0xFFFF
+                    responseAPDU.sw and 0xFFFF
                 )
             }
             return unwrapResponseAPDU(responseAPDU)
@@ -224,12 +205,12 @@ abstract class SecureMessagingWrapper protected constructor(
      */
     @Throws(GeneralSecurityException::class, IOException::class)
     private fun wrapCommandAPDU(commandAPDU: CommandAPDU): CommandAPDU {
-        val cla = commandAPDU.getCLA()
-        val ins = commandAPDU.getINS()
-        val p1 = commandAPDU.getP1()
-        val p2 = commandAPDU.getP2()
-        val lc = commandAPDU.getNc()
-        val le = commandAPDU.getNe()
+        val cla = commandAPDU.cla
+        val ins = commandAPDU.ins
+        val p1 = commandAPDU.p1
+        val p2 = commandAPDU.p2
+        val lc = commandAPDU.nc
+        val le = commandAPDU.ne
 
         val maskedHeader = byteArrayOf((cla or 0x0C.toByte().toInt()).toByte(), ins.toByte(), p1.toByte(), p2.toByte())
         val paddedMaskedHeader = Util.pad(maskedHeader, this.padLength)
@@ -478,7 +459,7 @@ abstract class SecureMessagingWrapper protected constructor(
     @Throws(IOException::class)
     private fun readDO8E(inputStream: DataInputStream): ByteArray {
         val length = inputStream.readUnsignedByte()
-        check(!(length != 8 && length != 16)) { "DO'8E wrong length for MAC: " + length }
+        check(!(length != 8 && length != 16)) { "DO'8E wrong length for MAC: $length" }
         val cc = ByteArray(length)
         inputStream.readFully(cc)
         return cc
@@ -544,7 +525,7 @@ abstract class SecureMessagingWrapper protected constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd.protocol")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd.protocol")
 
         private const val serialVersionUID = 4709645514566992414L
 

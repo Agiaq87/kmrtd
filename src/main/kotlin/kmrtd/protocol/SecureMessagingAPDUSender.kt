@@ -80,10 +80,10 @@ class SecureMessagingAPDUSender
                 if ((sw.toInt() and ISO7816.SW_WRONG_LENGTH.toInt()) == ISO7816.SW_WRONG_LENGTH.toInt()) {
                     return responseAPDU
                 }
-                if (responseAPDU.getBytes().size <= 2) {
+                if (responseAPDU.bytes.size <= 2) {
                     throw CardServiceException(
                         ("Exception during transmission of wrapped APDU"
-                                + ", C=" + Hex.bytesToHexString(plainCapdu.getBytes())), sw.toInt()
+                                + ", C=" + Hex.bytesToHexString(plainCapdu.bytes)), sw.toInt()
                     )
                 }
 
@@ -93,7 +93,7 @@ class SecureMessagingAPDUSender
             } catch (e: Exception) {
                 throw CardServiceException(
                     ("Exception during transmission of wrapped APDU"
-                            + ", C=" + Hex.bytesToHexString(plainCapdu.getBytes())), e, sw.toInt()
+                            + ", C=" + Hex.bytesToHexString(plainCapdu.bytes)), e, sw.toInt()
                 )
             } finally {
                 notifyExchangedAPDU(
@@ -119,7 +119,7 @@ class SecureMessagingAPDUSender
          * 
          * @return a boolean indicating whether extended length APDUs are supported
          */
-        get() = service.isExtendedAPDULengthSupported()
+        get() = service.isExtendedAPDULengthSupported
 
     /**
      * Adds a listener.
@@ -146,7 +146,7 @@ class SecureMessagingAPDUSender
      * @param event the APDU event
      */
     protected fun notifyExchangedAPDU(event: APDUEvent?) {
-        val apduListeners = service.getAPDUListeners()
+        val apduListeners = service.apduListeners
         if (apduListeners == null || apduListeners.isEmpty()) {
             return
         }
@@ -175,17 +175,17 @@ class SecureMessagingAPDUSender
         var index = 0
         for (segment in segments) {
             val isLast = ++index >= segments.size
-            var cla = commandAPDU.getCLA()
+            var cla = commandAPDU.cla
             if (!isLast) {
                 cla = cla or ISO7816.CLA_COMMAND_CHAINING.toInt()
             }
             val partialCommandAPDU = CommandAPDU(
                 cla,
-                commandAPDU.getINS(),
-                commandAPDU.getP1(),
-                commandAPDU.getP2(),
+                commandAPDU.ins,
+                commandAPDU.p1,
+                commandAPDU.p2,
                 segment,
-                commandAPDU.getNe()
+                commandAPDU.ne
             )
             val responseAPDU = service.transmit(partialCommandAPDU)
             responseAPDUs.add(responseAPDU)

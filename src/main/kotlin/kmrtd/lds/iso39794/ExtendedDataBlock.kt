@@ -40,10 +40,10 @@
  */
 package kmrtd.lds.iso39794
 
+import kmrtd.ASN1Util
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.DEROctetString
-import org.jmrtd.ASN1Util
 import java.util.*
 
 class ExtendedDataBlock : Block {
@@ -62,8 +62,8 @@ class ExtendedDataBlock : Block {
     //  }
     internal constructor(asn1Encodable: ASN1Encodable?) {
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        dataTypeIdBlock = RegistryIdBlock(taggedObjects.get(0))
-        data = ASN1OctetString.getInstance(taggedObjects.get(1)).getOctets()
+        dataTypeIdBlock = RegistryIdBlock(taggedObjects[0])
+        data = ASN1OctetString.getInstance(taggedObjects[1]).octets
     }
 
     public override fun hashCode(): Int {
@@ -96,12 +96,12 @@ class ExtendedDataBlock : Block {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, dataTypeIdBlock.getASN1Object())
-            taggedObjects.put(1, DEROctetString(data))
+            taggedObjects[0] = dataTypeIdBlock.getASN1Object()
+            taggedObjects[1] = DEROctetString(data)
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }
 

@@ -35,7 +35,6 @@ import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier
 import org.bouncycastle.asn1.x509.Certificate
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers
-import org.jmrtd.Util
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -134,6 +133,7 @@ object SignedDataUtil {
      * 
      * @throws IOException on error reading from the stream
      */
+    @JvmStatic
     @Throws(IOException::class)
     fun readSignedData(inputStream: InputStream?): SignedData {
         val asn1InputStream = ASN1InputStream(inputStream, true)
@@ -145,7 +145,7 @@ object SignedDataUtil {
 
         val contentTypeOID = (sequence.getObjectAt(0) as ASN1ObjectIdentifier).getId()
         if (RFC_3369_SIGNED_DATA_OID != contentTypeOID) {
-            throw IOException("Was expecting signed-data content type OID (" + RFC_3369_SIGNED_DATA_OID + "), found " + contentTypeOID)
+            throw IOException("Was expecting signed-data content type OID ($RFC_3369_SIGNED_DATA_OID), found $contentTypeOID")
         }
 
         val asn1SequenceWithSignedData = getObjectFromTaggedObject(sequence.getObjectAt(1))
@@ -165,6 +165,7 @@ object SignedDataUtil {
      * 
      * @throws IOException on error writing to the stream
      */
+    @JvmStatic
     @Throws(IOException::class)
     fun writeData(signedData: SignedData?, outputStream: OutputStream) {
         val v = ASN1EncodableVector()
@@ -182,6 +183,7 @@ object SignedDataUtil {
      * 
      * @return the contents of the e-content in the signed data structure
      */
+    @JvmStatic
     fun getContent(signedData: SignedData): ASN1Primitive? {
         val encapContentInfo = signedData.getEncapContentInfo()
 
@@ -219,7 +221,7 @@ object SignedDataUtil {
     @Throws(IOException::class)
     fun getObjectFromTaggedObject(asn1Encodable: ASN1Encodable): ASN1Object? {
         if (asn1Encodable !is ASN1TaggedObject) {
-            throw IOException("Was expecting an ASN1TaggedObject, found " + asn1Encodable.javaClass.getCanonicalName())
+            throw IOException("Was expecting an ASN1TaggedObject, found " + asn1Encodable.javaClass.canonicalName)
         }
 
         val asn1TaggedObject = asn1Encodable
@@ -248,13 +250,14 @@ object SignedDataUtil {
      * 
      * @return the digest algorithm
      */
+    @JvmStatic
     fun getSignerInfoDigestAlgorithm(signedData: SignedData): String? {
         try {
             val signerInfo = getSignerInfo(signedData)
-            val digestAlgOID = signerInfo.getDigestAlgorithm().getAlgorithm().getId()
+            val digestAlgOID = signerInfo.digestAlgorithm.algorithm.getId()
             return lookupMnemonicByOID(digestAlgOID)
         } catch (nsae: NoSuchAlgorithmException) {
-            LOGGER.log(Level.WARNING, "No such algorithm" + nsae)
+            LOGGER.log(Level.WARNING, "No such algorithm $nsae")
             return null
         }
     }
@@ -269,17 +272,18 @@ object SignedDataUtil {
      * 
      * @return the algorithm parameters, or `PSSParameterSpec.DEFAULT` for RSASSA/PSS, or `null` on unrecognized algorithms
      */
+    @JvmStatic
     fun getDigestEncryptionAlgorithmParams(signedData: SignedData): AlgorithmParameterSpec? {
         try {
             val signerInfo = getSignerInfo(signedData)
-            val digestEncryptionAlgorithm = signerInfo.getDigestEncryptionAlgorithm()
-            val digestEncryptionAlgorithmOID = digestEncryptionAlgorithm.getAlgorithm().getId()
+            val digestEncryptionAlgorithm = signerInfo.digestEncryptionAlgorithm
+            val digestEncryptionAlgorithmOID = digestEncryptionAlgorithm.algorithm.getId()
             if (PKCS1_RSASSA_PSS_OID != digestEncryptionAlgorithmOID) {
                 /* We only support additional parameters for RSASSA/PSS signature algorithm. */
                 return null
             }
 
-            val params = digestEncryptionAlgorithm.getParameters()
+            val params = digestEncryptionAlgorithm.parameters
             if (params == null) {
                 LOGGER.warning("Cannot get RSASSA/PSS parameters")
                 return null
@@ -306,10 +310,11 @@ object SignedDataUtil {
      * 
      * @return a JCE mnemonic algorithm string
      */
+    @JvmStatic
     fun getDigestEncryptionAlgorithm(signedData: SignedData): String? {
         try {
             val signerInfo = getSignerInfo(signedData)
-            val digestEncryptionAlgorithmOID = signerInfo.getDigestEncryptionAlgorithm().getAlgorithm().getId()
+            val digestEncryptionAlgorithmOID = signerInfo.digestEncryptionAlgorithm.algorithm.getId()
             if (digestEncryptionAlgorithmOID == null) {
                 LOGGER.warning("Could not determine digest encryption algorithm OID")
                 return null
@@ -338,13 +343,14 @@ object SignedDataUtil {
      * 
      * @throws SignatureException if the contents do not check out
      */
+    @JvmStatic
     @Throws(SignatureException::class)
     fun getEContent(signedData: SignedData): ByteArray? {
         val signerInfo = getSignerInfo(signedData)
-        val signedAttributesSet = signerInfo.getAuthenticatedAttributes()
+        val signedAttributesSet = signerInfo.authenticatedAttributes
 
-        val contentInfo = signedData.getEncapContentInfo()
-        val contentBytes = (contentInfo.getContent() as ASN1OctetString).getOctets()
+        val contentInfo = signedData.encapContentInfo
+        val contentBytes = (contentInfo.content as ASN1OctetString).octets
 
         if (signedAttributesSet.size() == 0) {
             /* Signed attributes absent, return content to be signed... */
@@ -354,7 +360,7 @@ object SignedDataUtil {
         /* Signed attributes present (i.e. a structure containing a hash of the content), return that structure to be signed... */
         /* This option is taken by ICAO passports. */
         var attributesBytes: ByteArray? = null
-        val digAlg = signerInfo.getDigestAlgorithm().getAlgorithm().getId()
+        val digAlg = signerInfo.digestAlgorithm.algorithm.getId()
 
         try {
             attributesBytes = signedAttributesSet.getEncoded(ASN1Encoding.DER)
@@ -372,9 +378,10 @@ object SignedDataUtil {
      * 
      * @return the signature
      */
+    @JvmStatic
     fun getEncryptedDigest(signedData: SignedData): ByteArray {
         val signerInfo = getSignerInfo(signedData)
-        return signerInfo.getEncryptedDigest().getOctets()
+        return signerInfo.encryptedDigest.octets
     }
 
     /**
@@ -384,9 +391,10 @@ object SignedDataUtil {
      * 
      * @return the issuer and serial number
      */
+    @JvmStatic
     fun getIssuerAndSerialNumber(signedData: SignedData): IssuerAndSerialNumber? {
         val signerInfo = getSignerInfo(signedData)
-        val signerIdentifier = signerInfo.getSID()
+        val signerIdentifier = signerInfo.sid
         val signerIdentifierId = signerIdentifier.getId()
         if (!(signerIdentifierId is ASN1Sequence || signerIdentifierId is IssuerAndSerialNumber)) {
             /* NOTE: DE MasterList appears to use DER octet string here. */
@@ -394,8 +402,8 @@ object SignedDataUtil {
         }
 
         val issuerAndSerialNumber = IssuerAndSerialNumber.getInstance(signerIdentifierId)
-        val issuer = issuerAndSerialNumber.getName()
-        val serialNumber = issuerAndSerialNumber.getSerialNumber().getValue()
+        val issuer = issuerAndSerialNumber.name
+        val serialNumber = issuerAndSerialNumber.serialNumber.value
         return IssuerAndSerialNumber(issuer, serialNumber)
     }
 
@@ -409,6 +417,7 @@ object SignedDataUtil {
      * 
      * @return the subject-key-identifier
      */
+    @JvmStatic
     fun getSubjectKeyIdentifier(signedData: SignedData): ByteArray {
         val signerInfo = getSignerInfo(signedData)
         val signerIdentifier = signerInfo.getSID()
@@ -458,8 +467,9 @@ object SignedDataUtil {
      * 
      * @return the list of certificates
      */
+    @JvmStatic
     fun getCertificates(signedData: SignedData): MutableList<X509Certificate?> {
-        val encodedCertificates = signedData.getCertificates()
+        val encodedCertificates = signedData.certificates
         val certificateCount = if (encodedCertificates == null) 0 else encodedCertificates.size()
 
         val result: MutableList<X509Certificate?> = ArrayList<X509Certificate?>(certificateCount)
@@ -515,6 +525,7 @@ object SignedDataUtil {
      * 
      * @throws GeneralSecurityException on error
      */
+    @JvmStatic
     @Throws(GeneralSecurityException::class)
     fun createSignedData(
         digestAlgorithm: String?, digestEncryptionAlgorithm: String,
@@ -547,6 +558,7 @@ object SignedDataUtil {
      * 
      * @throws GeneralSecurityException on error
      */
+    @JvmStatic
     @Throws(GeneralSecurityException::class)
     fun createSignedData(
         digestAlgorithm: String?,
@@ -756,6 +768,7 @@ object SignedDataUtil {
      * 
      * @return the signed data
      */
+    @JvmStatic
     fun signData(
         digestAlgorithm: String?,
         digestEncryptionAlgorithm: String,
@@ -788,6 +801,7 @@ object SignedDataUtil {
      * 
      * @return the signed data
      */
+    @JvmStatic
     fun signData(
         digestAlgorithm: String?,
         digestEncryptionAlgorithm: String,
@@ -828,6 +842,7 @@ object SignedDataUtil {
      * 
      * @return the signer info structure
      */
+    @JvmStatic
     fun getSignerInfo(signedData: SignedData): SignerInfo {
         val signerInfos = signedData.getSignerInfos()
         require(!(signerInfos == null || signerInfos.size() <= 0)) { "No signer info in signed data" }
@@ -848,6 +863,7 @@ object SignedDataUtil {
      * 
      * @throws NoSuchAlgorithmException if the provided OID is not yet supported
      */
+    @JvmStatic
     @Throws(NoSuchAlgorithmException::class)
     fun lookupMnemonicByOID(oid: String?): String {
         if (oid == null) {
@@ -950,6 +966,7 @@ object SignedDataUtil {
      * 
      * @throws NoSuchAlgorithmException if the mnemonic does not correspond to a known object identifier
      */
+    @JvmStatic
     @Throws(NoSuchAlgorithmException::class)
     fun lookupOIDByMnemonic(name: String?): String {
         if ("O" == name) {
@@ -1046,7 +1063,7 @@ object SignedDataUtil {
             return PKCS1_MGF1
         }
 
-        throw NoSuchAlgorithmException("Unknown name " + name)
+        throw NoSuchAlgorithmException("Unknown name $name")
     }
 
     /* PRIVATE BELOW */
@@ -1063,11 +1080,11 @@ object SignedDataUtil {
     @Throws(NoSuchAlgorithmException::class, SignatureException::class)
     private fun checkEContent(attributes: MutableCollection<Attribute>, digAlg: String, contentBytes: ByteArray?) {
         for (attribute in attributes) {
-            if (RFC_3369_MESSAGE_DIGEST_OID != attribute.getAttrType().getId()) {
+            if (RFC_3369_MESSAGE_DIGEST_OID != attribute.attrType.getId()) {
                 continue
             }
 
-            val attrValuesSet = attribute.getAttrValues()
+            val attrValuesSet = attribute.attrValues
             if (attrValuesSet.size() != 1) {
                 LOGGER.warning("Expected only one attribute value in signedAttribute message digest in eContent!")
             }
@@ -1117,15 +1134,15 @@ object SignedDataUtil {
             return null
         }
 
-        val hashAlgorithmOID = rsaSSAParams.getHashAlgorithm().getAlgorithm().getId()
-        val maskGenAlgorithm = rsaSSAParams.getMaskGenAlgorithm()
-        val maskGenAlgorithmOID = maskGenAlgorithm.getAlgorithm().getId()
+        val hashAlgorithmOID = rsaSSAParams.hashAlgorithm.algorithm.getId()
+        val maskGenAlgorithm = rsaSSAParams.maskGenAlgorithm
+        val maskGenAlgorithmOID = maskGenAlgorithm.algorithm.getId()
 
         val hashAlgorithmName = lookupMnemonicByOID(hashAlgorithmOID)
         val maskGenAlgorithmName = lookupMnemonicByOID(maskGenAlgorithmOID)
 
-        val saltLength = rsaSSAParams.getSaltLength().toInt()
-        val trailerField = rsaSSAParams.getTrailerField().toInt()
+        val saltLength = rsaSSAParams.saltLength.toInt()
+        val trailerField = rsaSSAParams.trailerField.toInt()
 
         if (hashAlgorithmName == null || maskGenAlgorithmName == null || saltLength < 0 || trailerField < 0) {
             LOGGER.warning("Cannot get RSASSA/PSS parameters")
@@ -1150,10 +1167,10 @@ object SignedDataUtil {
      */
     private fun toMaskGenAlgorithmParameterSpec(maskGenAlgorithm: AlgorithmIdentifier): AlgorithmParameterSpec {
         try {
-            val maskGenParams = maskGenAlgorithm.getParameters()
+            val maskGenParams = maskGenAlgorithm.parameters
             if (maskGenParams != null) {
                 val hashIdentifier = AlgorithmIdentifier.getInstance(maskGenParams)
-                val hashOID = hashIdentifier.getAlgorithm().getId()
+                val hashOID = hashIdentifier.algorithm.getId()
                 val hashName = lookupMnemonicByOID(hashOID)
                 return MGF1ParameterSpec(hashName)
             }
@@ -1188,7 +1205,7 @@ object SignedDataUtil {
         try {
             val params = AlgorithmParameters.getInstance(digestEncryptionAlgorithm)
             params.init(digestEncryptionParameters)
-            return AlgorithmIdentifier(digestEncryptionAlgOID, ASN1Primitive.fromByteArray(params.getEncoded()))
+            return AlgorithmIdentifier(digestEncryptionAlgOID, ASN1Primitive.fromByteArray(params.encoded))
         } catch (ioe: IOException) {
             throw InvalidAlgorithmParameterException("Unable to encode parameters object", ioe)
         }

@@ -53,7 +53,7 @@ abstract class PACEMappingResult(
      * @return the resulting parameters
      */
     // FIXME: Should be serializable instead of transient.
-    @field:Transient val ephemeralParameters: AlgorithmParameterSpec?
+    @JvmField @field:Transient var ephemeralParameters: AlgorithmParameterSpec?
 ) : Serializable {
     /**
      * Returns the nonce that was sent by the PICC.

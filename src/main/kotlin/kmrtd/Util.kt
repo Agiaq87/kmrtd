@@ -27,6 +27,9 @@
  */
 package kmrtd
 
+import kmrtd.lds.PACEInfo
+import kmrtd.lds.SecurityInfo
+import kmrtd.lds.icao.MRZInfo
 import net.sf.scuba.tlv.TLVInputStream
 import net.sf.scuba.tlv.TLVUtil
 import org.bouncycastle.asn1.*
@@ -46,9 +49,6 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.bouncycastle.math.ec.ECCurve
 import org.bouncycastle.util.encoders.Hex
-import org.jmrtd.lds.PACEInfo
-import org.jmrtd.lds.SecurityInfo
-import org.jmrtd.lds.icao.MRZInfo
 import java.io.*
 import java.math.BigInteger
 import java.security.*
@@ -74,7 +74,7 @@ import kotlin.math.min
  * @version $Revision: 1902 $
  */
 object Util {
-    private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+    private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
     /** Mode for KDF.  */
     const val ENC_MODE: Int = 1
@@ -207,7 +207,7 @@ object Util {
                     System.arraycopy(hashResult, 0, keyBytes, 0, 32)
                 }
 
-                else -> throw IllegalArgumentException("KDF can only use AES with 128-bit, 192-bit key or 256-bit length, found: " + keyLength + "-bit key length")
+                else -> throw IllegalArgumentException("KDF can only use AES with 128-bit, 192-bit key or 256-bit length, found: $keyLength-bit key length")
             }
         }
 
@@ -652,25 +652,25 @@ object Util {
             return "null"
         }
 
-        var algorithm = publicKey.getAlgorithm()
+        var algorithm = publicKey.algorithm
         if (publicKey is RSAPublicKey) {
             val rsaPublicKey = publicKey
-            val bitLength = rsaPublicKey.getModulus().bitLength()
-            algorithm += " [" + bitLength + " bit]"
+            val bitLength = rsaPublicKey.modulus.bitLength()
+            algorithm += " [$bitLength bit]"
         } else if (publicKey is ECPublicKey) {
             val ecPublicKey = publicKey
-            val ecParams = ecPublicKey.getParams()
+            val ecParams = ecPublicKey.params
             val name = getCurveName(ecParams)
             if (name != null) {
-                algorithm += " [" + name + "]"
+                algorithm += " [$name]"
             }
         } else if (publicKey is DHPublicKey) {
             val dhPublicKey = publicKey
-            dhPublicKey.getY()
-            val dhParamSpec = dhPublicKey.getParams()
-            val g = dhParamSpec.getG()
-            val l = dhParamSpec.getL()
-            val p = dhParamSpec.getP()
+            dhPublicKey.y
+            val dhParamSpec = dhPublicKey.params
+            val g = dhParamSpec.g
+            val l = dhParamSpec.l
+            val p = dhParamSpec.p
             algorithm += " [p.length = " + p.bitLength() + ", g.length = " + g.bitLength() + ", l = " + l + "]"
         }
 
@@ -693,13 +693,13 @@ object Util {
         if (privateKey is RSAPrivateKey) {
             val rsaPrivateKey = privateKey
             val bitLength = rsaPrivateKey.getModulus().bitLength()
-            algorithm += " [" + bitLength + " bit]"
+            algorithm += " [$bitLength bit]"
         } else if (privateKey is ECPrivateKey) {
             val ecPrivateKey = privateKey
             val ecParams = ecPrivateKey.getParams()
             val name = getCurveName(ecParams)
             if (name != null) {
-                algorithm += " [" + name + "]"
+                algorithm += " [$name]"
             }
         }
         return algorithm
@@ -715,12 +715,12 @@ object Util {
     fun getECParameterSpec(curveName: String?): ECParameterSpec {
         val bcParamSpec = ECNamedCurveTable.getParameterSpec(curveName)
         return ECNamedCurveSpec(
-            bcParamSpec.getName(),
-            bcParamSpec.getCurve(),
-            bcParamSpec.getG(),
-            bcParamSpec.getN(),
-            bcParamSpec.getH(),
-            bcParamSpec.getSeed()
+            bcParamSpec.name,
+            bcParamSpec.curve,
+            bcParamSpec.g,
+            bcParamSpec.n,
+            bcParamSpec.h,
+            bcParamSpec.seed
         )
     }
 
@@ -737,14 +737,14 @@ object Util {
      */
     fun getApproximateSignatureSize(key: Key?): Int {
         if (key is RSAPublicKey) {
-            return key.getModulus().bitLength()
+            return key.modulus.bitLength()
         } else if (key is RSAPrivateKey) {
-            return key.getModulus().bitLength()
+            return key.modulus.bitLength()
         } else if (key is ECPublicKey) {
-            val keySize = ceil(key.getParams().getCurve().getField().getFieldSize().toDouble()).toInt()
+            val keySize = ceil(key.params.curve.field.fieldSize.toDouble()).toInt()
             return 2 * keySize
         } else if (key is ECPrivateKey) {
-            val keySize = ceil(key.getParams().getCurve().getField().getFieldSize().toDouble()).toInt()
+            val keySize = ceil(key.params.curve.field.fieldSize.toDouble()).toInt()
             return 2 * keySize
         }
 
@@ -791,20 +791,20 @@ object Util {
             return null
         }
         try {
-            val g = params.getGenerator()
-            val n = params.getOrder() // Order, order
-            val h = params.getCofactor() // co-factor
-            val curve = params.getCurve()
-            val a = curve.getA()
-            val b = curve.getB()
-            val field = curve.getField()
+            val g = params.generator
+            val n = params.order // Order, order
+            val h = params.cofactor // co-factor
+            val curve = params.curve
+            val a = curve.a
+            val b = curve.b
+            val field = curve.field
             if (field is ECFieldFp) {
-                val p = field.getP()
+                val p = field.p
                 val resultField: ECField = ECFieldFp(p)
                 val resultCurve = EllipticCurve(resultField, a, b)
                 return ECParameterSpec(resultCurve, g, n, h)
             } else if (field is ECFieldF2m) {
-                val m = field.getM()
+                val m = field.m
                 val resultField: ECField = ECFieldF2m(m)
                 val resultCurve = EllipticCurve(resultField, a, b)
                 return ECParameterSpec(resultCurve, g, n, h)
@@ -837,10 +837,10 @@ object Util {
         val namedSpecs: MutableList<ECNamedCurveSpec?> = ArrayList<ECNamedCurveSpec?>()
         for (name in names) {
             val namedSpec = toECNamedCurveSpec(ECNamedCurveTable.getParameterSpec(name))
-            if (namedSpec.getCurve() == ecParamSpec.getCurve()
-                && namedSpec.getGenerator() == ecParamSpec.getGenerator()
-                && namedSpec.getOrder() == ecParamSpec.getOrder()
-                && namedSpec.getCofactor() == ecParamSpec.getCofactor()
+            if (namedSpec.curve == ecParamSpec.curve
+                && namedSpec.generator == ecParamSpec.generator
+                && namedSpec.order == ecParamSpec.order
+                && namedSpec.cofactor == ecParamSpec.cofactor
             ) {
                 namedSpecs.add(namedSpec)
             }
@@ -848,9 +848,9 @@ object Util {
         if (namedSpecs.isEmpty()) {
             return null
         } else if (namedSpecs.size == 1) {
-            return namedSpecs.get(0)
+            return namedSpecs[0]
         } else {
-            return namedSpecs.get(0)
+            return namedSpecs[0]
         }
     }
 
@@ -862,12 +862,12 @@ object Util {
      * @return a JCA compliant named EC parameter spec
      */
     fun toECNamedCurveSpec(namedParamSpec: ECNamedCurveParameterSpec): ECNamedCurveSpec {
-        val name = namedParamSpec.getName()
-        val curve = namedParamSpec.getCurve()
-        val generator = namedParamSpec.getG()
-        val order = namedParamSpec.getN()
-        val coFactor = namedParamSpec.getH()
-        val seed = namedParamSpec.getSeed()
+        val name = namedParamSpec.name
+        val curve = namedParamSpec.curve
+        val generator = namedParamSpec.g
+        val order = namedParamSpec.n
+        val coFactor = namedParamSpec.h
+        val seed = namedParamSpec.seed
         return ECNamedCurveSpec(name, curve, generator, order, coFactor, seed)
     }
 
@@ -889,15 +889,15 @@ object Util {
      */
     fun toSubjectPublicKeyInfo(publicKey: PublicKey): SubjectPublicKeyInfo? {
         try {
-            val algorithm = publicKey.getAlgorithm()
+            val algorithm = publicKey.algorithm
             if ("EC" == algorithm || "ECDH" == algorithm || (publicKey is ECPublicKey)) {
-                val asn1In = ASN1InputStream(publicKey.getEncoded(), true)
+                val asn1In = ASN1InputStream(publicKey.encoded, true)
                 try {
                     var subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(asn1In.readObject())
-                    val algorithmIdentifier = subjectPublicKeyInfo!!.getAlgorithm()
-                    val algOID = algorithmIdentifier.getAlgorithm().getId()
+                    val algorithmIdentifier = subjectPublicKeyInfo!!.algorithm
+                    val algOID = algorithmIdentifier.algorithm.getId()
                     check(SecurityInfo.ID_EC_PUBLIC_KEY == algOID) { "Was expecting id-ecPublicKey (" + SecurityInfo.ID_EC_PUBLIC_KEY_TYPE + "), found " + algOID }
-                    val derEncodedParams = algorithmIdentifier.getParameters().toASN1Primitive()
+                    val derEncodedParams = algorithmIdentifier.parameters.toASN1Primitive()
                     var params: X9ECParameters? = null
                     if (derEncodedParams is ASN1ObjectIdentifier) {
                         val paramsOID = derEncodedParams
@@ -907,18 +907,18 @@ object Util {
                         checkNotNull(params) { "Could not find X9.62 named curve for OID " + paramsOID.getId() }
 
                         /* Reconstruct the parameters. */
-                        var generator = params.getG()
+                        var generator = params.g
                         val curve = generator.getCurve()
                         generator = curve.createPoint(
                             generator.getAffineXCoord().toBigInteger(),
                             generator.getAffineYCoord().toBigInteger()
                         )
                         params = X9ECParameters(
-                            params.getCurve(),
+                            params.curve,
                             X9ECPoint(generator, false),
-                            params.getN(),
-                            params.getH(),
-                            params.getSeed()
+                            params.n,
+                            params.h,
+                            params.seed
                         )
                     } else {
                         /* It's not a named curve, we can just return the decoded public key info. */
@@ -928,10 +928,10 @@ object Util {
                     if (publicKey is org.bouncycastle.jce.interfaces.ECPublicKey) {
                         val ecPublicKey = publicKey
                         val id = AlgorithmIdentifier(
-                            subjectPublicKeyInfo.getAlgorithm().getAlgorithm(),
+                            subjectPublicKeyInfo.algorithm.algorithm,
                             params.toASN1Primitive()
                         )
-                        val q = ecPublicKey.getQ()
+                        val q = ecPublicKey.q
                         subjectPublicKeyInfo = SubjectPublicKeyInfo(id, q.getEncoded(false))
                         return subjectPublicKeyInfo
                     } else {
@@ -941,25 +941,25 @@ object Util {
                     asn1In.close()
                 }
             } else if ("DH" == algorithm || (publicKey is DHPublicKey)) {
-                val asn1In = ASN1InputStream(publicKey.getEncoded(), true)
+                val asn1In = ASN1InputStream(publicKey.encoded, true)
                 try {
                     val subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance((asn1In.readObject()))
-                    val algorithmIdentifier = subjectPublicKeyInfo!!.getAlgorithm()
+                    val algorithmIdentifier = subjectPublicKeyInfo!!.algorithm
 
                     val dhPublicKey = publicKey as DHPublicKey
-                    val dhSpec = dhPublicKey.getParams()
+                    val dhSpec = dhPublicKey.params
                     return SubjectPublicKeyInfo(
                         AlgorithmIdentifier(
-                            algorithmIdentifier.getAlgorithm(),
-                            DHParameter(dhSpec.getP(), dhSpec.getG(), dhSpec.getL()).toASN1Primitive()
+                            algorithmIdentifier.algorithm,
+                            DHParameter(dhSpec.p, dhSpec.g, dhSpec.l).toASN1Primitive()
                         ),
-                        ASN1Integer(dhPublicKey.getY())
+                        ASN1Integer(dhPublicKey.y)
                     )
                 } finally {
                     asn1In.close()
                 }
             } else {
-                throw IllegalArgumentException("Unrecognized key type, found " + publicKey.getAlgorithm() + ", should be DH or ECDH")
+                throw IllegalArgumentException("Unrecognized key type, found " + publicKey.algorithm + ", should be DH or ECDH")
             }
         } catch (e: Exception) {
             LOGGER.log(Level.WARNING, "Exception", e)
@@ -1009,8 +1009,8 @@ object Util {
 
         try {
             val ecPublicKey = publicKey
-            val w = ecPublicKey.getW()
-            var params = ecPublicKey.getParams()
+            val w = ecPublicKey.w
+            var params = ecPublicKey.params
             params = toExplicitECParameterSpec(params)
             val explicitPublicKeySpec = ECPublicKeySpec(w, params)
 
@@ -1035,14 +1035,14 @@ object Util {
             return null
         }
         try {
-            val algorithm = publicKey.getAlgorithm()
+            val algorithm = publicKey.algorithm
             if ("EC" == algorithm || "ECDSA" == algorithm || "ECDH" == algorithm) {
                 if (params !is ECParameterSpec) {
                     return publicKey
                 }
 
                 val ecPublicKey = publicKey as ECPublicKey
-                val w = ecPublicKey.getW()
+                val w = ecPublicKey.w
                 val explicitPublicKeySpec = ECPublicKeySpec(w, params)
 
                 return KeyFactory.getInstance("EC", bouncyCastleProvider).generatePublic(explicitPublicKeySpec)
@@ -1098,8 +1098,8 @@ object Util {
      */
     fun ecPoint2OS(point: ECPoint, bitLength: Int): ByteArray {
         val bOut = ByteArrayOutputStream()
-        val x = point.getAffineX()
-        val y = point.getAffineY()
+        val x = point.affineX
+        val y = point.affineY
         try {
             bOut.write(0x04) // FIXME: Constant for 0x04.
             bOut.write(i2os(x, ceil(bitLength / 8.0).toInt()))
@@ -1170,13 +1170,13 @@ object Util {
      * @return a boolean indicating whether the point is on the curve
      */
     fun isPointOnCurve(xy: ECPoint, ecParams: ECParameterSpec): Boolean {
-        val x = xy.getAffineX()
-        val y = xy.getAffineY()
+        val x = xy.affineX
+        val y = xy.affineY
         val p = getPrime(ecParams)
 
-        val curve = ecParams.getCurve()
-        val a = curve.getA()
-        val b = curve.getB()
+        val curve = ecParams.curve
+        val a = curve.a
+        val b = curve.b
         val lhs = y.multiply(y).mod(p)
         val rhs = x.multiply(x).multiply(x).add(a.multiply(x)).add(b).mod(p)
 
@@ -1215,14 +1215,14 @@ object Util {
         requireNotNull(params) { "Parameters null" }
 
         if (params is DHParameterSpec) {
-            return params.getP()
+            return params.p
         } else if (params is ECParameterSpec) {
-            val curve = params.getCurve()
-            val field = curve.getField()
-            check(field is ECFieldFp) { "Was expecting prime field of type ECFieldFp, found " + field.javaClass.getCanonicalName() }
-            return field.getP()
+            val curve = params.curve
+            val field = curve.field
+            check(field is ECFieldFp) { "Was expecting prime field of type ECFieldFp, found " + field.javaClass.canonicalName }
+            return field.p
         } else {
-            throw IllegalArgumentException("Unsupported agreement algorithm, was expecting DHParameterSpec or ECParameterSpec, found " + params.javaClass.getCanonicalName())
+            throw IllegalArgumentException("Unsupported agreement algorithm, was expecting DHParameterSpec or ECParameterSpec, found " + params.javaClass.canonicalName)
         }
     }
 
@@ -1240,7 +1240,7 @@ object Util {
         } else if (publicKey is DHPublicKey) {
             return "DH"
         } else {
-            throw IllegalArgumentException("Unsupported public key: " + publicKey)
+            throw IllegalArgumentException("Unsupported public key: $publicKey")
         }
     }
 
@@ -1272,7 +1272,7 @@ object Util {
      */
     fun toBouncyCastleECPoint(point: ECPoint, params: ECParameterSpec): org.bouncycastle.math.ec.ECPoint {
         val bcCurve = toBouncyCastleECCurve(params)
-        return bcCurve.createPoint(point.getAffineX(), point.getAffineY())
+        return bcCurve.createPoint(point.affineX, point.affineY)
     }
 
     /**
@@ -1285,7 +1285,7 @@ object Util {
     fun fromBouncyCastleECPoint(point: org.bouncycastle.math.ec.ECPoint): ECPoint {
         var point = point
         point = point.normalize()
-        if (!point.isValid()) {
+        if (!point.isValid) {
             LOGGER.warning("point not valid")
         }
         return ECPoint(point.getAffineXCoord().toBigInteger(), point.getAffineYCoord().toBigInteger())
@@ -1301,7 +1301,7 @@ object Util {
      */
     fun isValid(ecPoint: ECPoint, params: ECParameterSpec): Boolean {
         val bcPoint = toBouncyCastleECPoint(ecPoint, params)
-        return bcPoint.isValid()
+        return bcPoint.isValid
     }
 
     /**
@@ -1327,13 +1327,13 @@ object Util {
      * @return the corresponding EC curve
      */
     private fun toBouncyCastleECCurve(params: ECParameterSpec): ECCurve {
-        val curve = params.getCurve()
-        val field = curve.getField()
-        require(field is ECFieldFp) { "Only prime field supported (for now), found " + field.javaClass.getCanonicalName() }
-        val coFactor = params.getCofactor()
-        val order = params.getOrder()
-        val a = curve.getA()
-        val b = curve.getB()
+        val curve = params.curve
+        val field = curve.field
+        require(field is ECFieldFp) { "Only prime field supported (for now), found " + field.javaClass.canonicalName }
+        val coFactor = params.cofactor
+        val order = params.order
+        val a = curve.a
+        val b = curve.b
         val p = getPrime(params)
         return ECCurve.Fp(p, a, b, order, BigInteger.valueOf(coFactor.toLong()))
     }
@@ -1346,8 +1346,8 @@ object Util {
      * @return a BC typed public key parameter specification
      */
     fun toBouncyECPublicKeyParameters(publicKey: ECPublicKey): ECPublicKeyParameters {
-        val ecParams = publicKey.getParams()
-        val q = toBouncyCastleECPoint(publicKey.getW(), ecParams)
+        val ecParams = publicKey.params
+        val q = toBouncyCastleECPoint(publicKey.w, ecParams)
         return ECPublicKeyParameters(q, toBouncyECDomainParameters(ecParams))
     }
 
@@ -1360,7 +1360,7 @@ object Util {
      */
     fun toBouncyECPrivateKeyParameters(privateKey: ECPrivateKey): ECPrivateKeyParameters {
         val d = privateKey.getS()
-        val ecParams = toBouncyECDomainParameters(privateKey.getParams())
+        val ecParams = toBouncyECDomainParameters(privateKey.params)
         return ECPrivateKeyParameters(d, ecParams)
     }
 
@@ -1374,10 +1374,10 @@ object Util {
      */
     fun toBouncyECDomainParameters(params: ECParameterSpec): ECDomainParameters {
         val curve = toBouncyCastleECCurve(params)
-        val g = toBouncyCastleECPoint(params.getGenerator(), params)
-        val n = params.getOrder()
-        val h = BigInteger.valueOf(params.getCofactor().toLong())
-        val seed = params.getCurve().getSeed()
+        val g = toBouncyCastleECPoint(params.generator, params)
+        val n = params.order
+        val h = BigInteger.valueOf(params.cofactor.toLong())
+        val seed = params.curve.seed
         return ECDomainParameters(curve, g, n, h, seed)
     }
 
@@ -1650,7 +1650,7 @@ object Util {
             }
             return TLVUtil.wrapDO(0x80, oidBytes) /* FIXME: define constant for 0x80. */
         } catch (ioe: IOException) {
-            throw IllegalArgumentException("Illegal OID: \"" + oid, ioe)
+            throw IllegalArgumentException("Illegal OID: \"$oid", ioe)
         }
     }
 
@@ -1703,27 +1703,45 @@ object Util {
     @Throws(GeneralSecurityException::class)
     fun getAlgorithmParams(key: Key): AlgorithmParameterSpec? {
         requireNotNull(key) { "Key is null" }
-        if (key is DHPublicKey) {
-            return key.getParams()
-        } else if (key is ECPublicKey) {
-            return key.getParams()
-        } else if (key is RSAPublicKey) {
-            return key.getParams()
-        } else if (key is DSAPublicKey) {
-            val dsaParams = key.getParams()
-            return DSAParameterSpec(dsaParams.getP(), dsaParams.getQ(), dsaParams.getG())
-        } else if (key is DHPrivateKey) {
-            return key.getParams()
-        } else if (key is ECPrivateKey) {
-            return key.getParams()
-        } else if (key is RSAPrivateKey) {
-            return key.getParams()
-        } else if (key is DSAPrivateKey) {
-            val dsaPrivateKey = key
-            val dsaParams = dsaPrivateKey.getParams()
-            return DSAParameterSpec(dsaParams.getP(), dsaParams.getQ(), dsaParams.getG())
-        } else {
-            throw NoSuchAlgorithmException("Unsupported key type")
+        when (key) {
+            is DHPublicKey -> {
+                return key.params
+            }
+
+            is ECPublicKey -> {
+                return key.params
+            }
+
+            is RSAPublicKey -> {
+                return key.params
+            }
+
+            is DSAPublicKey -> {
+                val dsaParams = key.params
+                return DSAParameterSpec(dsaParams.p, dsaParams.q, dsaParams.g)
+            }
+
+            is DHPrivateKey -> {
+                return key.params
+            }
+
+            is ECPrivateKey -> {
+                return key.params
+            }
+
+            is RSAPrivateKey -> {
+                return key.params
+            }
+
+            is DSAPrivateKey -> {
+                val dsaPrivateKey = key
+                val dsaParams = dsaPrivateKey.params
+                return DSAParameterSpec(dsaParams.p, dsaParams.q, dsaParams.g)
+            }
+
+            else -> {
+                throw NoSuchAlgorithmException("Unsupported key type")
+            }
         }
     }
 
@@ -1792,13 +1810,13 @@ object Util {
     private val RFC5114_2048_256_Q = ("8CF83642A709A097B447997640129DA299B1A47D1EB3750B"
             + "A308B0FE64F5FBD3")
 
-    @Deprecated("Existence of a " hidden SNFS" backdoor cannot be ruled out. see https://eprint.iacr.org/2016/961.pdf")
+    @Deprecated("Existence of a hidden SNFS backdoor cannot be ruled out. see https://eprint.iacr.org/2016/961.pdf")
     val RFC5114_1024_160: DHParameters = fromPGQ(RFC5114_1024_160_P, RFC5114_1024_160_G, RFC5114_1024_160_Q)
 
-    @Deprecated("Existence of a " hidden SNFS" backdoor cannot be ruled out. see https://eprint.iacr.org/2016/961.pdf")
+    @Deprecated("Existence of a hidden SNFS backdoor cannot be ruled out. see https://eprint.iacr.org/2016/961.pdf")
     val RFC5114_2048_224: DHParameters = fromPGQ(RFC5114_2048_224_P, RFC5114_2048_224_G, RFC5114_2048_224_Q)
 
-    @Deprecated("Existence of a " hidden SNFS" backdoor cannot be ruled out. see https://eprint.iacr.org/2016/961.pdf")
+    @Deprecated("Existence of a hidden SNFS backdoor cannot be ruled out. see https://eprint.iacr.org/2016/961.pdf")
     val RFC5114_2048_256: DHParameters = fromPGQ(RFC5114_2048_256_P, RFC5114_2048_256_G, RFC5114_2048_256_Q)
 
     private fun fromPGQ(hexP: String, hexG: String, hexQ: String): DHParameters {

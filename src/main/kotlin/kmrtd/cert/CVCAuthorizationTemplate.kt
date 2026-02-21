@@ -64,16 +64,7 @@ class CVCAuthorizationTemplate {
          * 
          * @return a bitmap
          */
-        val value: Byte
-
-        /**
-         * Creates a role for the given value.
-         * 
-         * @param value the value code
-         */
-        init {
-            this.value = value.toByte()
-        }
+        val value: Byte = value.toByte()
     }
 
     /**
@@ -101,16 +92,7 @@ class CVCAuthorizationTemplate {
          * 
          * @return a bitmap
          */
-        val value: Byte
-
-        /**
-         * Constructs a permission for the given value.
-         * 
-         * @param value a value code
-         */
-        init {
-            this.value = value.toByte()
-        }
+        val value: Byte = value.toByte()
 
         /**
          * Whether this permission implies the other permission.
@@ -120,12 +102,12 @@ class CVCAuthorizationTemplate {
          * @return a boolean
          */
         fun implies(other: Permission?): Boolean {
-            when (this) {
-                Permission.READ_ACCESS_NONE -> return other == Permission.READ_ACCESS_NONE
-                Permission.READ_ACCESS_DG3 -> return other == Permission.READ_ACCESS_DG3
-                Permission.READ_ACCESS_DG4 -> return other == Permission.READ_ACCESS_DG4
-                Permission.READ_ACCESS_DG3_AND_DG4 -> return other == Permission.READ_ACCESS_DG3 || other == Permission.READ_ACCESS_DG4 || other == Permission.READ_ACCESS_DG3_AND_DG4
-                else -> return false
+            return when (this) {
+                READ_ACCESS_NONE -> other == READ_ACCESS_NONE
+                READ_ACCESS_DG3 -> other == READ_ACCESS_DG3
+                READ_ACCESS_DG4 -> other == READ_ACCESS_DG4
+                READ_ACCESS_DG3_AND_DG4 -> other == READ_ACCESS_DG3 || other == READ_ACCESS_DG4 || other == READ_ACCESS_DG3_AND_DG4
+                else -> false
             }
         }
     }
@@ -214,12 +196,12 @@ class CVCAuthorizationTemplate {
          * @return the EJBCA typed equivalent of the given permission
          */
         fun fromPermission(permission: Permission): AccessRightEnum {
-            try {
+            return try {
                 when (permission) {
-                    Permission.READ_ACCESS_NONE -> return AccessRightEnum.READ_ACCESS_NONE
-                    Permission.READ_ACCESS_DG3 -> return AccessRightEnum.READ_ACCESS_DG3
-                    Permission.READ_ACCESS_DG4 -> return AccessRightEnum.READ_ACCESS_DG4
-                    Permission.READ_ACCESS_DG3_AND_DG4 -> return AccessRightEnum.READ_ACCESS_DG3_AND_DG4
+                    Permission.READ_ACCESS_NONE -> AccessRightEnum.READ_ACCESS_NONE
+                    Permission.READ_ACCESS_DG3 -> AccessRightEnum.READ_ACCESS_DG3
+                    Permission.READ_ACCESS_DG4 -> AccessRightEnum.READ_ACCESS_DG4
+                    Permission.READ_ACCESS_DG3_AND_DG4 -> AccessRightEnum.READ_ACCESS_DG3_AND_DG4
                     else -> throw IllegalArgumentException("Error getting permission for " + permission)
                 }
             } catch (e: Exception) {
@@ -236,12 +218,12 @@ class CVCAuthorizationTemplate {
          */
         fun fromRole(role: Role): AuthorizationRoleEnum {
             try {
-                when (role) {
-                    Role.CVCA -> return AuthorizationRoleEnum.CVCA
-                    Role.DV_D -> return AuthorizationRoleEnum.DV_D
-                    Role.DV_F -> return AuthorizationRoleEnum.DV_F
-                    Role.IS -> return AuthorizationRoleEnum.IS
-                    else -> throw IllegalArgumentException("Error getting role from AuthZ template " + role)
+                return when (role) {
+                    Role.CVCA -> AuthorizationRoleEnum.CVCA
+                    Role.DV_D -> AuthorizationRoleEnum.DV_D
+                    Role.DV_F -> AuthorizationRoleEnum.DV_F
+                    Role.IS -> AuthorizationRoleEnum.IS
+                    else -> throw IllegalArgumentException("Error getting role from AuthZ template $role")
                 }
             } catch (e: Exception) {
                 throw IllegalArgumentException("Error getting role from AuthZ template", e)
@@ -257,13 +239,12 @@ class CVCAuthorizationTemplate {
          */
         private fun toRole(template: CVCAuthorizationTemplate): Role {
             try {
-                val role = template.getAuthorizationField().getRole()
-                when (role) {
-                    AuthorizationRoleEnum.CVCA -> return Role.CVCA
-                    AuthorizationRoleEnum.DV_D -> return Role.DV_D
-                    AuthorizationRoleEnum.DV_F -> return Role.DV_F
-                    AuthorizationRoleEnum.IS -> return Role.IS
-                    else -> throw IllegalArgumentException("Unsupported role " + role)
+                return when (val role = template.authorizationField.getRole()) {
+                    AuthorizationRoleEnum.CVCA -> Role.CVCA
+                    AuthorizationRoleEnum.DV_D -> Role.DV_D
+                    AuthorizationRoleEnum.DV_F -> Role.DV_F
+                    AuthorizationRoleEnum.IS -> Role.IS
+                    else -> throw IllegalArgumentException("Unsupported role $role")
                 }
             } catch (nsfe: NoSuchFieldException) {
                 throw IllegalArgumentException("Error getting role from AuthZ template", nsfe)
@@ -279,13 +260,12 @@ class CVCAuthorizationTemplate {
          */
         private fun toPermission(template: CVCAuthorizationTemplate): Permission {
             try {
-                val accessRight = template.getAuthorizationField().getAccessRight()
-                when (accessRight) {
-                    AccessRightEnum.READ_ACCESS_NONE -> return Permission.READ_ACCESS_NONE
-                    AccessRightEnum.READ_ACCESS_DG3 -> return Permission.READ_ACCESS_DG3
-                    AccessRightEnum.READ_ACCESS_DG4 -> return Permission.READ_ACCESS_DG4
-                    AccessRightEnum.READ_ACCESS_DG3_AND_DG4 -> return Permission.READ_ACCESS_DG3_AND_DG4
-                    else -> throw IllegalArgumentException("Unsupported access right " + accessRight)
+                return when (val accessRight = template.authorizationField.getAccessRight()) {
+                    AccessRightEnum.READ_ACCESS_NONE -> Permission.READ_ACCESS_NONE
+                    AccessRightEnum.READ_ACCESS_DG3 -> Permission.READ_ACCESS_DG3
+                    AccessRightEnum.READ_ACCESS_DG4 -> Permission.READ_ACCESS_DG4
+                    AccessRightEnum.READ_ACCESS_DG3_AND_DG4 -> Permission.READ_ACCESS_DG3_AND_DG4
+                    else -> throw IllegalArgumentException("Unsupported access right $accessRight")
                 }
             } catch (nsfe: NoSuchFieldException) {
                 throw IllegalArgumentException("Unsupported access right", nsfe)

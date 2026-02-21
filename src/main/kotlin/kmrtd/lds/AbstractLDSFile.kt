@@ -47,7 +47,7 @@ internal abstract class AbstractLDSFile
  * classes in this package.
  */
     : LDSFile {
-    val encoded: ByteArray?
+    override val encoded: ByteArray?
         /**
          * Returns the contents of this file as byte array,
          * includes the ICAO tag and length.

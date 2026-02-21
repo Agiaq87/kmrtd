@@ -33,7 +33,7 @@ import org.bouncycastle.asn1.eac.EACObjectIdentifiers
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import org.jmrtd.Util
 import java.io.IOException
 import java.io.OutputStream
@@ -50,6 +50,7 @@ import java.util.logging.Logger
  * @version $Revision: 1894 $
  */
 abstract class SecurityInfo : AbstractLDSInfo() {
+    @JvmField
     @get:Deprecated("this method will be removed from visible interface (because of dependency on BC API)")
     abstract val dERObject: ASN1Primitive
 
@@ -100,13 +101,17 @@ abstract class SecurityInfo : AbstractLDSInfo() {
          */
         const val ID_AA: String = "2.23.136.1.1.5"
 
+        @JvmField
         val ID_PK_DH: String? = EACObjectIdentifiers.id_PK_DH.getId()
+        @JvmField
         val ID_PK_ECDH: String? = EACObjectIdentifiers.id_PK_ECDH.getId()
 
         /** Used in Chip Authentication 1 and 2.  */
+        @JvmField
         val ID_CA_DH_3DES_CBC_CBC: String? = EACObjectIdentifiers.id_CA_DH_3DES_CBC_CBC.getId()
 
         /** Used in Chip Authentication 1 and 2.  */
+        @JvmField
         val ID_CA_ECDH_3DES_CBC_CBC: String? = EACObjectIdentifiers.id_CA_ECDH_3DES_CBC_CBC.getId()
 
         /** Used in Chip Authentication 1 and 2.  */
@@ -165,55 +170,79 @@ abstract class SecurityInfo : AbstractLDSInfo() {
         private const val ID_BSI = "0.4.0.127.0.7"
 
         /* protocols (2), smartcard (2), PACE (4) */
-        val ID_PACE: String = ID_BSI + ".2.2.4"
+        val ID_PACE: String = "$ID_BSI.2.2.4"
 
-        val ID_PACE_DH_GM: String = ID_PACE + ".1"
+        @JvmField
+        val ID_PACE_DH_GM: String = "$ID_PACE.1"
+        @JvmField
         val ID_PACE_DH_GM_3DES_CBC_CBC: String =
-            ID_PACE_DH_GM + ".1" /* 0.4.0.127.0.7.2.2.4.1.1, id-PACE-DH-GM-3DES-CBC-CBC */
+            "$ID_PACE_DH_GM.1" /* 0.4.0.127.0.7.2.2.4.1.1, id-PACE-DH-GM-3DES-CBC-CBC */
+        @JvmField
         val ID_PACE_DH_GM_AES_CBC_CMAC_128: String =
-            ID_PACE_DH_GM + ".2" /* 0.4.0.127.0.7.2.2.4.1.2, id-PACE-DH-GM-AES-CBC-CMAC-128 */
+            "$ID_PACE_DH_GM.2" /* 0.4.0.127.0.7.2.2.4.1.2, id-PACE-DH-GM-AES-CBC-CMAC-128 */
+        @JvmField
         val ID_PACE_DH_GM_AES_CBC_CMAC_192: String =
-            ID_PACE_DH_GM + ".3" /* 0.4.0.127.0.7.2.2.4.1.3, id-PACE-DH-GM-AES-CBC-CMAC-192 */
+            "$ID_PACE_DH_GM.3" /* 0.4.0.127.0.7.2.2.4.1.3, id-PACE-DH-GM-AES-CBC-CMAC-192 */
+        @JvmField
         val ID_PACE_DH_GM_AES_CBC_CMAC_256: String =
-            ID_PACE_DH_GM + ".4" /* 0.4.0.127.0.7.2.2.4.1.4, id-PACE-DH-GM-AES-CBC-CMAC-256 */
+            "$ID_PACE_DH_GM.4" /* 0.4.0.127.0.7.2.2.4.1.4, id-PACE-DH-GM-AES-CBC-CMAC-256 */
 
+        @JvmField
         val ID_PACE_ECDH_GM: String = ID_PACE + ".2"
+        @JvmField
         val ID_PACE_ECDH_GM_3DES_CBC_CBC: String =
-            ID_PACE_ECDH_GM + ".1" /* 0.4.0.127.0.7.2.2.4.2.1, id-PACE-ECDH-GM-3DES-CBC-CBC */
+            "$ID_PACE_ECDH_GM.1" /* 0.4.0.127.0.7.2.2.4.2.1, id-PACE-ECDH-GM-3DES-CBC-CBC */
+        @JvmField
         val ID_PACE_ECDH_GM_AES_CBC_CMAC_128: String =
-            ID_PACE_ECDH_GM + ".2" /* 0.4.0.127.0.7.2.2.4.2.2, id-PACE-ECDH-GM-AES-CBC-CMAC-128 */
+            "$ID_PACE_ECDH_GM.2" /* 0.4.0.127.0.7.2.2.4.2.2, id-PACE-ECDH-GM-AES-CBC-CMAC-128 */
+        @JvmField
         val ID_PACE_ECDH_GM_AES_CBC_CMAC_192: String =
-            ID_PACE_ECDH_GM + ".3" /* 0.4.0.127.0.7.2.2.4.2.3, id-PACE-ECDH-GM-AES-CBC-CMAC-192 */
+            "$ID_PACE_ECDH_GM.3" /* 0.4.0.127.0.7.2.2.4.2.3, id-PACE-ECDH-GM-AES-CBC-CMAC-192 */
+        @JvmField
         val ID_PACE_ECDH_GM_AES_CBC_CMAC_256: String =
-            ID_PACE_ECDH_GM + ".4" /* 0.4.0.127.0.7.2.2.4.2.4, id-PACE-ECDH-GM-AES-CBC-CMAC-256 */
+            "$ID_PACE_ECDH_GM.4" /* 0.4.0.127.0.7.2.2.4.2.4, id-PACE-ECDH-GM-AES-CBC-CMAC-256 */
 
-        val ID_PACE_DH_IM: String = ID_PACE + ".3"
+        @JvmField
+        val ID_PACE_DH_IM: String = "$ID_PACE.3"
+        @JvmField
         val ID_PACE_DH_IM_3DES_CBC_CBC: String =
-            ID_PACE_DH_IM + ".1" /* 0.4.0.127.0.7.2.2.4.3.1, id-PACE-DH-IM-3DES-CBC-CBC */
+            "$ID_PACE_DH_IM.1" /* 0.4.0.127.0.7.2.2.4.3.1, id-PACE-DH-IM-3DES-CBC-CBC */
+        @JvmField
         val ID_PACE_DH_IM_AES_CBC_CMAC_128: String =
-            ID_PACE_DH_IM + ".2" /* 0.4.0.127.0.7.2.2.4.3.2, id-PACE-DH-IM-AES-CBC-CMAC-128 */
+            "$ID_PACE_DH_IM.2" /* 0.4.0.127.0.7.2.2.4.3.2, id-PACE-DH-IM-AES-CBC-CMAC-128 */
+        @JvmField
         val ID_PACE_DH_IM_AES_CBC_CMAC_192: String =
-            ID_PACE_DH_IM + ".3" /* 0.4.0.127.0.7.2.2.4.3.3, id-PACE-DH-IM-AES-CBC-CMAC-192 */
+            "$ID_PACE_DH_IM.3" /* 0.4.0.127.0.7.2.2.4.3.3, id-PACE-DH-IM-AES-CBC-CMAC-192 */
+        @JvmField
         val ID_PACE_DH_IM_AES_CBC_CMAC_256: String =
-            ID_PACE_DH_IM + ".4" /* 0.4.0.127.0.7.2.2.4.3.4, id-PACE-DH-IM-AES-CBC-CMAC-256 */
+            "$ID_PACE_DH_IM.4" /* 0.4.0.127.0.7.2.2.4.3.4, id-PACE-DH-IM-AES-CBC-CMAC-256 */
 
-        val ID_PACE_ECDH_IM: String = ID_PACE + ".4"
+        @JvmField
+        val ID_PACE_ECDH_IM: String = "$ID_PACE.4"
+        @JvmField
         val ID_PACE_ECDH_IM_3DES_CBC_CBC: String =
-            ID_PACE_ECDH_IM + ".1" /* 0.4.0.127.0.7.2.2.4.4.1, id-PACE-ECDH-IM-3DES-CBC-CBC */
+            "$ID_PACE_ECDH_IM.1" /* 0.4.0.127.0.7.2.2.4.4.1, id-PACE-ECDH-IM-3DES-CBC-CBC */
+        @JvmField
         val ID_PACE_ECDH_IM_AES_CBC_CMAC_128: String =
-            ID_PACE_ECDH_IM + ".2" /* 0.4.0.127.0.7.2.2.4.4.2, id-PACE-ECDH-IM-AES-CBC-CMAC-128 */
+            "$ID_PACE_ECDH_IM.2" /* 0.4.0.127.0.7.2.2.4.4.2, id-PACE-ECDH-IM-AES-CBC-CMAC-128 */
+        @JvmField
         val ID_PACE_ECDH_IM_AES_CBC_CMAC_192: String =
-            ID_PACE_ECDH_IM + ".3" /* 0.4.0.127.0.7.2.2.4.4.3, id-PACE-ECDH-IM-AES-CBC-CMAC-192 */
+            "$ID_PACE_ECDH_IM.3" /* 0.4.0.127.0.7.2.2.4.4.3, id-PACE-ECDH-IM-AES-CBC-CMAC-192 */
+        @JvmField
         val ID_PACE_ECDH_IM_AES_CBC_CMAC_256: String =
-            ID_PACE_ECDH_IM + ".4" /* 0.4.0.127.0.7.2.2.4.4.4, id-PACE-ECDH-IM-AES-CBC-CMAC-256 */
+            "$ID_PACE_ECDH_IM.4" /* 0.4.0.127.0.7.2.2.4.4.4, id-PACE-ECDH-IM-AES-CBC-CMAC-256 */
 
-        val ID_PACE_ECDH_CAM: String = ID_PACE + ".6"
+        @JvmField
+        val ID_PACE_ECDH_CAM: String = "$ID_PACE.6"
+        @JvmField
         val ID_PACE_ECDH_CAM_AES_CBC_CMAC_128: String =
-            ID_PACE_ECDH_CAM + ".2" /* 0.4.0.127.0.7.2.2.4.6.2, id-PACE-ECDH-CAM-AES-CBC-CMAC-128 */
+            "$ID_PACE_ECDH_CAM.2" /* 0.4.0.127.0.7.2.2.4.6.2, id-PACE-ECDH-CAM-AES-CBC-CMAC-128 */
+        @JvmField
         val ID_PACE_ECDH_CAM_AES_CBC_CMAC_192: String =
-            ID_PACE_ECDH_CAM + ".3" /* 0.4.0.127.0.7.2.2.4.6.3, id-PACE-ECDH-CAM-AES-CBC-CMAC-192 */
+            "$ID_PACE_ECDH_CAM.3" /* 0.4.0.127.0.7.2.2.4.6.3, id-PACE-ECDH-CAM-AES-CBC-CMAC-192 */
+        @JvmField
         val ID_PACE_ECDH_CAM_AES_CBC_CMAC_256: String =
-            ID_PACE_ECDH_CAM + ".4" /* 0.4.0.127.0.7.2.2.4.6.4, id-PACE-ECDH-CAM-AES-CBC-CMAC-256 */
+            "$ID_PACE_ECDH_CAM.4" /* 0.4.0.127.0.7.2.2.4.6.4, id-PACE-ECDH-CAM-AES-CBC-CMAC-256 */
 
         /**
          * Factory method for creating security info objects given an input.
@@ -222,6 +251,7 @@ abstract class SecurityInfo : AbstractLDSInfo() {
          * 
          * @return a concrete security info object
          */
+        @JvmStatic
         fun getInstance(obj: ASN1Encodable?): SecurityInfo? {
             try {
                 val sequence = ASN1Util.list(obj)
@@ -278,7 +308,7 @@ abstract class SecurityInfo : AbstractLDSInfo() {
                     }
                     return PACEDomainParameterInfo(oid, domainParameters)
                 }
-                LOGGER.warning("Unsupported SecurityInfo, oid = " + oid)
+                LOGGER.warning("Unsupported SecurityInfo, oid = $oid")
                 return null
             } catch (e: Exception) {
                 LOGGER.log(Level.WARNING, "Unexpected exception", e)

@@ -85,7 +85,7 @@ class DisplayedImageInfo : AbstractImageInfo {
      */
     @Throws(IOException::class)
     override fun readObject(inputStream: InputStream?) {
-        val tlvIn = if (inputStream is TLVInputStream) inputStream else TLVInputStream(inputStream)
+        val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
 
         displayedImageTag = tlvIn.readTag()
         require(
@@ -94,8 +94,8 @@ class DisplayedImageInfo : AbstractImageInfo {
         ) { "Expected tag 0x5F40 or 0x5F43, found " + Integer.toHexString(displayedImageTag) }
 
         val type: Int = getTypeFromDisplayedImageTag(displayedImageTag)
-        setType(type)
-        setMimeType(getMimeTypeFromType(type))
+        type = type
+        mimeType = getMimeTypeFromType(type)
 
         val imageLength = tlvIn.readLength().toLong()
 
@@ -104,13 +104,13 @@ class DisplayedImageInfo : AbstractImageInfo {
 
     @Throws(IOException::class)
     public override fun writeObject(outputStream: OutputStream?) {
-        val tlvOut = if (outputStream is TLVOutputStream) outputStream else TLVOutputStream(outputStream)
+        val tlvOut = outputStream as? TLVOutputStream ?: TLVOutputStream(outputStream)
         tlvOut.writeTag(getDisplayedImageTagFromType(type))
         writeImage(tlvOut)
         tlvOut.writeValueEnd()
     }
 
-    val recordLength: Long
+    override val recordLength: Long
         /**
          * Returns the record length of the encoded image info.
          * 
@@ -201,9 +201,9 @@ class DisplayedImageInfo : AbstractImageInfo {
          * @return the corresponding image info type
          */
         private fun getTypeFromDisplayedImageTag(tag: Int): Int {
-            when (tag) {
-                DISPLAYED_PORTRAIT_TAG -> return ImageInfo.TYPE_PORTRAIT
-                DISPLAYED_SIGNATURE_OR_MARK_TAG -> return ImageInfo.TYPE_SIGNATURE_OR_MARK
+            return when (tag) {
+                DISPLAYED_PORTRAIT_TAG -> ImageInfo.TYPE_PORTRAIT
+                DISPLAYED_SIGNATURE_OR_MARK_TAG -> ImageInfo.TYPE_SIGNATURE_OR_MARK
                 else -> throw NumberFormatException("Unknown tag: " + Integer.toHexString(tag))
             }
         }

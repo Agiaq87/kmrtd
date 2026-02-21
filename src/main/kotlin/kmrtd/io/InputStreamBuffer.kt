@@ -41,8 +41,9 @@ import kotlin.math.min
  * 
  * @author The JMRTD team (info@jmrtd.org)
  */
-class InputStreamBuffer(inputStream: InputStream?, length: Int) {
-    private val carrier: PositionInputStream
+// class InputStreamBuffer(inputStream: InputStream?, length: Int) {
+class InputStreamBuffer(inputStream: InputStream, length: Int) {
+    private val carrier: PositionInputStream = PositionInputStream(inputStream)
 
     private val buffer: FragmentBuffer
 
@@ -53,7 +54,6 @@ class InputStreamBuffer(inputStream: InputStream?, length: Int) {
      * @param length the length of the input stream
      */
     init {
-        this.carrier = PositionInputStream(inputStream)
         this.carrier.mark(length)
         this.buffer = FragmentBuffer(length)
     }
@@ -106,7 +106,7 @@ class InputStreamBuffer(inputStream: InputStream?, length: Int) {
         get() = buffer.length
 
     override fun toString(): String {
-        return "InputStreamBuffer [" + buffer + "]"
+        return "InputStreamBuffer [$buffer]"
     }
 
     /**
@@ -211,8 +211,8 @@ class InputStreamBuffer(inputStream: InputStream?, length: Int) {
                 val fragment: FragmentBuffer.Fragment = buffer.getSmallestUnbufferedFragment(position, len)
                 if (fragment.getLength() > 0) {
                     /* Copy buffered prefix to b. */
-                    val alreadyBufferedPrefixLength = fragment.getOffset() - position
-                    val unbufferedPostfixLength = fragment.getLength()
+                    val alreadyBufferedPrefixLength = fragment.offset - position
+                    val unbufferedPostfixLength = fragment.length
                     System.arraycopy(buffer.buffer, position, b, off, alreadyBufferedPrefixLength)
                     position += alreadyBufferedPrefixLength
 
@@ -223,7 +223,7 @@ class InputStreamBuffer(inputStream: InputStream?, length: Int) {
                     /* Read unbuffered postfix from carrier, directly to b and buffer it. */
                     val bytesReadFromCarrier =
                         carrier.read(b, off + alreadyBufferedPrefixLength, unbufferedPostfixLength)
-                    buffer.addFragment(fragment.getOffset(), b, off + alreadyBufferedPrefixLength, bytesReadFromCarrier)
+                    buffer.addFragment(fragment.offset, b, off + alreadyBufferedPrefixLength, bytesReadFromCarrier)
                     position += bytesReadFromCarrier
 
                     return alreadyBufferedPrefixLength + bytesReadFromCarrier

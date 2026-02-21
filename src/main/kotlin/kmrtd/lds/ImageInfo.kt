@@ -27,6 +27,8 @@
  */
 package kmrtd.lds
 
+import java.io.InputStream
+
 /**
  * Common interface type for records containing an encoded image.
  * 

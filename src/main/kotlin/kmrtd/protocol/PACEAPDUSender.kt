@@ -46,16 +46,7 @@ import java.util.logging.Logger
  * @since 0.7.0
  */
 class PACEAPDUSender(service: CardService) : APDULevelPACECapable {
-    private val secureMessagingSender: SecureMessagingAPDUSender
-
-    /**
-     * Creates an APDU sender to support the PACE protocol.
-     * 
-     * @param service the card service to tranceive APDUs
-     */
-    init {
-        this.secureMessagingSender = SecureMessagingAPDUSender(service)
-    }
+    private val secureMessagingSender: SecureMessagingAPDUSender = SecureMessagingAPDUSender(service)
 
     /**
      * The MSE AT APDU for PACE, see ICAO TR-SAC-1.01, Section 3.2.1, BSI TR 03110 v2.03 B11.1.
@@ -83,7 +74,7 @@ class PACEAPDUSender(service: CardService) : APDULevelPACECapable {
      * 0x83 Reference of a public key / secret key.
      * The password to be used is indicated as follows: 0x01: MRZ, 0x02: CAN.
      */
-        require(refPublicKeyOrSecretKey == MRZ_PACE_KEY_REFERENCE.toInt() || refPublicKeyOrSecretKey == CAN_PACE_KEY_REFERENCE.toInt() || refPublicKeyOrSecretKey == PIN_PACE_KEY_REFERENCE.toInt() || refPublicKeyOrSecretKey == PUK_PACE_KEY_REFERENCE.toInt()) { "Unsupported key type reference (MRZ, CAN, etc), found " + refPublicKeyOrSecretKey }
+        require(refPublicKeyOrSecretKey == MRZ_PACE_KEY_REFERENCE.toInt() || refPublicKeyOrSecretKey == CAN_PACE_KEY_REFERENCE.toInt() || refPublicKeyOrSecretKey == PIN_PACE_KEY_REFERENCE.toInt() || refPublicKeyOrSecretKey == PUK_PACE_KEY_REFERENCE.toInt()) { "Unsupported key type reference (MRZ, CAN, etc), found $refPublicKeyOrSecretKey" }
 
         val refPublicKeyOrSecretKeyBytes =
             TLVUtil.wrapDO(0x83, byteArrayOf(refPublicKeyOrSecretKey.toByte())) /* FIXME: define constant for 0x83 */

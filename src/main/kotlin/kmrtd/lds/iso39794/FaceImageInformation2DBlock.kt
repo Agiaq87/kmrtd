@@ -43,22 +43,16 @@ package kmrtd.lds.iso39794
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.math.BigInteger
 import java.util.*
 
 class FaceImageInformation2DBlock : Block {
-    enum class ImageDataFormatCode(val code: Int, mimeType: String) : EncodableEnum<ImageDataFormatCode?> {
+    enum class ImageDataFormatCode(override val code: Int, val mimeType: String) : EncodableEnum<ImageDataFormatCode?> {
         UNKNOWN(0, "image/raw"),
         JPEG(2, "image/jpeg"),
         JPEG2000_LOSSY(3, "image/jp2"),
         JPEG2000_LOSSLESS(4, "image/jp2");
-
-        val mimeType: String?
-
-        init {
-            this.mimeType = mimeType
-        }
 
         companion object {
             fun fromCode(code: Int): ImageDataFormatCode {
@@ -74,7 +68,7 @@ class FaceImageInformation2DBlock : Block {
         }
     }
 
-    enum class FaceImageKind2DCode(val code: Int) : EncodableEnum<FaceImageKind2DCode?> {
+    enum class FaceImageKind2DCode(override val code: Int) : EncodableEnum<FaceImageKind2DCode?> {
         MRTD(0),
         GENERAL_PURPOSE(1);
 
@@ -85,7 +79,7 @@ class FaceImageInformation2DBlock : Block {
         }
     }
 
-    enum class LossyTransformationAttemptsCode(val code: Int) : EncodableEnum<LossyTransformationAttemptsCode?> {
+    enum class LossyTransformationAttemptsCode(override val code: Int) : EncodableEnum<LossyTransformationAttemptsCode?> {
         UNKNOWN(0),
         ZERO(1),
         ONE(2),
@@ -98,7 +92,7 @@ class FaceImageInformation2DBlock : Block {
         }
     }
 
-    enum class ImageColourSpaceCode(val code: Int) : EncodableEnum<ImageColourSpaceCode?> {
+    enum class ImageColourSpaceCode(override val code: Int) : EncodableEnum<ImageColourSpaceCode?> {
         UNKNOWN(0),
         OTHER(1),
         RGB_24BIT(2),
@@ -119,7 +113,9 @@ class FaceImageInformation2DBlock : Block {
     //    height [1] ImageSize
     //  }
     class ImageSizeBlock : Block {
+        @JvmField
         val width: Int
+        @JvmField
         val height: Int
 
         constructor(width: Int, height: Int) {
@@ -155,15 +151,15 @@ class FaceImageInformation2DBlock : Block {
         }
 
         override fun toString(): String {
-            return "ImageSizeBlock [width: " + width + ", height: " + height + "]"
+            return "ImageSizeBlock [width: $width, height: $height]"
         }
 
         val aSN1Object: ASN1Encodable?
             get() {
                 val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                     HashMap<Int?, ASN1Encodable?>()
-                taggedObjects.put(0, ASN1Util.encodeInt(width))
-                taggedObjects.put(1, ASN1Util.encodeInt(height))
+                taggedObjects[0] = ASN1Util.encodeInt(width)
+                taggedObjects[1] = ASN1Util.encodeInt(height)
                 return ASN1Util.encodeTaggedObjects(taggedObjects)
             }
 
@@ -195,16 +191,16 @@ class FaceImageInformation2DBlock : Block {
         internal constructor(asn1Encodable: ASN1Encodable?) {
             val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
             if (taggedObjects.containsKey(0)) {
-                imageHeadWidth = ASN1Util.decodeBigInteger(taggedObjects.get(0))
+                imageHeadWidth = ASN1Util.decodeBigInteger(taggedObjects[0])
             }
             if (taggedObjects.containsKey(1)) {
-                imageInterEyeDistance = ASN1Util.decodeBigInteger(taggedObjects.get(1))
+                imageInterEyeDistance = ASN1Util.decodeBigInteger(taggedObjects[1])
             }
             if (taggedObjects.containsKey(2)) {
-                imageEyeToMouthDistance = ASN1Util.decodeBigInteger(taggedObjects.get(2))
+                imageEyeToMouthDistance = ASN1Util.decodeBigInteger(taggedObjects[2])
             }
             if (taggedObjects.containsKey(3)) {
-                imageHeadLength = ASN1Util.decodeBigInteger(taggedObjects.get(3))
+                imageHeadLength = ASN1Util.decodeBigInteger(taggedObjects[3])
             }
         }
 
@@ -232,22 +228,22 @@ class FaceImageInformation2DBlock : Block {
                     + "]")
         }
 
-        val aSN1Object: ASN1Encodable?
+        override val aSN1Object: ASN1Encodable?
             /* PACKAGE */
             get() {
                 val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                     HashMap<Int?, ASN1Encodable?>()
                 if (imageHeadWidth != null) {
-                    taggedObjects.put(0, ASN1Util.encodeBigInteger(imageHeadWidth))
+                    taggedObjects[0] = ASN1Util.encodeBigInteger(imageHeadWidth)
                 }
                 if (imageInterEyeDistance != null) {
-                    taggedObjects.put(1, ASN1Util.encodeBigInteger(imageInterEyeDistance))
+                    taggedObjects[1] = ASN1Util.encodeBigInteger(imageInterEyeDistance)
                 }
                 if (imageEyeToMouthDistance != null) {
-                    taggedObjects.put(2, ASN1Util.encodeBigInteger(imageEyeToMouthDistance))
+                    taggedObjects[2] = ASN1Util.encodeBigInteger(imageEyeToMouthDistance)
                 }
                 if (imageHeadLength != null) {
-                    taggedObjects.put(3, ASN1Util.encodeBigInteger(imageHeadLength))
+                    taggedObjects[3] = ASN1Util.encodeBigInteger(imageHeadLength)
                 }
                 return ASN1Util.encodeTaggedObjects(taggedObjects)
             }
@@ -431,55 +427,43 @@ class FaceImageInformation2DBlock : Block {
                 + "]")
     }
 
-    val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable?
         /* PACAKAGE */
         get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(
-                0,
-                ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(imageDataFormatCode!!.code)
-            )
+            taggedObjects[0] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(imageDataFormatCode!!.code)
             if (faceImageKind2DCode != null) {
-                taggedObjects.put(
-                    1,
-                    ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(faceImageKind2DCode!!.code)
-                )
+                taggedObjects[1] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(faceImageKind2DCode!!.code)
             }
             if (postAcquisitionProcessingBlock != null) {
-                taggedObjects.put(2, postAcquisitionProcessingBlock!!.getASN1Object())
+                taggedObjects[2] = postAcquisitionProcessingBlock!!.getASN1Object()
             }
             if (lossyTransformationAttemptsCode != null) {
-                taggedObjects.put(
-                    3,
-                    ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(
-                        lossyTransformationAttemptsCode!!.code
-                    )
+                taggedObjects[3] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(
+                    lossyTransformationAttemptsCode!!.code
                 )
             }
             if (cameraToSubjectDistance != null) {
-                taggedObjects.put(4, ASN1Util.encodeInt(cameraToSubjectDistance!!))
+                taggedObjects[4] = ASN1Util.encodeInt(cameraToSubjectDistance!!)
             }
             if (sensorDiagonal != null) {
-                taggedObjects.put(5, ASN1Util.encodeInt(sensorDiagonal!!))
+                taggedObjects[5] = ASN1Util.encodeInt(sensorDiagonal!!)
             }
             if (lensFocalLength != null) {
-                taggedObjects.put(6, ASN1Util.encodeInt(lensFocalLength!!))
+                taggedObjects[6] = ASN1Util.encodeInt(lensFocalLength!!)
             }
             if (imageSizeBlock != null) {
-                taggedObjects.put(7, imageSizeBlock!!.aSN1Object)
+                taggedObjects[7] = imageSizeBlock!!.aSN1Object
             }
             if (imageFaceMeasurementsBlock != null) {
-                taggedObjects.put(8, imageFaceMeasurementsBlock!!.aSN1Object)
+                taggedObjects[8] = imageFaceMeasurementsBlock!!.aSN1Object
             }
             if (imageColourSpaceCode != null) {
-                taggedObjects.put(
-                    9,
-                    ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(imageColourSpaceCode!!.code)
-                )
+                taggedObjects[9] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(imageColourSpaceCode!!.code)
             }
             if (referenceColourMappingBlock != null) {
-                taggedObjects.put(10, referenceColourMappingBlock!!.getASN1Object())
+                taggedObjects[10] = referenceColourMappingBlock!!.getASN1Object()
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }

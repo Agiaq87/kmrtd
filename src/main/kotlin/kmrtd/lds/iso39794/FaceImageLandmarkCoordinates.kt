@@ -41,7 +41,7 @@
 package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import org.jmrtd.ASN1Util
+import kmrtd.ASN1Util
 import java.io.Serializable
 
 //  LandmarkCoordinates ::= CHOICE {
@@ -88,15 +88,15 @@ interface FaceImageLandmarkCoordinates : Serializable {
         fun encodeLandmarkCoordinates(landmarkCoordinates: FaceImageLandmarkCoordinates?): ASN1Encodable? {
             val baseTaggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
             if (landmarkCoordinates is CoordinateCartesian2DUnsignedShortBlock) {
-                baseTaggedObjects.put(0, landmarkCoordinates.getASN1Object())
+                baseTaggedObjects[0] = landmarkCoordinates.getASN1Object()
             } else if (landmarkCoordinates is FaceImageCoordinateTextureImageBlock) {
-                baseTaggedObjects.put(1, landmarkCoordinates.aSN1Object)
+                baseTaggedObjects[1] = landmarkCoordinates.aSN1Object
             } else if (landmarkCoordinates is CoordinateCartesian3DUnsignedShortBlock) {
-                baseTaggedObjects.put(2, landmarkCoordinates.aSN1Object)
+                baseTaggedObjects[2] = landmarkCoordinates.aSN1Object
             }
 
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-            taggedObjects.put(0, ASN1Util.encodeTaggedObjects(baseTaggedObjects))
+            taggedObjects[0] = ASN1Util.encodeTaggedObjects(baseTaggedObjects)
             return ASN1Util.encodeTaggedObjects(taggedObjects)
         }
     }

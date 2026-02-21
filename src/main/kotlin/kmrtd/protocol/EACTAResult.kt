@@ -27,10 +27,10 @@
  */
 package kmrtd.protocol
 
+import kmrtd.Util
+import kmrtd.cert.CVCPrincipal
+import kmrtd.cert.CardVerifiableCertificate
 import net.sf.scuba.util.Hex
-import org.jmrtd.Util
-import org.jmrtd.cert.CVCPrincipal
-import org.jmrtd.cert.CardVerifiableCertificate
 import java.io.Serializable
 import java.security.PrivateKey
 import java.security.cert.CertificateException
@@ -116,7 +116,7 @@ class EACTAResult(
      */
     override fun toString(): String {
         val result = StringBuilder()
-        result.append("TAResult [chipAuthenticationResult: " + chipAuthenticationResult).append(", ")
+        result.append("TAResult [chipAuthenticationResult: $chipAuthenticationResult").append(", ")
         result.append("caReference: " + this.cAReference).append(", ")
         result.append("terminalCertificates: [")
         var isFirst = true
@@ -209,7 +209,7 @@ class EACTAResult(
         try {
             val reference = certificate.getHolderReference()
             if (this.cAReference != reference) {
-                result.append("holderReference: " + reference)
+                result.append("holderReference: $reference")
             }
         } catch (ce: CertificateException) {
             result.append("holderReference = ???")
@@ -224,6 +224,6 @@ class EACTAResult(
     companion object {
         private val serialVersionUID = -2926063872890928748L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
     }
 }

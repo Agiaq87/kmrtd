@@ -84,8 +84,8 @@ class PACEGMWithECDHAgreement {
 
         val pub = Util.toBouncyECPublicKeyParameters(publicKey)
 
-        val p = pub.getQ().multiply(Util.toBouncyECPrivateKeyParameters(privateKey).getD()).normalize()
-        check(!p.isInfinity()) { "Infinity" }
+        val p = pub.q.multiply(Util.toBouncyECPrivateKeyParameters(privateKey).d).normalize()
+        check(!p.isInfinity) { "Infinity" }
         return Util.fromBouncyCastleECPoint(p)
     }
 }

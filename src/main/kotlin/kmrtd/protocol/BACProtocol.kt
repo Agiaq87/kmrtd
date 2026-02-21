@@ -48,20 +48,7 @@ class BACProtocol(
     private val maxTranceiveLength: Int,
     private val shouldCheckMAC: Boolean
 ) {
-    private val random: Random
-
-    /**
-     * Constructs a BAC protocol instance.
-     * 
-     * @param service the service to send APDUs
-     * @param maxTranceiveLength the maximal tranceive length (on responses to `READ BINARY`)
-     * to use in the resulting secure messaging channel
-     * @param shouldCheckMAC whether the resulting secure messaging channel should apply strict MAC
-     * checking on response APDUs
-     */
-    init {
-        this.random = SecureRandom()
-    }
+    private val random: Random = SecureRandom()
 
     /**
      * Performs the Basic Access Control protocol.
@@ -166,9 +153,9 @@ class BACProtocol(
             val dateOfBirth = bacKey.getDateOfBirth()
             val dateOfExpiry = bacKey.getDateOfExpiry()
 
-            require(!(dateOfBirth == null || dateOfBirth.length != 6)) { "Wrong date format used for date of birth. Expected yyMMdd, found " + dateOfBirth }
-            require(!(dateOfExpiry == null || dateOfExpiry.length != 6)) { "Wrong date format used for date of expiry. Expected yyMMdd, found " + dateOfExpiry }
-            requireNotNull(documentNumber) { "Wrong document number. Found " + documentNumber }
+            require(!(dateOfBirth == null || dateOfBirth.length != 6)) { "Wrong date format used for date of birth. Expected yyMMdd, found $dateOfBirth" }
+            require(!(dateOfExpiry == null || dateOfExpiry.length != 6)) { "Wrong date format used for date of expiry. Expected yyMMdd, found $dateOfExpiry" }
+            requireNotNull(documentNumber) { "Wrong document number. Found $documentNumber" }
 
             documentNumber = fixDocumentNumber(documentNumber)
 

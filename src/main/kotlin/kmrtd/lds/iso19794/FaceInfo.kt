@@ -27,12 +27,12 @@
  */
 package kmrtd.lds.iso19794
 
+import kmrtd.cbeff.BiometricDataBlock
+import kmrtd.cbeff.CBEFFInfo
+import kmrtd.cbeff.ISO781611
+import kmrtd.cbeff.StandardBiometricHeader
 import kmrtd.lds.AbstractListInfo
 import net.sf.scuba.data.Gender
-import org.jmrtd.cbeff.BiometricDataBlock
-import org.jmrtd.cbeff.CBEFFInfo
-import org.jmrtd.cbeff.ISO781611
-import org.jmrtd.cbeff.StandardBiometricHeader
 import java.io.*
 import java.util.*
 import java.util.logging.Level
@@ -97,7 +97,7 @@ class FaceInfo : AbstractListInfo<FaceImageInfo?>, BiometricDataBlock {
      */
     @Throws(IOException::class)
     public override fun readObject(inputStream: InputStream) {
-        val dataInputStream = if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+        val dataInputStream = inputStream as? DataInputStream ?: DataInputStream(inputStream)
 
         /* Facial Record Header (14) */
         val fac0 = dataInputStream.readInt() // header (e.g. "FAC", 0x00)						/* 4 */
@@ -129,7 +129,7 @@ class FaceInfo : AbstractListInfo<FaceImageInfo?>, BiometricDataBlock {
                 /* Construct header with default values. */
                 val imageInfo = FaceImageInfo(
                     Gender.UNKNOWN,
-                    org.jmrtd.lds.iso19794.FaceImageInfo.EyeColor.UNSPECIFIED,
+                    FaceImageInfo.EyeColor.UNSPECIFIED,
                     0x00,
                     FaceImageInfo.HAIR_COLOR_UNSPECIFIED,
                     FaceImageInfo.EXPRESSION_UNSPECIFIED.toInt(),
@@ -139,7 +139,7 @@ class FaceInfo : AbstractListInfo<FaceImageInfo?>, BiometricDataBlock {
                     FaceImageInfo.SOURCE_TYPE_UNSPECIFIED,
                     0x00,
                     0,
-                    arrayOf<org.jmrtd.lds.iso19794.FaceImageInfo.FeaturePoint?>(),
+                    arrayOf<FaceImageInfo.FeaturePoint?>(),
                     0, 0,
                     ByteArrayInputStream(bOut.toByteArray()), imageLength, FaceImageInfo.IMAGE_DATA_TYPE_JPEG2000
                 )
@@ -191,7 +191,7 @@ class FaceInfo : AbstractListInfo<FaceImageInfo?>, BiometricDataBlock {
 
         val recordLength = headerLength + dataLength
 
-        val dataOut = if (outputStream is DataOutputStream) outputStream else DataOutputStream(outputStream)
+        val dataOut = outputStream as? DataOutputStream ?: DataOutputStream(outputStream)
 
         dataOut.writeInt(FORMAT_IDENTIFIER) /* 4 */
         dataOut.writeInt(VERSION_NUMBER) /* + 4 = 8 */
@@ -231,10 +231,10 @@ class FaceInfo : AbstractListInfo<FaceImageInfo?>, BiometricDataBlock {
             )
 
             val elements: SortedMap<Int?, ByteArray?> = TreeMap<Int?, ByteArray?>()
-            elements.put(ISO781611.BIOMETRIC_TYPE_TAG, biometricType)
-            elements.put(ISO781611.BIOMETRIC_SUBTYPE_TAG, biometricSubtype)
-            elements.put(ISO781611.FORMAT_OWNER_TAG, formatOwner)
-            elements.put(ISO781611.FORMAT_TYPE_TAG, formatType)
+            elements[ISO781611.BIOMETRIC_TYPE_TAG] = biometricType
+            elements[ISO781611.BIOMETRIC_SUBTYPE_TAG] = biometricSubtype
+            elements[ISO781611.FORMAT_OWNER_TAG] = formatOwner
+            elements[ISO781611.FORMAT_TYPE_TAG] = formatType
             sbh = StandardBiometricHeader(elements)
         }
         return sbh!!

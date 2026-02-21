@@ -27,8 +27,8 @@
  */
 package kmrtd.lds
 
-import org.jmrtd.PassportService
-import org.jmrtd.cert.CVCPrincipal
+import kmrtd.PassportService
+import kmrtd.cert.CVCPrincipal
 import java.io.DataInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -183,7 +183,7 @@ class CVCAFile : AbstractLDSFile {
     override fun toString(): String {
         return StringBuilder()
             .append("CA reference: \"").append(caReference).append("\"")
-            .append((if (altCAReference != null) ", Alternative CA reference: " + altCAReference else ""))
+            .append((if (altCAReference != null) ", Alternative CA reference: $altCAReference" else ""))
             .toString()
     }
 
