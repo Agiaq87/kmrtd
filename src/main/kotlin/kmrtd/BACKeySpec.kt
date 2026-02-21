@@ -27,6 +27,9 @@
  */
 package kmrtd
 
+import org.giaquinto.kmrtd.support.DocumentNumber
+import org.giaquinto.kmrtd.support.ICAODate
+
 /**
  * A BAC key.
  * 
@@ -42,19 +45,19 @@ interface BACKeySpec : AccessKeySpec {
      * 
      * @return the document number
      */
-    val documentNumber: String?
+    val documentNumber: DocumentNumber
 
     /**
      * Returns the date of birth string.
      * 
      * @return a *yymmdd* string
      */
-    val dateOfBirth: String?
+    val dateOfBirth: ICAODate
 
     /**
      * Returns the date of expiry string.
      * 
      * @return a *yymmdd* string
      */
-    val dateOfExpiry: String?
+    val dateOfExpiry: ICAODate
 }

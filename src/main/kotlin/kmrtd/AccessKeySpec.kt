@@ -44,12 +44,12 @@ interface AccessKeySpec : Serializable, KeySpec {
      * 
      * @return the type of access key
      */
-    val algorithm: String?
+    val algorithm: String
 
     /**
      * Returns the bytes used for deriving the key seed.
      * 
      * @return a byte array with the input for key derivation
      */
-    val key: ByteArray?
+    val key: ByteArray
 }
