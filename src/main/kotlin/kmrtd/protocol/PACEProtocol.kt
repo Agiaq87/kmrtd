@@ -930,7 +930,7 @@ class PACEProtocol(
             val keySeed: ByteArray? = computeKeySeedForPACE(accessKey)
 
             var paceKeyReference: Byte = 0
-            if (accessKey is PACEKeySpec) {
+            if (accessKey is old_PACEKeySpec) {
                 paceKeyReference = accessKey.getKeyReference()
             }
 
@@ -947,19 +947,20 @@ class PACEProtocol(
          * @throws GeneralSecurityException on error
          */
         @Throws(GeneralSecurityException::class)
-        fun computeKeySeedForPACE(accessKey: AccessKeySpec): ByteArray? {
-            requireNotNull(accessKey) { "Access key cannot be null" }
+        fun computeKeySeedForPACE(accessKey: AccessKeySpec): ByteArray {
+            // Not required anymore
+            //requireNotNull(accessKey) { "Access key cannot be null" }
 
             /* MRZ based key. */
             if (accessKey is BACKeySpec) {
-                val bacKey = accessKey
-                var documentNumber = bacKey.getDocumentNumber()
-                val dateOfBirth = bacKey.getDateOfBirth()
-                val dateOfExpiry = bacKey.getDateOfExpiry()
+                var documentNumber = accessKey.documentNumber.value
+                val dateOfBirth = accessKey.dateOfBirth.date
+                val dateOfExpiry = accessKey.dateOfExpiry.date
 
-                require(!(dateOfBirth == null || dateOfBirth.length != 6)) { "Wrong date format used for date of birth. Expected yyMMdd, found " + dateOfBirth }
-                require(!(dateOfExpiry == null || dateOfExpiry.length != 6)) { "Wrong date format used for date of expiry. Expected yyMMdd, found " + dateOfExpiry }
-                requireNotNull(documentNumber) { "Wrong document number. Found " + documentNumber }
+                // Not required anymore
+                /*require(!(dateOfBirth == null || dateOfBirth.length != 6)) { "Wrong date format used for date of birth. Expected yyMMdd, found $dateOfBirth" }
+                require(!(dateOfExpiry == null || dateOfExpiry.length != 6)) { "Wrong date format used for date of expiry. Expected yyMMdd, found $dateOfExpiry" }
+                requireNotNull(documentNumber) { "Wrong document number. Found $documentNumber" }*/
 
                 documentNumber = fixDocumentNumber(documentNumber)
 
@@ -967,11 +968,11 @@ class PACEProtocol(
             }
 
             if (accessKey is PACEKeySpec) {
-                return accessKey.getKey()
+                return accessKey.key
             }
 
             LOGGER.warning("JMRTD doesn't recognize this type of access key, best effort key derivation!")
-            return accessKey.getKey()
+            return accessKey.key
         }
 
         /* Generic Mapping. */
@@ -1599,12 +1600,11 @@ class PACEProtocol(
          */
         @Throws(GeneralSecurityException::class)
         private fun computeKeySeedForPACE(
-            documentNumber: String?,
-            dateOfBirth: String?,
-            dateOfExpiry: String?
-        ): ByteArray? {
-            return Util.computeKeySeed(documentNumber, dateOfBirth, dateOfExpiry, "SHA-1", false)
-        }
+            documentNumber: String,
+            dateOfBirth: String,
+            dateOfExpiry: String
+        ): ByteArray =
+            Util.computeKeySeed(documentNumber, dateOfBirth, dateOfExpiry, "SHA-1", false)
 
         /**
          * Compares two keys, taking into account that an exception might

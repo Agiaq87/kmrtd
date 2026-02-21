@@ -37,6 +37,7 @@ import java.security.spec.KeySpec
  * 
  * @version $Revision: 1799 $
  */
+
 interface AccessKeySpec : Serializable, KeySpec {
     /**
      * Returns the type of access key.

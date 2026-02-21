@@ -2,12 +2,14 @@ package kmrtd
 
 import kmrtd.support.DocumentNumber
 import kmrtd.support.ICAODate
+import kotlinx.serialization.Serializable
 import java.security.GeneralSecurityException
 import java.util.*
 
 /**
  * BACKey data class
  */
+@Serializable
 data class BACKey(
     override val documentNumber: DocumentNumber,
     override val dateOfBirth: ICAODate,
@@ -15,6 +17,7 @@ data class BACKey(
 ) : BACKeySpec {
 
     override val algorithm: String = "BAC"
+
     override val key: ByteArray
         get() = try {
             Util.computeKeySeed(

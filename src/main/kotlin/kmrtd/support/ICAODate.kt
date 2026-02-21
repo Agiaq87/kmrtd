@@ -1,5 +1,6 @@
 package kmrtd.support
 
+import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -24,6 +25,8 @@ import java.util.Date
  * @see DocumentNumber
  * @see BACKey
  */
+
+@Serializable
 @JvmInline
 value class ICAODate(val date: String) {
     init {

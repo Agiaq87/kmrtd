@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.3.0"
+    kotlin("plugin.serialization") version "2.3.0"
 }
 
 group = "org.giaquinto"
@@ -10,6 +11,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     implementation("net.sf.scuba:scuba-smartcards:0.0.20")
     implementation("org.bouncycastle:bcprov-jdk18on:1.83")
     implementation("org.bouncycastle:bcutil-jdk18on:1.83")

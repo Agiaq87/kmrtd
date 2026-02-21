@@ -1,5 +1,7 @@
 package kmrtd.support
 
+import kotlinx.serialization.Serializable
+
 /**
  * Represents an ICAO-compliant travel document number.
  *
@@ -21,6 +23,7 @@ package kmrtd.support
  * @see ICAODate
  * @see BACKey
  */
+@Serializable
 @JvmInline
 value class DocumentNumber(val value: String) {
     init {
