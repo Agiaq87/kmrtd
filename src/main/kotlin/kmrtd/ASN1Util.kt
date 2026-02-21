@@ -222,12 +222,12 @@ object ASN1Util {
 
     /* PRIVATE. */
     private fun tagClassToString(tagClass: Int): String {
-        when (tagClass) {
-            BERTags.APPLICATION -> return "APPLICATION"
-            BERTags.UNIVERSAL -> return "UNIVERSAL"
-            BERTags.CONTEXT_SPECIFIC -> return "CONTEXT_SPECIFIC"
-            BERTags.PRIVATE -> return "PRIVATE"
-            else -> return tagClass.toString()
+        return when (tagClass) {
+            BERTags.APPLICATION -> "APPLICATION"
+            BERTags.UNIVERSAL -> "UNIVERSAL"
+            BERTags.CONTEXT_SPECIFIC -> "CONTEXT_SPECIFIC"
+            BERTags.PRIVATE -> "PRIVATE"
+            else -> tagClass.toString()
         }
     }
 }

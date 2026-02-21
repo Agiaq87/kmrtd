@@ -41,7 +41,7 @@ import kmrtd.BACKeySpec
  * 
  */
 @Deprecated("Use {@link CardServiceProtocolException} instead.")
-class BACDeniedException
+data class BACDeniedException
 /**
  * Creates an exception.
  * 
@@ -49,13 +49,14 @@ class BACDeniedException
  * @param bACKey the BAC entry that was tried
  * @param sw status word or `-1`
  */(
-    msg: String?,
+    val msg: String,
     /**
      * Returns the BAC key that was tried before BAC failed.
      * 
      * @return a BAC key
      */
-    val bACKey: BACKeySpec?, sw: Int
+    val bACKey: BACKeySpec?,
+    val sw: Int
 ) : CardServiceException(msg, sw) {
     companion object {
         private val serialVersionUID = -7094953658210693249L
