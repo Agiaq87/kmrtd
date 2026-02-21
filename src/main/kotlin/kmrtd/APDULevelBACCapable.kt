@@ -46,7 +46,7 @@ interface APDULevelBACCapable {
      * @throws CardServiceException on tranceive error
      */
     @Throws(CardServiceException::class)
-    fun sendGetChallenge(): ByteArray?
+    fun sendGetChallenge(): ByteArray
 
     /**
      * Sends an `EXTERNAL AUTHENTICATE` command to the passport.
@@ -69,10 +69,10 @@ interface APDULevelBACCapable {
      */
     @Throws(CardServiceException::class)
     fun sendMutualAuth(
-        rndIFD: ByteArray?,
-        rndICC: ByteArray?,
-        kIFD: ByteArray?,
-        kEnc: SecretKey?,
-        kMac: SecretKey?
-    ): ByteArray?
+        rndIFD: ByteArray,
+        rndICC: ByteArray,
+        kIFD: ByteArray,
+        kEnc: SecretKey,
+        kMac: SecretKey
+    ): ByteArray
 }

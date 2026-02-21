@@ -51,10 +51,10 @@ interface APDULevelPACECapable {
      */
     @Throws(CardServiceException::class)
     fun sendMSESetATMutualAuth(
-        wrapper: APDUWrapper?,
-        oid: String?,
+        wrapper: APDUWrapper,
+        oid: String,
         refPublicKeyOrSecretKey: Int,
-        refPrivateKeyOrForComputingSessionKey: ByteArray?
+        refPrivateKeyOrForComputingSessionKey: ByteArray
     )
 
     /**
@@ -70,5 +70,5 @@ interface APDULevelPACECapable {
      * @throws CardServiceException on error
      */
     @Throws(CardServiceException::class)
-    fun sendGeneralAuthenticate(wrapper: APDUWrapper?, data: ByteArray?, le: Int, isLast: Boolean): ByteArray?
+    fun sendGeneralAuthenticate(wrapper: APDUWrapper, data: ByteArray, le: Int, isLast: Boolean): ByteArray
 }

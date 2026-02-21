@@ -49,7 +49,7 @@ interface APDULevelEACCACapable {
      * @throws CardServiceException on error
      */
     @Throws(CardServiceException::class)
-    fun sendMSEKAT(wrapper: APDUWrapper?, keyData: ByteArray?, idData: ByteArray?)
+    fun sendMSEKAT(wrapper: APDUWrapper, keyData: ByteArray, idData: ByteArray)
 
     /**
      * The  MSE Set AT for Chip Authentication.
@@ -61,7 +61,7 @@ interface APDULevelEACCACapable {
      * @throws CardServiceException on error
      */
     @Throws(CardServiceException::class)
-    fun sendMSESetATIntAuth(wrapper: APDUWrapper?, oid: String?, keyId: BigInteger?)
+    fun sendMSESetATIntAuth(wrapper: APDUWrapper, oid: String, keyId: BigInteger)
 
     /**
      * Sends a General Authenticate command.
@@ -75,5 +75,5 @@ interface APDULevelEACCACapable {
      * @throws CardServiceException on error
      */
     @Throws(CardServiceException::class)
-    fun sendGeneralAuthenticate(wrapper: APDUWrapper?, data: ByteArray?, isLast: Boolean): ByteArray?
+    fun sendGeneralAuthenticate(wrapper: APDUWrapper, data: ByteArray, isLast: Boolean): ByteArray
 }

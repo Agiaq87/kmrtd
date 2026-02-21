@@ -46,7 +46,7 @@ interface APDULevelReadBinaryCapable {
      * @throws CardServiceException on tranceive error
      */
     @Throws(CardServiceException::class)
-    fun sendSelectApplet(wrapper: APDUWrapper?, aid: ByteArray?)
+    fun sendSelectApplet(wrapper: APDUWrapper, aid: ByteArray)
 
     /**
      * Sends a `SELECT MF` command to the card.
@@ -65,7 +65,7 @@ interface APDULevelReadBinaryCapable {
      * @throws CardServiceException on error
      */
     @Throws(CardServiceException::class)
-    fun sendSelectFile(wrapper: APDUWrapper?, fid: Short)
+    fun sendSelectFile(wrapper: APDUWrapper, fid: Short)
 
     /**
      * Sends a `READ BINARY` command to the passport.
@@ -87,11 +87,11 @@ interface APDULevelReadBinaryCapable {
      */
     @Throws(CardServiceException::class)
     fun sendReadBinary(
-        wrapper: APDUWrapper?,
+        wrapper: APDUWrapper,
         sfi: Int,
         offset: Int,
         le: Int,
         isSFIEnabled: Boolean,
         isTLVEncodedOffsetNeeded: Boolean
-    ): ByteArray?
+    ): ByteArray
 }

@@ -47,7 +47,7 @@ interface APDULevelEACTACapable {
      * @throws CardServiceException on error
      */
     @Throws(CardServiceException::class)
-    fun sendMSESetDST(wrapper: APDUWrapper?, data: ByteArray?)
+    fun sendMSESetDST(wrapper: APDUWrapper, data: ByteArray)
 
     /**
      * Sends a perform security operation command in extended length mode.
@@ -59,7 +59,7 @@ interface APDULevelEACTACapable {
      * @throws CardServiceException on error communicating over the service
      */
     @Throws(CardServiceException::class)
-    fun sendPSOExtendedLengthMode(wrapper: APDUWrapper?, certBodyData: ByteArray?, certSignatureData: ByteArray?)
+    fun sendPSOExtendedLengthMode(wrapper: APDUWrapper, certBodyData: ByteArray, certSignatureData: ByteArray)
 
     /**
      * The MSE Set AT APDU for TA, see EAC 1.11 spec, Section B.2.
@@ -73,7 +73,7 @@ interface APDULevelEACTACapable {
      * @throws CardServiceException on error
      */
     @Throws(CardServiceException::class)
-    fun sendMSESetATExtAuth(wrapper: APDUWrapper?, data: ByteArray?)
+    fun sendMSESetATExtAuth(wrapper: APDUWrapper, data: ByteArray)
 
     /**
      * Sends a `GET CHALLENGE` command to the passport.
@@ -85,7 +85,7 @@ interface APDULevelEACTACapable {
      * @throws CardServiceException on tranceive error
      */
     @Throws(CardServiceException::class)
-    fun sendGetChallenge(wrapper: APDUWrapper?): ByteArray?
+    fun sendGetChallenge(wrapper: APDUWrapper): ByteArray
 
     /**
      * Sends the EXTERNAL AUTHENTICATE command.
@@ -97,5 +97,5 @@ interface APDULevelEACTACapable {
      * @throws CardServiceException if the resulting status word different from 9000
      */
     @Throws(CardServiceException::class)
-    fun sendMutualAuthenticate(wrapper: APDUWrapper?, signature: ByteArray?)
+    fun sendMutualAuthenticate(wrapper: APDUWrapper, signature: ByteArray)
 }

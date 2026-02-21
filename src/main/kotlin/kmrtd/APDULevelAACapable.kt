@@ -51,5 +51,5 @@ interface APDULevelAACapable {
      * @throws CardServiceException on tranceive error
      */
     @Throws(CardServiceException::class)
-    fun sendInternalAuthenticate(wrapper: APDUWrapper?, signatureLength: Int, rndIFD: ByteArray?): ByteArray?
+    fun sendInternalAuthenticate(wrapper: APDUWrapper, signatureLength: Int, rndIFD: ByteArray): ByteArray
 }
