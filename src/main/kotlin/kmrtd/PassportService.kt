@@ -27,12 +27,10 @@
  */
 package kmrtd
 
-import net.sf.scuba.smartcards.*
-import kmrtd.AccessKeySpec
-import kmrtd.BACKeySpec
 import kmrtd.cert.CVCPrincipal
 import kmrtd.cert.CardVerifiableCertificate
 import kmrtd.protocol.*
+import net.sf.scuba.smartcards.*
 import java.math.BigInteger
 import java.security.GeneralSecurityException
 import java.security.PrivateKey
@@ -217,7 +215,7 @@ class PassportService(
             bacSender,
             this.maxTranceiveLength, shouldCheckMAC
         )).doBAC(bacKey)
-        wrapper = bacResult.getWrapper()
+        wrapper = bacResult.wrapper
         appletFileSystem!!.setWrapper(wrapper)
         return bacResult
     }
@@ -245,7 +243,7 @@ class PassportService(
             bacSender,
             this.maxTranceiveLength, shouldCheckMAC
         )).doBAC(kEnc, kMac)
-        wrapper = bacResult.getWrapper()
+        wrapper = bacResult.wrapper
         appletFileSystem!!.setWrapper(wrapper)
         return bacResult
     }
@@ -275,7 +273,7 @@ class PassportService(
             paceSender, wrapper, maxTranceiveLengthForPACEProtocol,
             this.maxTranceiveLength, shouldCheckMAC
         )).doPACE(keySpec, oid, params, parameterId)
-        wrapper = paceResult.getWrapper()
+        wrapper = paceResult.wrapper
         appletFileSystem!!.setWrapper(wrapper)
         return paceResult
     }
@@ -302,7 +300,7 @@ class PassportService(
             eacCASender, getWrapper(),
             this.maxTranceiveLength, shouldCheckMAC
         )).doCA(keyId, oid, publicKeyOID, publicKey)
-        wrapper = caResult.getWrapper()
+        wrapper = caResult.wrapper
         appletFileSystem!!.setWrapper(wrapper)
         return caResult
     }
