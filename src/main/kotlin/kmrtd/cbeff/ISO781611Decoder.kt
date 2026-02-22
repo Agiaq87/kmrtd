@@ -262,7 +262,7 @@ class ISO781611Decoder<B : BiometricDataBlock>(private val bdbDecoders: MutableM
      * @throws IOException on error reading from the stream
      */
     @Throws(IOException::class)
-    private fun decodeSMTValue(inputStream: InputStream?): ByteArray? {
+    private fun decodeSMTValue(inputStream: InputStream): ByteArray? {
         val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
         val doTag = tlvIn.readTag()
         val doLength = tlvIn.readLength()

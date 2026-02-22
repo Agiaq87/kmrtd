@@ -53,7 +53,7 @@ class ISO781611Encoder<B : BiometricDataBlock>(private val bdbEncoder: Biometric
      * @throws IOException if something goes wrong
      */
     @Throws(IOException::class)
-    fun encode(cbeffInfo: CBEFFInfo?, outputStream: OutputStream?) {
+    fun encode(cbeffInfo: CBEFFInfo, outputStream: OutputStream) {
         if (cbeffInfo is SimpleCBEFFInfo<*>) {
             writeBITGroup(mutableListOf(cbeffInfo), outputStream)
         } else if (cbeffInfo is ComplexCBEFFInfo<*>) {
@@ -70,7 +70,7 @@ class ISO781611Encoder<B : BiometricDataBlock>(private val bdbEncoder: Biometric
      * @throws IOException on error writing to the stream
      */
     @Throws(IOException::class)
-    private fun writeBITGroup(records: MutableList<CBEFFInfo>, outputStream: OutputStream?) {
+    private fun writeBITGroup(records: MutableList<CBEFFInfo>, outputStream: OutputStream) {
         val tlvOut = outputStream as? TLVOutputStream ?: TLVOutputStream(outputStream)
         tlvOut.writeTag(ISO781611.BIOMETRIC_INFORMATION_GROUP_TEMPLATE_TAG) /* 7F61 */
         tlvOut.writeTag(ISO781611.BIOMETRIC_INFO_COUNT_TAG) /* 0x02 */
