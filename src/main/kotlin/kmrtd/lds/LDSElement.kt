@@ -42,5 +42,5 @@ interface LDSElement : Serializable {
      * 
      * @return a byte array containing the encoding of this LDS info
      */
-    val encoded: ByteArray
+    val encoded: ByteArray?
 }

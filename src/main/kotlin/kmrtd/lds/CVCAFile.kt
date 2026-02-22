@@ -222,12 +222,12 @@ class CVCAFile : AbstractLDSFile {
         private val serialVersionUID = -1100904058684365703L
 
         const val CAR_TAG: Byte = 0x42
-        val length: Int = 36
+        val length: Int
             /**
              * Returns the length of the content of this CVCA file. This always returns {@value #LENGTH}.
              * 
              * @return {@value #LENGTH}
              */
-            get() = Companion.field
+            get() = 36
     }
 }

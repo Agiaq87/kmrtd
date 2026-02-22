@@ -27,6 +27,7 @@
  */
 package kmrtd
 
+import kmrtd.io.Fragment
 import net.sf.scuba.smartcards.*
 import net.sf.scuba.tlv.TLVInputStream
 import net.sf.scuba.util.Hex
@@ -66,7 +67,7 @@ class DefaultFileSystem @JvmOverloads constructor(
      * 
      * @return the currently set maximum length to be requested in READ BINARY commands
      */
-    var maxReadBinaryLength: Int
+    var maxReadBinaryLength: Int = PassportService.EXTENDED_MAX_TRANCEIVE_LENGTH
         private set
 
     /**
@@ -75,7 +76,7 @@ class DefaultFileSystem @JvmOverloads constructor(
      */
     private var isSelected = false
 
-    private val fileInfos: MutableMap<Short?, DefaultFileInfo?>
+    private val fileInfos: MutableMap<Short, DefaultFileInfo> = mutableMapOf()
 
     private var wrapper: APDUWrapper? = null
 
@@ -94,10 +95,10 @@ class DefaultFileSystem @JvmOverloads constructor(
      * @param service the card service supporting low-level `SELECT` and/or `READ BINARY` commands
      * @param isSFIEnabled whether the file system should use short file identifiers in `READ BINARY` commands
      */
-    init {
-        this.fileInfos = HashMap<Short?, DefaultFileInfo?>()
-        this.maxReadBinaryLength = PassportService.EXTENDED_MAX_TRANCEIVE_LENGTH
-    }
+    /*init {
+        //this.fileInfos = HashMap<Short?, DefaultFileInfo?>()
+        //this.maxReadBinaryLength = PassportService.EXTENDED_MAX_TRANCEIVE_LENGTH
+    }*/
 
     /**
      * Sets the current wrapper to the given APDU wrapper.
@@ -115,9 +116,8 @@ class DefaultFileSystem @JvmOverloads constructor(
      * 
      * @return the wrapper
      */
-    fun getWrapper(): APDUWrapper? {
-        return wrapper
-    }
+    fun getWrapper(): APDUWrapper? =
+        wrapper
 
     /**
      * Returns the selected path.
@@ -128,7 +128,7 @@ class DefaultFileSystem @JvmOverloads constructor(
      */
     @Synchronized
     @Throws(CardServiceException::class)
-    override fun getSelectedPath(): Array<FileInfo?>? {
+    override fun getSelectedPath(): Array<FileInfo>? {
         try {
             val fileInfo = this.fileInfo
             if (fileInfo == null) {
@@ -193,16 +193,15 @@ class DefaultFileSystem @JvmOverloads constructor(
             var responseLength = length
 
             var bytes: ByteArray? = null
-            if (fragment.getLength() > 0) {
+            if (fragment.length > 0) {
                 if (isSFIEnabled && offset < 256) {
-                    val sfi: Byte = fidToSFI.get(selectedFID)!!
-                    if (sfi == null) {
-                        throw NumberFormatException("Unknown FID " + Integer.toHexString(selectedFID.toInt()))
-                    }
+                    val sfi: Byte = fidToSFI[selectedFID] ?: throw NumberFormatException(
+                        "Unknown FID " + Integer.toHexString(selectedFID.toInt())
+                    )
                     bytes = sendReadBinary(
                         0x80 or (sfi.toInt() and 0xFF),
-                        fragment.getOffset(),
-                        fragment.getLength(),
+                        fragment.offset,
+                        fragment.length,
                         false
                     )
                     isSelected = true
@@ -211,14 +210,14 @@ class DefaultFileSystem @JvmOverloads constructor(
                         sendSelectFile(selectedFID)
                         isSelected = true
                     }
-                    bytes = sendReadBinary(fragment.getOffset(), fragment.getLength(), offset > 32767)
+                    bytes = sendReadBinary(fragment.offset, fragment.length, offset > 32767)
                 }
 
                 checkNotNull(bytes) { "Could not read bytes" }
 
-                if (bytes.size > 0) {
+                if (bytes.isNotEmpty()) {
                     /* Update buffer with newly read bytes. */
-                    fileInfo.addFragment(fragment.getOffset(), bytes)
+                    fileInfo.addFragment(fragment.offset, bytes)
                 }
 
                 /*
@@ -229,7 +228,7 @@ class DefaultFileSystem @JvmOverloads constructor(
          *
          * Bug reproduced using org.jmrtd.AESSecureMessagingWrapper with AES-256.
          */
-                if (bytes.size < fragment.getLength()) {
+                if (bytes.size < fragment.length) {
                     responseLength = bytes.size
                 }
             }
@@ -250,15 +249,11 @@ class DefaultFileSystem @JvmOverloads constructor(
             }
 
             throw CardServiceException(
-                "Read binary failed on file " + (if (fileInfo == null) Integer.toHexString(
-                    selectedFID.toInt()
-                ) else fileInfo), cse
+                "Read binary failed on file ${(fileInfo ?: Integer.toHexString(selectedFID.toInt()))}", cse
             )
         } catch (e: Exception) {
             throw CardServiceException(
-                "Read binary failed on file " + (if (fileInfo == null) Integer.toHexString(
-                    selectedFID.toInt()
-                ) else fileInfo), e
+                "Read binary failed on file ${(fileInfo ?: Integer.toHexString(selectedFID.toInt()))}", e
             )
         }
     }
@@ -270,9 +265,9 @@ class DefaultFileSystem @JvmOverloads constructor(
          * Returns the file info object for the currently selected file. If this
          * executes normally the result is non-null. If the file has not been
          * read before this will send a READ_BINARY to determine length.
-         * 
+         *
          * @return a non-null MRTDFileInfo
-         * 
+         *
          * @throws CardServiceException on error
          */
         get() {
@@ -280,7 +275,7 @@ class DefaultFileSystem @JvmOverloads constructor(
                 throw CardServiceException("No file selected")
             }
 
-            var fileInfo = fileInfos.get(selectedFID)
+            var fileInfo = fileInfos[selectedFID]
 
             /* If known file, use file info from cache. */
             if (fileInfo != null) {
@@ -295,14 +290,11 @@ class DefaultFileSystem @JvmOverloads constructor(
                   */
                 var prefix: ByteArray? = null
                 if (isSFIEnabled) {
-                    val sfi: Byte = fidToSFI.get(selectedFID)!!
-                    if (sfi == null) {
-                        throw NumberFormatException(
-                            "Unknown FID " + Integer.toHexString(
-                                selectedFID.toInt()
-                            )
+                    val sfi: Byte = fidToSFI[selectedFID] ?: throw NumberFormatException(
+                        "Unknown FID " + Integer.toHexString(
+                            selectedFID.toInt()
                         )
-                    }
+                    )
                     prefix = sendReadBinary(
                         0x80 or (sfi.toInt() and 0XFF),
                         0,
@@ -317,7 +309,7 @@ class DefaultFileSystem @JvmOverloads constructor(
                     }
                     prefix = sendReadBinary(0, READ_AHEAD_LENGTH, false)
                 }
-                if (prefix == null || prefix.size == 0) {
+                if (prefix == null || prefix.isEmpty()) {
                     LOGGER.warning(
                         "Something is wrong with prefix, prefix = " + Hex.bytesToHexString(
                             prefix
@@ -337,7 +329,7 @@ class DefaultFileSystem @JvmOverloads constructor(
                 }
                 fileInfo = DefaultFileInfo(selectedFID, fileLength)
                 fileInfo.addFragment(0, prefix)
-                fileInfos.put(selectedFID, fileInfo)
+                fileInfos[selectedFID] = fileInfo
                 return fileInfo
             } catch (ioe: IOException) {
                 throw CardServiceException(
@@ -349,9 +341,9 @@ class DefaultFileSystem @JvmOverloads constructor(
 
     /**
      * Selects a file within the MRTD application.
-     * 
+     *
      * @param fid a file identifier
-     * 
+     *
      * @throws CardServiceException on error
      */
     @Synchronized
@@ -363,13 +355,13 @@ class DefaultFileSystem @JvmOverloads constructor(
     /**
      * Sends a `READ BINARY` command for the already selected file to the passport,
      * using the wrapper when a secure channel has been set up.
-     * 
+     *
      * @param offset offset into the file
      * @param le the expected length of the file to read
      * @param isTLVEncodedOffsetNeeded whether to encode the offset in a TLV object (typically for offset larger than 32767)
-     * 
+     *
      * @return a byte array of length `le` with (the specified part of) the contents of the currently selected file
-     * 
+     *
      * @throws CardServiceException on tranceive error
      */
     @Synchronized
@@ -383,14 +375,14 @@ class DefaultFileSystem @JvmOverloads constructor(
     /**
      * Sends a `READ BINARY` command using an explicit short file identifier to the passport,
      * using the wrapper when a secure channel has been set up.
-     * 
+     *
      * @param sfi the short file identifier byte as int value (between 0 and 255)
      * @param offset offset into the file
      * @param le the expected length of the file to read
      * @param isTLVEncodedOffsetNeeded whether to encode the offset in a TLV object (typically for offset larger than 32767)
-     * 
+     *
      * @return a byte array of length `le` with (the specified part of) the contents of the currently selected file
-     * 
+     *
      * @throws CardServiceException on tranceive error
      */
     @Synchronized
@@ -401,59 +393,48 @@ class DefaultFileSystem @JvmOverloads constructor(
 
     /**
      * A file info for the ICAO MRTD file system.
-     * 
+     *
      * @author The JMRTD team (info@jmrtd.org)
-     * 
+     *
      * @version $Revision: 1908 $
      */
-    private class DefaultFileInfo(private val fid: Short, length: Int) : FileInfo(), Serializable {
-        private val buffer: FragmentBuffer
-
-        /**
-         * Constructs a file info.
-         * 
-         * @param fid indicates which file
-         * @param length length of the contents of the file
-         */
-        init {
-            this.buffer = FragmentBuffer(length)
-        }
+    private class DefaultFileInfo(
+        private val fid: Short,
+        length: Int
+    ) : FileInfo(), Serializable {
+        private val buffer: FragmentBuffer = FragmentBuffer(length)
 
         /**
          * Returns the buffer.
-         * 
+         *
          * @return the buffer
          */
-        fun getBuffer(): ByteArray {
-            return buffer.getBuffer()
-        }
+        fun getBuffer(): ByteArray =
+            buffer.buffer
 
         /**
          * Returns the file identifier.
-         * 
+         *
          * @return file identifier
          */
-        override fun getFID(): Short {
-            return fid
-        }
+        override fun getFID(): Short =
+            fid
 
         /**
          * Returns the length of the file.
-         * 
+         *
          * @return the length of the file
          */
-        override fun getFileLength(): Int {
-            return buffer.getLength()
-        }
+        override fun getFileLength(): Int =
+            buffer.length
 
         /**
          * Returns a textual representation of this file info.
          * 
          * @return a textual representation of this file info
          */
-        override fun toString(): String {
-            return Integer.toHexString(fid.toInt())
-        }
+        override fun toString(): String =
+            Integer.toHexString(fid.toInt())
 
         /**
          * Returns the smallest unbuffered fragment included in `offset` and `offset + length - 1`.
@@ -463,9 +444,8 @@ class DefaultFileSystem @JvmOverloads constructor(
          * 
          * @return a fragment smaller than or equal to the fragment indicated by `offset` and `length`
          */
-        fun getSmallestUnbufferedFragment(offset: Int, length: Int): FragmentBuffer.Fragment {
-            return buffer.getSmallestUnbufferedFragment(offset, length)
-        }
+        fun getSmallestUnbufferedFragment(offset: Int, length: Int): Fragment =
+            buffer.getSmallestUnbufferedFragment(offset, length)
 
         /**
          * Adds a fragment of bytes at a specific offset to this file.
@@ -473,9 +453,8 @@ class DefaultFileSystem @JvmOverloads constructor(
          * @param offset the offset
          * @param bytes the bytes to be added
          */
-        fun addFragment(offset: Int, bytes: ByteArray?) {
+        fun addFragment(offset: Int, bytes: ByteArray) =
             buffer.addFragment(offset, bytes)
-        }
 
         companion object {
             private const val serialVersionUID = 6727369753765119839L

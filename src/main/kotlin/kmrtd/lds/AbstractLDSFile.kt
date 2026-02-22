@@ -75,7 +75,7 @@ internal abstract class AbstractLDSFile
      * @throws IOException if reading fails
      */
     @Throws(IOException::class)
-    protected abstract fun readObject(inputStream: InputStream?)
+    protected abstract fun readObject(inputStream: InputStream)
 
     /**
      * Writes the file to an output stream.
@@ -85,7 +85,7 @@ internal abstract class AbstractLDSFile
      * @throws IOException if writing fails
      */
     @Throws(IOException::class)
-    protected abstract fun writeObject(outputStream: OutputStream?)
+    protected abstract fun writeObject(outputStream: OutputStream)
 
     companion object {
         private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
