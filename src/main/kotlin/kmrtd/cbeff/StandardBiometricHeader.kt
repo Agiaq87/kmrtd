@@ -40,7 +40,7 @@ import java.util.*
  * 
  * @since 0.4.7
  */
-class StandardBiometricHeader(elements: MutableMap<Int, ByteArray>) : Serializable {
+class StandardBiometricHeader(elements: MutableMap<Int, ByteArray>) : Serializable, ISO781611() {
     private val elements: SortedMap<Int, ByteArray> = TreeMap<Int, ByteArray>(elements)
 
     /**
@@ -48,8 +48,8 @@ class StandardBiometricHeader(elements: MutableMap<Int, ByteArray>) : Serializab
      * 
      * @return the elements, each consisting of a tag and value
      */
-    fun getElements(): SortedMap<Int?, ByteArray?> {
-        return TreeMap<Int?, ByteArray?>(elements)
+    fun getElements(): SortedMap<Int, ByteArray> {
+        return TreeMap<Int, ByteArray>(elements)
     }
 
     /**
@@ -60,7 +60,7 @@ class StandardBiometricHeader(elements: MutableMap<Int, ByteArray>) : Serializab
      * @return a boolean indicating the format type is present and equal to the given value
      */
     fun hasFormatType(formatTypeValue: Int): Boolean {
-        val actualFormatTypeValue = elements[ISO781611.FORMAT_TYPE_TAG] ?: return false
+        val actualFormatTypeValue = elements[FORMAT_TYPE_TAG] ?: return false
         if (actualFormatTypeValue.size != 2) {
             return false
         }
@@ -93,19 +93,19 @@ class StandardBiometricHeader(elements: MutableMap<Int, ByteArray>) : Serializab
         return result
     }
 
-    override fun equals(obj: Any?): Boolean {
-        if (this === obj) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (obj == null) {
+        if (other == null) {
             return false
         }
-        if (javaClass != obj.javaClass) {
+        if (javaClass != other.javaClass) {
             return false
         }
 
-        val other = obj as StandardBiometricHeader
-        return equals(elements, other.elements)
+        val that = other as StandardBiometricHeader
+        return equals(elements, that.elements)
     }
 
     companion object {

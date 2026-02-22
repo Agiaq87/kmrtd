@@ -37,7 +37,6 @@ import kmrtd.cbeff.BiometricEncodingType.Companion.toBDBTag
 import net.sf.scuba.tlv.TLVOutputStream
 import java.io.IOException
 import java.io.OutputStream
-import java.util.*
 
 /**
  * ISO 7816-11 encoder for BIR.
@@ -48,8 +47,8 @@ import java.util.*
  * 
  * @version $Revision: 1897 $
 </B> */
-class ISO781611Encoder<B : BiometricDataBlock?>(private val bdbEncoder: BiometricDataBlockEncoder<B?>) : ISO781611 {
-    private val encodingType: BiometricEncodingType = bdbEncoder.encodingType!!
+class ISO781611Encoder<B : BiometricDataBlock>(private val bdbEncoder: BiometricDataBlockEncoder<B>) : ISO781611() {
+    private val encodingType: BiometricEncodingType = bdbEncoder.encodingType
 
     /**
      * Writes a BIT group to an output stream.
@@ -60,9 +59,9 @@ class ISO781611Encoder<B : BiometricDataBlock?>(private val bdbEncoder: Biometri
      * @throws IOException if something goes wrong
      */
     @Throws(IOException::class)
-    fun encode(cbeffInfo: CBEFFInfo<*>?, outputStream: OutputStream?) {
+    fun encode(cbeffInfo: CBEFFInfo?, outputStream: OutputStream?) {
         if (cbeffInfo is SimpleCBEFFInfo<*>) {
-            writeBITGroup(Arrays.asList<CBEFFInfo<*>?>(*arrayOf<CBEFFInfo<*>>(cbeffInfo)), outputStream)
+            writeBITGroup(mutableListOf(cbeffInfo), outputStream)
         } else if (cbeffInfo is ComplexCBEFFInfo<*>) {
             writeBITGroup(cbeffInfo.getSubRecords(), outputStream)
         }
@@ -77,15 +76,15 @@ class ISO781611Encoder<B : BiometricDataBlock?>(private val bdbEncoder: Biometri
      * @throws IOException on error writing to the stream
      */
     @Throws(IOException::class)
-    private fun writeBITGroup(records: MutableList<CBEFFInfo<*>?>, outputStream: OutputStream?) {
+    private fun writeBITGroup(records: MutableList<CBEFFInfo>, outputStream: OutputStream?) {
         val tlvOut = outputStream as? TLVOutputStream ?: TLVOutputStream(outputStream)
-        tlvOut.writeTag(ISO781611.BIOMETRIC_INFORMATION_GROUP_TEMPLATE_TAG) /* 7F61 */
-        tlvOut.writeTag(ISO781611.BIOMETRIC_INFO_COUNT_TAG) /* 0x02 */
+        tlvOut.writeTag(BIOMETRIC_INFORMATION_GROUP_TEMPLATE_TAG) /* 7F61 */
+        tlvOut.writeTag(BIOMETRIC_INFO_COUNT_TAG) /* 0x02 */
         val count = records.size
         tlvOut.writeValue(byteArrayOf(count.toByte()))
 
         for (index in 0..<count) {
-            val simpleCBEFFInfo = records.get(index) as SimpleCBEFFInfo<B?>
+            val simpleCBEFFInfo = records[index] as SimpleCBEFFInfo<B>
             writeBIT(tlvOut, index, simpleCBEFFInfo)
         }
         tlvOut.writeValueEnd() /* BIOMETRIC_INFORMATION_GROUP_TEMPLATE_TAG, i.e. 7F61 */
@@ -101,8 +100,8 @@ class ISO781611Encoder<B : BiometricDataBlock?>(private val bdbEncoder: Biometri
      * @throws IOException on error writing to the stream
      */
     @Throws(IOException::class)
-    private fun writeBIT(tlvOutputStream: TLVOutputStream, index: Int, cbeffInfo: SimpleCBEFFInfo<B?>) {
-        tlvOutputStream.writeTag(ISO781611.BIOMETRIC_INFORMATION_TEMPLATE_TAG) /* 7F60 */
+    private fun writeBIT(tlvOutputStream: TLVOutputStream, index: Int, cbeffInfo: SimpleCBEFFInfo<B>) {
+        tlvOutputStream.writeTag(BIOMETRIC_INFORMATION_TEMPLATE_TAG) /* 7F60 */
         writeBHT(tlvOutputStream, index, cbeffInfo)
         writeBiometricDataBlock(tlvOutputStream, cbeffInfo.biometricDataBlock)
         tlvOutputStream.writeValueEnd() /* BIOMETRIC_INFORMATION_TEMPLATE_TAG, i.e. 7F60 */
@@ -118,13 +117,13 @@ class ISO781611Encoder<B : BiometricDataBlock?>(private val bdbEncoder: Biometri
      * @throws IOException on error writing to the stream
      */
     @Throws(IOException::class)
-    private fun writeBHT(tlvOutputStream: TLVOutputStream, index: Int, cbeffInfo: SimpleCBEFFInfo<B?>) {
-        tlvOutputStream.writeTag((ISO781611.BIOMETRIC_HEADER_TEMPLATE_BASE_TAG /* + index */) and 0xFF) /* A1 */
+    private fun writeBHT(tlvOutputStream: TLVOutputStream, index: Int, cbeffInfo: SimpleCBEFFInfo<B>) {
+        tlvOutputStream.writeTag((BIOMETRIC_HEADER_TEMPLATE_BASE_TAG /* + index */) and 0xFF) /* A1 */
 
         val bdb = cbeffInfo.biometricDataBlock
 
         /* SBH */
-        val sbh: StandardBiometricHeader = bdb!!.standardBiometricHeader!!
+        val sbh: StandardBiometricHeader = bdb.standardBiometricHeader
         val elements = sbh.getElements()
         for (entry in elements.entries) {
             tlvOutputStream.writeTag(entry.key!!)
@@ -142,7 +141,7 @@ class ISO781611Encoder<B : BiometricDataBlock?>(private val bdbEncoder: Biometri
      * @throws IOException on error writing to the stream
      */
     @Throws(IOException::class)
-    private fun writeBiometricDataBlock(tlvOutputStream: TLVOutputStream, bdb: B?) {
+    private fun writeBiometricDataBlock(tlvOutputStream: TLVOutputStream, bdb: B) {
         tlvOutputStream.writeTag(toBDBTag(encodingType)) /* 5F2E or 7F2E */
 
         bdbEncoder.encode(bdb, tlvOutputStream)

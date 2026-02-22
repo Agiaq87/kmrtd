@@ -51,4 +51,4 @@ class SimpleCBEFFInfo<B : BiometricDataBlock>
      * @return a biometric data block
      */
     val biometricDataBlock: B
-) : CBEFFInfo<B>
+) : CBEFFInfo
