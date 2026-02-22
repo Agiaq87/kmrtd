@@ -74,8 +74,8 @@ class CVCertificateFactorySpi : CertificateFactorySpi() {
             tlvOut.writeTag(CV_CERTIFICATE_TAG)
             tlvOut.writeValue(value)
             tlvOut.close()
-            val parsedObject: CVCObject? = CertificateParser.parseCertificate(out.toByteArray())
-            return CardVerifiableCertificate(parsedObject as CVCertificate?)
+            val parsedObject: CVCObject = CertificateParser.parseCertificate(out.toByteArray())
+            return CardVerifiableCertificate(parsedObject as CVCertificate)
         } catch (ioe: IOException) {
             throw CertificateException(ioe)
         } catch (ce: ConstructionException) {

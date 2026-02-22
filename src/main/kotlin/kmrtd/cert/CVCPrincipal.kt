@@ -28,11 +28,8 @@
 package kmrtd.cert
 
 import net.sf.scuba.data.Country
-import org.giaquinto.kmrtd.cert.UnknownCountry
 import java.io.Serializable
 import java.security.Principal
-import java.util.*
-import java.util.logging.Level
 import java.util.logging.Logger
 
 /**

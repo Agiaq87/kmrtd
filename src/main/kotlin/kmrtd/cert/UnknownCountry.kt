@@ -1,4 +1,4 @@
-package org.giaquinto.kmrtd.cert
+package kmrtd.cert
 /*
  * Modified work Copyright (C) 2026 Alessandro Giaquinto
  * Kotlin port of JMRTD

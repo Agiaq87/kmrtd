@@ -55,85 +55,13 @@ import java.util.logging.Logger
  * 
  * @version $Revision: 1808 $
  */
-class CardVerifiableCertificate protected constructor(cvCertificate: CVCertificate) : Certificate("CVC") {
-    /** The EJBCA CVC that we wrap.  */
-    private var cvCertificate: CVCertificate
+class CardVerifiableCertificate constructor(private val cvCertificate: CVCertificate) : Certificate("CVC") {
 
+    /**
+     * Granted from JVM not need to catch exception...
+     */
     @Transient
-    private var rsaKeyFactory: KeyFactory? = null
-
-    /**
-     * Constructs a wrapper.
-     * 
-     * @param cvCertificate the EJCBA CVC to wrap
-     */
-    init {
-        try {
-            rsaKeyFactory = KeyFactory.getInstance("RSA")
-        } catch (nsae: NoSuchAlgorithmException) {
-            /* NOTE: never happens, RSA will be provided. */
-            LOGGER.log(Level.WARNING, "Exception", nsae)
-        }
-        this.cvCertificate = cvCertificate
-    }
-
-    /*
-   * TODO: perhaps move this to factory class (CertificateFactory, CertificateBuilder, whatever).
-   * NOTE: algorithm should be one of"SHA224withECDSA", "SHA256withECDSA", "SHA384withECDSA", "SHA512withECDSA",
-   * or similar with RSA.
-   */
-    /**
-     * Constructs a certificate.
-     * 
-     * @param authorityReference authority reference
-     * @param holderReference holder reference
-     * @param publicKey public key
-     * @param algorithm algorithm
-     * @param notBefore valid from date
-     * @param notAfter valid to date
-     * @param role role
-     * @param permission permission
-     * @param signatureData signed date
-     */
-    constructor(
-        authorityReference: CVCPrincipal, holderReference: CVCPrincipal,
-        publicKey: PublicKey,
-        algorithm: String?,
-        notBefore: Date,
-        notAfter: Date,
-        role: CVCAuthorizationTemplate.Role?,
-        permission: CVCAuthorizationTemplate.Permission?,
-        signatureData: ByteArray?
-    ) : this(null) {
-        try {
-            val authorityRef = CAReferenceField(
-                authorityReference.getCountry().toAlpha2Code(),
-                authorityReference.mnemonic,
-                authorityReference.seqNumber
-            )
-            val holderRef = HolderReferenceField(
-                holderReference.getCountry().toAlpha2Code(),
-                holderReference.mnemonic,
-                holderReference.seqNumber
-            )
-            val authRole = CVCAuthorizationTemplate.fromRole(role)
-            val accessRight = CVCAuthorizationTemplate.fromPermission(permission)
-            val body = CVCertificateBody(
-                authorityRef,
-                org.ejbca.cvc.KeyFactory.createInstance(publicKey, algorithm, authRole),
-                holderRef,
-                authRole,
-                accessRight,
-                notBefore,
-                notAfter
-            )
-            this.cvCertificate = CVCertificate(body)
-            this.cvCertificate.signature = signatureData
-            cvCertificate.tbs
-        } catch (ce: ConstructionException) {
-            throw IllegalArgumentException(ce)
-        }
-    }
+    private var rsaKeyFactory: KeyFactory = KeyFactory.getInstance("RSA")
 
     val sigAlgName: String?
         /**
@@ -205,7 +133,7 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
             if ("RSA" == publicKey.algorithm) { // TODO: something similar for EC / ECDSA?
                 val rsaPublicKey = publicKey as RSAPublicKey
                 try {
-                    return rsaKeyFactory!!.generatePublic(
+                    return rsaKeyFactory?.generatePublic(
                         RSAPublicKeySpec(
                             rsaPublicKey.modulus,
                             rsaPublicKey.publicExponent
@@ -308,13 +236,13 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
          * @throws CertificateException on error
          * @throws IOException on error
          */
-        get() {
+        get()  = withCertificateBody { derEncoded }/*{
             try {
-                return cvCertificate.certificateBody.getDEREncoded()
+                return cvCertificate.certificateBody.derEncoded
             } catch (nsfe: NoSuchFieldException) {
                 throw CertificateException("No such field", nsfe)
             }
-        }
+        }*/
 
     @get:Throws(CertificateException::class)
     val notBefore: Date?
@@ -325,13 +253,13 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
          * 
          * @throws CertificateException on error
          */
-        get() {
+        get() = withCertificateBody { validFrom } /*{
             try {
                 return cvCertificate.certificateBody.validFrom
             } catch (nsfe: NoSuchFieldException) {
                 throw CertificateException("No such field", nsfe)
             }
-        }
+        }*/
 
     @get:Throws(CertificateException::class)
     val notAfter: Date?
@@ -342,13 +270,13 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
          * 
          * @throws CertificateException on error
          */
-        get() {
+        get() = withCertificateBody {validTo} /*{
             try {
                 return cvCertificate.certificateBody.validTo
             } catch (nsfe: NoSuchFieldException) {
                 throw CertificateException("No such field", nsfe)
             }
-        }
+        }*/
 
     @get:Throws(CertificateException::class)
     val authorityReference: CVCPrincipal
@@ -368,7 +296,17 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
             } catch (nsfe: NoSuchFieldException) {
                 throw CertificateException("No such field", nsfe)
             }
-        }
+        } /*{
+        get() {
+            try {
+                val rf: ReferenceField = cvCertificate.certificateBody.authorityReference
+                val countryCode = rf.country.uppercase(Locale.getDefault())
+                val country = Country.getInstance(countryCode)
+                return CVCPrincipal(country, rf.mnemonic, rf.sequence)
+            } catch (nsfe: NoSuchFieldException) {
+                throw CertificateException("No such field", nsfe)
+            }
+        }*/
 
     @get:Throws(CertificateException::class)
     val holderReference: CVCPrincipal
@@ -391,6 +329,18 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
                 throw CertificateException("No such field", nsfe)
             }
         }
+        /*get() {
+            try {
+                val rf: ReferenceField = cvCertificate.certificateBody.holderReference
+                return CVCPrincipal(
+                    Country.getInstance(
+                        rf.country.uppercase(Locale.getDefault())
+                    ), rf.mnemonic, rf.sequence
+                )
+            } catch (nsfe: NoSuchFieldException) {
+                throw CertificateException("No such field", nsfe)
+            }
+        }*/
 
     @get:Throws(CertificateException::class)
     val authorizationTemplate: CVCAuthorizationTemplate
@@ -420,13 +370,14 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
          * 
          * @throws CertificateException if certificate doesn't contain a signature
          */
-        get() {
+        get() = withBody { signature }
+        /*get() {
             try {
                 return cvCertificate.signature
             } catch (nsfe: NoSuchFieldException) {
                 throw CertificateException("No such field", nsfe)
             }
-        }
+        }*/
 
     /**
      * Tests for equality with respect to another object.
@@ -449,6 +400,19 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
         return this.cvCertificate == (otherObj as CardVerifiableCertificate).cvCertificate
     }
 
+    private inline fun <T> withCertificateBody(block: CVCertificateBody.() -> T): T? =
+        try {
+            cvCertificate.certificateBody.block()
+        } catch (nsfe: NoSuchFieldException) {
+            throw CertificateException("No such field", nsfe)
+        }
+
+    private inline fun <T> withBody(block: CVCertificate.() -> T): T? =
+        try {
+            cvCertificate.block()
+        } catch (nsfe: NoSuchFieldException) {
+            throw CertificateException("No such field", nsfe)
+        }
     /**
      * Returns a hash code for this object.
      * 

@@ -129,7 +129,7 @@ class CVCAuthorizationTemplate {
      * 
      * @param template the authZ template to wrap
      */
-    protected constructor(template: CVCAuthorizationTemplate) {
+    constructor(template: CVCAuthorizationTemplate) {
         this.role = toRole(template)
         this.accessRight = toPermission(template)
     }
@@ -157,22 +157,22 @@ class CVCAuthorizationTemplate {
     /**
      * Checks equality.
      * 
-     * @param otherObj the other object
+     * @param other the other object
      * 
      * @return whether the other object is equal to this object
      */
-    override fun equals(otherObj: Any?): Boolean {
-        if (otherObj == null) {
+    override fun equals(other: Any?): Boolean {
+        if (other == null) {
             return false
         }
-        if (otherObj === this) {
+        if (other === this) {
             return true
         }
-        if (this.javaClass != otherObj.javaClass) {
+        if (this.javaClass != other.javaClass) {
             return false
         }
 
-        val otherTemplate = otherObj as kmrtd.cert.CVCAuthorizationTemplate
+        val otherTemplate = other as kmrtd.cert.CVCAuthorizationTemplate
         return this.role == otherTemplate.role && this.accessRight == otherTemplate.accessRight
     }
 
@@ -200,7 +200,7 @@ class CVCAuthorizationTemplate {
                     Permission.READ_ACCESS_DG3 -> AccessRightEnum.READ_ACCESS_DG3
                     Permission.READ_ACCESS_DG4 -> AccessRightEnum.READ_ACCESS_DG4
                     Permission.READ_ACCESS_DG3_AND_DG4 -> AccessRightEnum.READ_ACCESS_DG3_AND_DG4
-                    else -> throw IllegalArgumentException("Error getting permission for " + permission)
+                    else -> throw IllegalArgumentException("Error getting permission for $permission")
                 }
             } catch (e: Exception) {
                 throw IllegalArgumentException("Error getting permission from AuthZ template", e)

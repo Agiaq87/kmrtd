@@ -78,31 +78,46 @@ object CVCertificateBuilder {
     )
     fun createCertificate(
         publicKey: PublicKey,
-        signerKey: PrivateKey?, algorithmName: String, caRef: CVCPrincipal,
-        holderRef: CVCPrincipal, authZTemplate: CVCAuthorizationTemplate, validFrom: Date, validTo: Date,
+        signerKey: PrivateKey?,
+        algorithmName: String,
+        caRef: CVCPrincipal,
+        holderRef: CVCPrincipal,
+        authZTemplate: CVCAuthorizationTemplate,
+        validFrom: Date,
+        validTo: Date,
         provider: String
     ): CardVerifiableCertificate {
-        return CardVerifiableCertificate(
-            CertificateGenerator
-                .createCertificate(
-                    publicKey,
-                    signerKey,
-                    algorithmName,
-                    CAReferenceField(
-                        caRef.getCountry().toAlpha2Code(),
-                        caRef.mnemonic, caRef.seqNumber
-                    ),
-                    HolderReferenceField(
-                        holderRef.getCountry()
-                            .toAlpha2Code(), holderRef.mnemonic,
-                        holderRef.seqNumber
-                    ),
-                    getRole(authZTemplate.role),
-                    getAccessRight(authZTemplate.accessRight),
-                    validFrom,
-                    validTo,
-                    provider
-                )
+        // TODO Need to check!
+        val cvcCertificate = CertificateGenerator
+            .createCertificate(
+                publicKey,
+                signerKey,
+                algorithmName,
+                CAReferenceField(
+                    caRef.getCountry().toAlpha2Code(),
+                    caRef.mnemonic, caRef.seqNumber
+                ),
+                HolderReferenceField(
+                    holderRef.getCountry()
+                        .toAlpha2Code(), holderRef.mnemonic,
+                    holderRef.seqNumber
+                ),
+                getRole(authZTemplate.role),
+                getAccessRight(authZTemplate.accessRight),
+                validFrom,
+                validTo,
+                provider
+            )
+        return CardVerifiableCertificate.from(
+            caRef,
+            holderRef,
+            publicKey,
+            algorithmName,
+            validFrom,
+            validTo,
+            authZTemplate.role,
+            authZTemplate.accessRight,
+            cvcCertificate.signature
         )
     }
 
