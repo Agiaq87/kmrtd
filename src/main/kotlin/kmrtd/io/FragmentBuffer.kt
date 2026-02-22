@@ -128,7 +128,7 @@ class FragmentBuffer  @JvmOverloads constructor(length: Int = DEFAULT_SIZE) : Se
                 fragments.remove(other)
             }
         }
-        fragments.add(Fragment.getInstance(thisOffset, thisLength))
+        fragments.add(Fragment(thisOffset, thisLength))
     }
 
     @get:Synchronized
@@ -250,7 +250,7 @@ class FragmentBuffer  @JvmOverloads constructor(length: Int = DEFAULT_SIZE) : Se
                     return
                 }
                 val newBuffer = ByteArray(length)
-                System.arraycopy(this.buffer, 0, newBuffer, 0, this.buffer!!.size)
+                System.arraycopy(this.buffer, 0, newBuffer, 0, this.buffer.size)
                 this.buffer = newBuffer
             }
         }
@@ -308,7 +308,7 @@ class FragmentBuffer  @JvmOverloads constructor(length: Int = DEFAULT_SIZE) : Se
                 thisLength = other.offset - thisOffset
             }
         }
-        return Fragment.getInstance(thisOffset, thisLength)
+        return Fragment(thisOffset, thisLength)
     }
 
     @Synchronized
@@ -328,9 +328,9 @@ class FragmentBuffer  @JvmOverloads constructor(length: Int = DEFAULT_SIZE) : Se
             return false
         }
         val otherBuffer = other as FragmentBuffer
-        if (otherBuffer.buffer == null) {
+        /*if (otherBuffer.buffer == null) {
             return false
-        }
+        }*/
         /*if (otherBuffer.buffer != null && this.buffer == null) {
             return false
         }*/

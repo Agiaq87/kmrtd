@@ -51,7 +51,7 @@ data class Fragment
      */
     val length: Int
 ) : Serializable {
-    override fun toString(): String {
+    /*override fun toString(): String {
         return "[ $offset .. ${offset + length - 1} ($length)]"
     }
 
@@ -68,7 +68,7 @@ data class Fragment
 
         val otherFragment = other as Fragment
         return otherFragment.offset == offset && otherFragment.length == length
-    }
+    }*/
 
     override fun hashCode(): Int {
         return 2 * offset + 3 * length + 5
@@ -85,8 +85,8 @@ data class Fragment
          *
          * @return the new fragment
          */
-        fun getInstance(offset: Int, length: Int): Fragment {
+        /*fun getInstance(offset: Int, length: Int): Fragment {
             return Fragment(offset, length)
-        }
+        }*/
     }
 }

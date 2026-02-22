@@ -75,7 +75,7 @@ class InputStreamBuffer(inputStream: InputStream, length: Int) {
          */
         get() {
             synchronized(carrier) {
-                return InputStreamBuffer.SubInputStream(carrier)
+                return /*InputStreamBuffer.*/SubInputStream(carrier)
             }
         }
 
@@ -139,9 +139,9 @@ class InputStreamBuffer(inputStream: InputStream, length: Int) {
          * 
          * @return the buffer
          */
-        fun getBuffer(): FragmentBuffer {
+        /*fun getBuffer(): FragmentBuffer {
             return buffer
-        }
+        }*/
 
         @Throws(IOException::class)
         override fun read(): Int {
@@ -151,7 +151,7 @@ class InputStreamBuffer(inputStream: InputStream, length: Int) {
                     return -1
                 } else if (buffer.isCoveredByFragment(position)) {
                     /* Serve the byte from the buffer */
-                    return buffer.buffer!![position++].toInt() and 0xFF
+                    return buffer.buffer[position++].toInt() and 0xFF
                 } else {
                     /* Get it from the carrier */
                     if (carrier.markSupported()) {
@@ -188,9 +188,9 @@ class InputStreamBuffer(inputStream: InputStream, length: Int) {
         override fun read(b: ByteArray, off: Int, len: Int): Int {
             var len = len
             synchronized(syncObject) {
-                if (b == null) {
+                /*if (b == null) {
                     throw NullPointerException()
-                } else if (off < 0 || len < 0 || len > b.size - off) {
+                } else*/ if (off < 0 || len < 0 || len > b.size - off) {
                     throw IndexOutOfBoundsException()
                 } else if (len == 0) {
                     return 0
@@ -208,8 +208,8 @@ class InputStreamBuffer(inputStream: InputStream, length: Int) {
                     syncCarrierPosition(position)
                 }
 
-                val fragment: FragmentBuffer.Fragment = buffer.getSmallestUnbufferedFragment(position, len)
-                if (fragment.getLength() > 0) {
+                val fragment: Fragment = buffer.getSmallestUnbufferedFragment(position, len)
+                if (fragment.length > 0) {
                     /* Copy buffered prefix to b. */
                     val alreadyBufferedPrefixLength = fragment.offset - position
                     val unbufferedPostfixLength = fragment.length
@@ -300,7 +300,7 @@ class InputStreamBuffer(inputStream: InputStream, length: Int) {
          */
         @Throws(IOException::class)
         private fun syncCarrierPosition(position: Int) {
-            if (position.toLong() == carrier.getPosition()) {
+            if (position.toLong() == carrier.position) {
                 return
             }
             carrier.reset()
