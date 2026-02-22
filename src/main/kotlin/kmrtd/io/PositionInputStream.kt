@@ -46,16 +46,16 @@ class PositionInputStream(private val carrier: InputStream) : InputStream() {
      */
     var position: Long = 0L
         private set
-    private var markedPosition: Long
+    private var markedPosition: Long = MARK_NOT_SET
 
-    /**
+ /*   *//**
      * Constructs a position input stream by decorating an existing input stream.
      * 
      * @param carrier the existing input stream
-     */
+     *//*
     init {
         markedPosition = MARK_NOT_SET
-    }
+    }*/
 
     @Throws(IOException::class)
     override fun read(): Int {
@@ -107,7 +107,7 @@ class PositionInputStream(private val carrier: InputStream) : InputStream() {
     }
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("org.giaquinto.kmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         private val MARK_NOT_SET = -1L
     }
