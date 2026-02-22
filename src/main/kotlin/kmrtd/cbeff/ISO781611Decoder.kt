@@ -30,8 +30,6 @@ package kmrtd.cbeff
 import kmrtd.cbeff.BiometricEncodingType.Companion.fromBDBTag
 import net.sf.scuba.tlv.TLVInputStream
 import net.sf.scuba.tlv.TLVUtil
-import org.jmrtd.cbeff.ISO781611.BIOMETRIC_DATA_BLOCK_CONSTRUCTED_TAG
-import org.jmrtd.cbeff.ISO781611.BIOMETRIC_DATA_BLOCK_TAG
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -46,8 +44,7 @@ import java.util.logging.Logger
  * 
  * @since 0.4.7
  */
-class ISO781611Decoder<B : BiometricDataBlock>(private val bdbDecoders: MutableMap<Int, BiometricDataBlockDecoder<B>>) :
-    ISO781611() {
+class ISO781611Decoder<B : BiometricDataBlock>(private val bdbDecoders: MutableMap<Int, BiometricDataBlockDecoder<B>>) {
     var encodingType: BiometricEncodingType? = null
         private set
 
@@ -86,9 +83,9 @@ class ISO781611Decoder<B : BiometricDataBlock>(private val bdbDecoders: MutableM
     private fun readBITGroup(inputStream: InputStream): ComplexCBEFFInfo<B> {
         val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
         val tag = tlvIn.readTag()
-        require(tag == BIOMETRIC_INFORMATION_GROUP_TEMPLATE_TAG) {
+        require(tag == ISO781611.BIOMETRIC_INFORMATION_GROUP_TEMPLATE_TAG) {
             "Expected tag " + Integer.toHexString(
-                BIOMETRIC_INFORMATION_GROUP_TEMPLATE_TAG
+                ISO781611.BIOMETRIC_INFORMATION_GROUP_TEMPLATE_TAG
             ) + ", found " + Integer.toHexString(tag)
         }
 
@@ -111,15 +108,15 @@ class ISO781611Decoder<B : BiometricDataBlock>(private val bdbDecoders: MutableM
     private fun readBITGroup(tag: Int, length: Int, inputStream: InputStream): ComplexCBEFFInfo<B> {
         val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
         val result = ComplexCBEFFInfo<B>()
-        require(tag == BIOMETRIC_INFORMATION_GROUP_TEMPLATE_TAG) {
+        require(tag == ISO781611.BIOMETRIC_INFORMATION_GROUP_TEMPLATE_TAG) {
             "Expected tag " + Integer.toHexString(
-                BIOMETRIC_INFORMATION_GROUP_TEMPLATE_TAG
+                ISO781611.BIOMETRIC_INFORMATION_GROUP_TEMPLATE_TAG
             ) + ", found " + Integer.toHexString(tag)
         }
         val bitCountTag = tlvIn.readTag()
-        require(bitCountTag == BIOMETRIC_INFO_COUNT_TAG) {
+        require(bitCountTag == ISO781611.BIOMETRIC_INFO_COUNT_TAG) {
             "Expected tag BIOMETRIC_INFO_COUNT_TAG (" + Integer.toHexString(
-                BIOMETRIC_INFO_COUNT_TAG
+                ISO781611.BIOMETRIC_INFO_COUNT_TAG
             ) + ") in CBEFF structure, found " + Integer.toHexString(bitCountTag)
         }
         val bitCountLength = tlvIn.readLength()
@@ -169,16 +166,16 @@ class ISO781611Decoder<B : BiometricDataBlock>(private val bdbDecoders: MutableM
     @Throws(IOException::class)
     private fun readBIT(tag: Int, length: Int, inputStream: InputStream, index: Int): CBEFFInfo? {
         val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
-        require(tag ==BIOMETRIC_INFORMATION_TEMPLATE_TAG /* 7F60 */) {
+        require(tag == ISO781611.BIOMETRIC_INFORMATION_TEMPLATE_TAG /* 7F60 */) {
             "Expected tag BIOMETRIC_INFORMATION_TEMPLATE_TAG (" + Integer.toHexString(
-                BIOMETRIC_INFORMATION_TEMPLATE_TAG
+                ISO781611.BIOMETRIC_INFORMATION_TEMPLATE_TAG
             ) + "), found " + Integer.toHexString(tag) + ", index is " + index
         }
 
         val bhtTag = tlvIn.readTag()
         val bhtLength = tlvIn.readLength()
 
-        if ((bhtTag ==SMT_TAG)) {
+        if ((bhtTag == ISO781611.SMT_TAG)) {
             /* The BIT is protected... */
             readStaticallyProtectedBIT(inputStream, bhtTag, bhtLength, index)
         } else if ((bhtTag and 0xA0) == 0xA0) {
@@ -209,7 +206,7 @@ class ISO781611Decoder<B : BiometricDataBlock>(private val bdbDecoders: MutableM
     @Throws(IOException::class)
     private fun readBHT(inputStream: InputStream, bhtTag: Int, bhtLength: Int, index: Int): StandardBiometricHeader {
         val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
-        val expectedBHTTag = (BIOMETRIC_HEADER_TEMPLATE_BASE_TAG /* + index */) and 0xFF
+        val expectedBHTTag = (ISO781611.BIOMETRIC_HEADER_TEMPLATE_BASE_TAG /* + index */) and 0xFF
         if (bhtTag != expectedBHTTag) {
             LOGGER.warning(
                 "Expected tag " + Integer.toHexString(expectedBHTTag) + ", found " + Integer.toHexString(
@@ -273,13 +270,13 @@ class ISO781611Decoder<B : BiometricDataBlock>(private val bdbDecoders: MutableM
         val doLength = tlvIn.readLength()
         var skippedBytes: Long = 0
         when (doTag) {
-            SMT_DO_PV ->       /* NOTE: Plain value, just return whatever is in the payload */
+            ISO781611.SMT_DO_PV ->       /* NOTE: Plain value, just return whatever is in the payload */
                 return tlvIn.readValue()
 
-            SMT_DO_CG ->       /* NOTE: content of payload is encrypted */
+            ISO781611.SMT_DO_CG ->       /* NOTE: content of payload is encrypted */
                 throw IllegalStateException("Access denied. Biometric Information Template is statically protected.")
 
-            SMT_DO_CC -> {
+            ISO781611.SMT_DO_CC -> {
                 /* NOTE: payload contains a MAC */
 
                 while (skippedBytes < doLength) {
@@ -288,7 +285,7 @@ class ISO781611Decoder<B : BiometricDataBlock>(private val bdbDecoders: MutableM
                 return null
             }
 
-            SMT_DO_DS -> {
+            ISO781611.SMT_DO_DS -> {
                 /* NOTE: payload contains a signature */
                 skippedBytes = 0
                 while (skippedBytes < doLength) {
@@ -320,13 +317,13 @@ class ISO781611Decoder<B : BiometricDataBlock>(private val bdbDecoders: MutableM
         val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
         val bioDataBlockTag = tlvIn.readTag()
         require(
-            !(bioDataBlockTag != BIOMETRIC_DATA_BLOCK_TAG /* 5F2E */ &&
-                    bioDataBlockTag != BIOMETRIC_DATA_BLOCK_CONSTRUCTED_TAG /* 7F2E */)
+            !(bioDataBlockTag != ISO781611.BIOMETRIC_DATA_BLOCK_TAG /* 5F2E */ &&
+                    bioDataBlockTag != ISO781611.BIOMETRIC_DATA_BLOCK_CONSTRUCTED_TAG /* 7F2E */)
         ) {
             ("Expected tag BIOMETRIC_DATA_BLOCK_TAG (" + Integer.toHexString(
-                BIOMETRIC_DATA_BLOCK_TAG
+                ISO781611.BIOMETRIC_DATA_BLOCK_TAG
             )
-                    + ") or BIOMETRIC_DATA_BLOCK_CONSTRUCTED_ALT (" + Integer.toHexString(BIOMETRIC_DATA_BLOCK_CONSTRUCTED_TAG)
+                    + ") or BIOMETRIC_DATA_BLOCK_CONSTRUCTED_ALT (" + Integer.toHexString(ISO781611.BIOMETRIC_DATA_BLOCK_CONSTRUCTED_TAG)
                     + "), found " + Integer.toHexString(bioDataBlockTag))
         }
         encodingType = fromBDBTag(bioDataBlockTag)
@@ -337,13 +334,13 @@ class ISO781611Decoder<B : BiometricDataBlock>(private val bdbDecoders: MutableM
     }
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd.cbeff")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd.cbeff")
 
         private fun <R : BiometricDataBlock> toMap(bdbDecoder: BiometricDataBlockDecoder<R>): MutableMap<Int, BiometricDataBlockDecoder<R>> {
             val bdbDecoders: MutableMap<Int, BiometricDataBlockDecoder<R>> =
                 HashMap()
-            bdbDecoders[BIOMETRIC_DATA_BLOCK_TAG] = bdbDecoder /* 5F2E */
-            bdbDecoders[BIOMETRIC_DATA_BLOCK_CONSTRUCTED_TAG] = bdbDecoder /* 7F2E */
+            bdbDecoders[ISO781611.BIOMETRIC_DATA_BLOCK_TAG] = bdbDecoder /* 5F2E */
+            bdbDecoders[ISO781611.BIOMETRIC_DATA_BLOCK_CONSTRUCTED_TAG] = bdbDecoder /* 7F2E */
             return bdbDecoders
         }
     }

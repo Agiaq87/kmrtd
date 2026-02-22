@@ -40,7 +40,7 @@ import java.util.*
  * 
  * @since 0.4.7
  */
-class StandardBiometricHeader(elements: MutableMap<Int, ByteArray>) : Serializable, ISO781611() {
+class StandardBiometricHeader(elements: MutableMap<Int, ByteArray>) : Serializable {
     private val elements: SortedMap<Int, ByteArray> = TreeMap<Int, ByteArray>(elements)
 
     /**
@@ -60,7 +60,7 @@ class StandardBiometricHeader(elements: MutableMap<Int, ByteArray>) : Serializab
      * @return a boolean indicating the format type is present and equal to the given value
      */
     fun hasFormatType(formatTypeValue: Int): Boolean {
-        val actualFormatTypeValue = elements[FORMAT_TYPE_TAG] ?: return false
+        val actualFormatTypeValue = elements[ISO781611.FORMAT_TYPE_TAG] ?: return false
         if (actualFormatTypeValue.size != 2) {
             return false
         }

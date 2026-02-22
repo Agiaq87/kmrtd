@@ -36,7 +36,7 @@ package kmrtd.cbeff
  * 
  * @since 0.4.7
  */
-/*interface*/ abstract class ISO781611 {
+/*interface*/ object ISO781611 {
     //companion object {
         val BIOMETRIC_INFORMATION_GROUP_TEMPLATE_TAG: Int = 0x7F61
         val BIOMETRIC_INFORMATION_TEMPLATE_TAG: Int = 0x7F60
