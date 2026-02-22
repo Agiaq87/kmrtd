@@ -126,7 +126,7 @@ class ISO781611Encoder<B : BiometricDataBlock>(private val bdbEncoder: Biometric
         val sbh: StandardBiometricHeader = bdb.standardBiometricHeader
         val elements = sbh.getElements()
         for (entry in elements.entries) {
-            tlvOutputStream.writeTag(entry.key!!)
+            tlvOutputStream.writeTag(entry.key)
             tlvOutputStream.writeValue(entry.value)
         }
         tlvOutputStream.writeValueEnd() /* BIOMETRIC_HEADER_TEMPLATE_BASE_TAG, i.e. A1 */

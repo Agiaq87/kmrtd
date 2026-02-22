@@ -339,10 +339,10 @@ class ISO781611Decoder<B : BiometricDataBlock>(private val bdbDecoders: MutableM
     companion object {
         private val LOGGER: Logger = Logger.getLogger("org.jmrtd.cbeff")
 
-        private fun <R : BiometricDataBlock> toMap(bdbDecoder: BiometricDataBlockDecoder<R>?): MutableMap<Int, BiometricDataBlockDecoder<R>> {
+        private fun <R : BiometricDataBlock> toMap(bdbDecoder: BiometricDataBlockDecoder<R>): MutableMap<Int, BiometricDataBlockDecoder<R>> {
             val bdbDecoders: MutableMap<Int, BiometricDataBlockDecoder<R>> =
                 HashMap()
-            bdbDecoders[BIOMETRIC_DATA_BLOCK_TAG] = bdbDecoder!! /* 5F2E */
+            bdbDecoders[BIOMETRIC_DATA_BLOCK_TAG] = bdbDecoder /* 5F2E */
             bdbDecoders[BIOMETRIC_DATA_BLOCK_CONSTRUCTED_TAG] = bdbDecoder /* 7F2E */
             return bdbDecoders
         }
