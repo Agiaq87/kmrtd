@@ -25,12 +25,6 @@
  *
  * Licensed under LGPL 3.0
  */
-/*
- * Modified work Copyright (C) 2026 Alessandro Giaquinto
- * Kotlin port of JMRTD
- *
- * Licensed under LGPL 3.0
- */
 package kmrtd.cbeff
 
 import kmrtd.cbeff.BiometricEncodingType.Companion.toBDBTag
@@ -108,7 +102,7 @@ class ISO781611Encoder<B : BiometricDataBlock>(private val bdbEncoder: Biometric
     }
 
     /**
-     * Writes a a header for a single BIT to a stream.
+     * Writes a header for a single BIT to a stream.
      * 
      * @param tlvOutputStream the stream to write to
      * @param index the index of the BIT within the BIT group

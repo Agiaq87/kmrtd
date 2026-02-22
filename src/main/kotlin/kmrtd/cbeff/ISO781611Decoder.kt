@@ -240,16 +240,14 @@ class ISO781611Decoder<B : BiometricDataBlock>(private val bdbDecoders: MutableM
      * @throws IOException on failure
      */
     @Throws(IOException::class)
-    private fun readStaticallyProtectedBIT(inputStream: InputStream?, tag: Int, length: Int, index: Int) {
+    private fun readStaticallyProtectedBIT(inputStream: InputStream, tag: Int, length: Int, index: Int) {
         val tlvBHTIn = TLVInputStream(ByteArrayInputStream(decodeSMTValue(inputStream)))
-        try {
+        tlvBHTIn.use { tlvBHTIn ->
             val headerTemplateTag = tlvBHTIn.readTag()
             val headerTemplateLength = tlvBHTIn.readLength()
             val sbh = readBHT(tlvBHTIn, headerTemplateTag, headerTemplateLength, index)
             val biometricDataBlockIn: InputStream = ByteArrayInputStream(decodeSMTValue(inputStream))
             readBiometricDataBlock(biometricDataBlockIn, sbh, index)
-        } finally {
-            tlvBHTIn.close()
         }
     } /* FIXME: return type??? */
 

@@ -80,7 +80,7 @@ class StandardBiometricHeader(elements: MutableMap<Int, ByteArray>) : Serializab
             } else {
                 result.append(", ")
             }
-            result.append(Integer.toHexString(entry.key!!)).append(" -> ").append(Hex.bytesToHexString(entry.value))
+            result.append(Integer.toHexString(entry.key)).append(" -> ").append(Hex.bytesToHexString(entry.value))
         }
         result.append("]")
         return result.toString()
@@ -89,7 +89,7 @@ class StandardBiometricHeader(elements: MutableMap<Int, ByteArray>) : Serializab
     override fun hashCode(): Int {
         val prime = 31
         var result = 1
-        result = prime * result + (elements.hashCode() ?: 0)
+        result = prime * result + elements.hashCode()
         return result
     }
 
