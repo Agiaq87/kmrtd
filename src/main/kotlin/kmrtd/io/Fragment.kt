@@ -31,13 +31,13 @@ import java.io.Serializable
 /**
  * Fragments encapsulate pairs of offset and length.
  */
-class Fragment
+data class Fragment
 /**
  * Constructs a fragment.
  *
  * @param offset the offset within the buffer
  * @param length the length of the fragment
- */ private constructor(
+ */ constructor(
     /**
      * Returns this fragment's offset within the buffer.
      *
