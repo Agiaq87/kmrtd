@@ -39,7 +39,7 @@ import java.io.InputStream
  * 
  * @version $Revision: 1808 $
  */
-class SplittableInputStream(inputStream: InputStream?, length: Int) : InputStream() {
+class SplittableInputStream(inputStream: InputStream, length: Int) : InputStream() {
     private val inputStreamBuffer: InputStreamBuffer
     private val carrier: InputStreamBuffer.SubInputStream
 
