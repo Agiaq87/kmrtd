@@ -110,7 +110,7 @@ class PACEProtocol(
         accessKey: AccessKeySpec,
         oid: String,
         staticParameters: AlgorithmParameterSpec,
-        parameterId: BigInteger?
+        parameterId: BigInteger
     ): PACEResult {
         try {
             return doPACE(accessKey, deriveStaticPACEKey(accessKey, oid), oid, staticParameters, parameterId)
@@ -134,11 +134,11 @@ class PACEProtocol(
      */
     @Throws(CardServiceException::class)
     private fun doPACE(
-        accessKey: AccessKeySpec?,
-        staticPACEKey: SecretKey?,
+        accessKey: AccessKeySpec,
+        staticPACEKey: SecretKey,
         oid: String,
         staticParameters: AlgorithmParameterSpec,
-        parameterId: BigInteger?
+        parameterId: BigInteger
     ): PACEResult {
         val mappingType = PACEInfo.toMappingType(oid) /* Either GM, CAM, or IM. */
         val agreementAlg = PACEInfo.toKeyAgreementAlgorithm(oid) /* Either DH or ECDH. */
@@ -150,7 +150,7 @@ class PACEProtocol(
 
         var staticPACECipher: Cipher? = null
         try {
-            staticPACECipher = Cipher.getInstance(cipherAlg + "/CBC/NoPadding")
+            staticPACECipher = Cipher.getInstance("$cipherAlg/CBC/NoPadding")
         } catch (gse: GeneralSecurityException) {
             throw CardServiceProtocolException(
                 "PCD side error in static cipher construction during key derivation step",
@@ -169,7 +169,7 @@ class PACEProtocol(
 
             var paceKeyReference = PassportService.MRZ_PACE_KEY_REFERENCE
             if (staticPACEKey is PACESecretKeySpec) {
-                paceKeyReference = staticPACEKey.getKeyReference()
+                paceKeyReference = staticPACEKey.keyReference
             }
 
             /*
@@ -180,7 +180,7 @@ class PACEProtocol(
        *
        * See discussion here: https://sourceforge.net/p/jmrtd/discussion/580232/thread/ff434886d2/.
        */
-            val referencePrivateKeyOrForComputingSessionKey = if (parameterId == null) null else Util.i2os(parameterId)
+            val referencePrivateKeyOrForComputingSessionKey = Util.i2os(parameterId)
 
             /* Send to the PICC. */
             service.sendMSESetATMutualAuth(
@@ -227,7 +227,7 @@ class PACEProtocol(
 
         /* Key agreement K = KA(SK_PCD~, PK_PICC~, D~). */
         val sharedSecretBytes =
-            doPACEStep3KeyAgreement(agreementAlg, ephemeralPCDKeyPair.private, ephemeralPICCPublicKey)
+            doPACEStep3KeyAgreement(agreementAlg, ephemeralPCDKeyPair.private, ephemeralPICCPublicKey!!)
 
         /* Derive secure messaging keys. */
         /* Compute session keys K_mac = KDF_mac(K), K_enc = KDF_enc(K). */
@@ -273,7 +273,7 @@ class PACEProtocol(
                 wrapper =
                     AESSecureMessagingWrapper(encKey, macKey, maxTranceiveLengthForSecureMessaging, shouldCheckMAC, ssc)
             } else {
-                LOGGER.warning("Unsupported cipher algorithm " + cipherAlg)
+                LOGGER.warning("Unsupported cipher algorithm $cipherAlg")
             }
         } catch (gse: GeneralSecurityException) {
             throw CardServiceProtocolException("Security exception in secure messaging establishment", 4, gse)
@@ -386,9 +386,9 @@ class PACEProtocol(
         piccNonce: ByteArray,
         staticPACECipher: Cipher
     ): PACEMappingResult {
-        when (mappingType) {
-            MappingType.CAM, MappingType.GM -> return doPACEStep2GM(agreementAlg, params, piccNonce)
-            MappingType.IM -> return doPACEStep2IM(agreementAlg, params, piccNonce, staticPACECipher)
+        return when (mappingType) {
+            MappingType.CAM, MappingType.GM -> doPACEStep2GM(agreementAlg, params, piccNonce)
+            MappingType.IM -> doPACEStep2IM(agreementAlg, params, piccNonce, staticPACECipher)
             else -> throw CardServiceProtocolException("Unsupported mapping type " + mappingType, 2)
         }
     }
@@ -410,7 +410,7 @@ class PACEProtocol(
     fun doPACEStep2GM(
         agreementAlg: String,
         params: AlgorithmParameterSpec,
-        piccNonce: ByteArray?
+        piccNonce: ByteArray
     ): PACEGMMappingResult {
         try {
             val keyPairGenerator: KeyPairGenerator = KeyPairGenerator.getInstance(agreementAlg, BC_PROVIDER)
@@ -430,7 +430,7 @@ class PACEProtocol(
             )
 
             val piccMappingEncodedPublicKey = TLVUtil.unwrapDO(0x82, step2Response)
-            val piccMappingPublicKey: PublicKey = decodePublicKeyFromSmartCard(piccMappingEncodedPublicKey, params)
+            val piccMappingPublicKey: PublicKey? = decodePublicKeyFromSmartCard(piccMappingEncodedPublicKey, params)
 
             if ("ECDH" == agreementAlg) {
                 /* Treat shared secret as an ECPoint. */
@@ -531,13 +531,13 @@ class PACEProtocol(
 
             if ("ECDH" == agreementAlg) {
                 val ephemeralParameters: AlgorithmParameterSpec =
-                    mapNonceIMWithECDH(piccNonce, pcdNonce, staticPACECipher.getAlgorithm(), params as ECParameterSpec?)
+                    mapNonceIMWithECDH(piccNonce, pcdNonce, staticPACECipher.algorithm, params as ECParameterSpec)
                 return PACEIMMappingResult(params, piccNonce, pcdNonce, ephemeralParameters)
             } else if ("DH" == agreementAlg) {
                 val ephemeralParameters: AlgorithmParameterSpec = Companion.mapNonceIMWithDH(
                     piccNonce,
                     pcdNonce,
-                    staticPACECipher.getAlgorithm(),
+                    staticPACECipher.algorithm,
                     (params as javax.crypto.spec.DHParameterSpec?)!!
                 )
                 return PACEIMMappingResult(params, piccNonce, pcdNonce, ephemeralParameters)
@@ -593,7 +593,7 @@ class PACEProtocol(
      * @throws CardServiceProtocolException on error
      */
     @Throws(CardServiceProtocolException::class)
-    fun doPACEStep3ExchangePublicKeys(pcdPublicKey: PublicKey, ephemeralParams: AlgorithmParameterSpec): PublicKey {
+    fun doPACEStep3ExchangePublicKeys(pcdPublicKey: PublicKey, ephemeralParams: AlgorithmParameterSpec): PublicKey? {
         try {
             val pcdEncodedPublicKey: ByteArray = encodePublicKeyForSmartCard(pcdPublicKey)
             val step3Data = TLVUtil.wrapDO(0x83, pcdEncodedPublicKey)
@@ -604,7 +604,7 @@ class PACEProtocol(
                 false
             )
             val piccEncodedPublicKey = TLVUtil.unwrapDO(0x84, step3Response)
-            val piccPublicKey: PublicKey = decodePublicKeyFromSmartCard(piccEncodedPublicKey, ephemeralParams)
+            val piccPublicKey: PublicKey? = decodePublicKeyFromSmartCard(piccEncodedPublicKey, ephemeralParams)
 
             if (keysAreEqual(pcdPublicKey, piccPublicKey)) {
                 throw CardServiceProtocolException(
@@ -689,7 +689,7 @@ class PACEProtocol(
                 step4ResponseInputStream.readLength()
                 val piccToken = step4ResponseInputStream.readValue()
 
-                val expectedPICCToken: ByteArray = generateAuthenticationToken(oid, macKey, pcdKeyPair.getPublic())
+                val expectedPICCToken: ByteArray = generateAuthenticationToken(oid, macKey, pcdKeyPair.public)
                 if (!expectedPICCToken.contentEquals(piccToken)) {
                     throw GeneralSecurityException(
                         ("PICC authentication token mismatch"
@@ -747,7 +747,7 @@ class PACEProtocol(
                 agreementAlg,
                 ignoreCase = true
             )
-        ) { "Unsupported agreement algorithm, expected \"ECDH\" or \"DH\", found \"" + agreementAlg + "\"" }
+        ) { "Unsupported agreement algorithm, expected \"ECDH\" or \"DH\", found \"$agreementAlg\"" }
 
         requireNotNull(cipherAlg) { "Unknown cipher algorithm" }
 
@@ -756,14 +756,14 @@ class PACEProtocol(
                 cipherAlg,
                 ignoreCase = true
             )
-        ) { "Unsupported cipher algorithm, expected \"DESede\" or \"AES\", found \"" + cipherAlg + "\"" }
+        ) { "Unsupported cipher algorithm, expected \"DESede\" or \"AES\", found \"$cipherAlg\"" }
 
         require(
             "SHA-1".equals(digestAlg, ignoreCase = true) || "SHA1".equals(digestAlg, ignoreCase = true)
                     || "SHA-256".equals(digestAlg, ignoreCase = true) || "SHA256".equals(digestAlg, ignoreCase = true)
-        ) { "Unsupported cipher algorithm, expected \"SHA-1\" or \"SHA-256\", found \"" + digestAlg + "\"" }
+        ) { "Unsupported cipher algorithm, expected \"SHA-1\" or \"SHA-256\", found \"$digestAlg\"" }
 
-        require(keyLength == 128 || keyLength == 192 || keyLength == 256) { "Unsupported key length, expected 128, 192, or 256, found " + keyLength }
+        require(keyLength == 128 || keyLength == 192 || keyLength == 256) { "Unsupported key length, expected 128, 192, or 256, found $keyLength" }
 
         /* Params should be correct param spec type, given agreement algorithm. */
         require(
@@ -783,7 +783,7 @@ class PACEProtocol(
     companion object {
         private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
 
-        private val BC_PROVIDER: Provider = Util.getBouncyCastleProvider()
+        private val BC_PROVIDER: Provider = Util.bouncyCastleProvider
 
         /**
          * Used in the last step of PACE-CAM.
@@ -927,11 +927,11 @@ class PACEProtocol(
         fun deriveStaticPACEKey(accessKey: AccessKeySpec, oid: String?): SecretKey {
             val cipherAlg = PACEInfo.toCipherAlgorithm(oid) /* Either DESede or AES. */
             val keyLength = PACEInfo.toKeyLength(oid) /* Of the enc cipher. Either 128, 192, or 256. */
-            val keySeed: ByteArray? = computeKeySeedForPACE(accessKey)
+            val keySeed: ByteArray = computeKeySeedForPACE(accessKey)
 
             var paceKeyReference: Byte = 0
-            if (accessKey is old_PACEKeySpec) {
-                paceKeyReference = accessKey.getKeyReference()
+            if (accessKey is PACEKeySpec) {
+                paceKeyReference = accessKey.keyReference
             }
 
             return Util.deriveKey(keySeed, cipherAlg, keyLength, null, Util.PACE_MODE, paceKeyReference)
@@ -988,27 +988,27 @@ class PACEProtocol(
          * @return the new parameters
          */
         fun mapNonceGMWithECDH(
-            nonceS: ByteArray?,
-            sharedSecretPointH: ECPoint?,
+            nonceS: ByteArray,
+            sharedSecretPointH: ECPoint,
             staticParameters: ECParameterSpec
         ): ECParameterSpec {
             /*
      * D~ = (p, a, b, G~, n, h) where G~ = [s]G + H
      */
-            val generator = staticParameters.getGenerator()
-            val curve = staticParameters.getCurve()
-            val a = curve.getA()
-            val b = curve.getB()
-            val field = curve.getField() as ECFieldFp
-            val p = field.getP()
-            val order = staticParameters.getOrder()
-            val cofactor = staticParameters.getCofactor()
+            val generator = staticParameters.generator
+            val curve = staticParameters.curve
+            val a = curve.a
+            val b = curve.b
+            val field = curve.field as ECFieldFp
+            val p = field.p
+            val order = staticParameters.order
+            val cofactor = staticParameters.cofactor
             val ephemeralGenerator = Util.add(
                 Util.multiply(Util.os2i(nonceS), generator, staticParameters),
                 sharedSecretPointH,
                 staticParameters
             )
-            if (!Util.toBouncyCastleECPoint(ephemeralGenerator, staticParameters).isValid()) {
+            if (!Util.toBouncyCastleECPoint(ephemeralGenerator, staticParameters).isValid) {
                 LOGGER.info("ephemeralGenerator is not a valid point")
             }
             return ECParameterSpec(EllipticCurve(ECFieldFp(p), a, b), ephemeralGenerator, order, cofactor)
@@ -1026,15 +1026,15 @@ class PACEProtocol(
          * @return the new parameters
          */
         fun mapNonceGMWithDH(
-            nonceS: ByteArray?,
+            nonceS: ByteArray,
             sharedSecretH: BigInteger?,
             staticParameters: DHParameterSpec
         ): DHParameterSpec {
             // g~ = g^s * h
-            val p = staticParameters.getP()
-            val generator = staticParameters.getG()
+            val p = staticParameters.p
+            val generator = staticParameters.g
             val mappedGenerator = generator.modPow(Util.os2i(nonceS), p).multiply(sharedSecretH).mod(p)
-            return DHParameterSpec(p, mappedGenerator, staticParameters.getL())
+            return DHParameterSpec(p, mappedGenerator, staticParameters.l)
         }
 
         /* Integrated Mapping. */
@@ -1056,13 +1056,13 @@ class PACEProtocol(
             nonceS: ByteArray,
             nonceT: ByteArray,
             cipherAlgorithm: String,
-            params: ECParameterSpec?
+            params: ECParameterSpec
         ): AlgorithmParameterSpec {
             val p = Util.getPrime(params)
-            val order = params!!.getOrder()
-            val cofactor = params.getCofactor()
-            val a = params.getCurve().getA()
-            val b = params.getCurve().getB()
+            val order = params.order
+            val cofactor = params.cofactor
+            val a = params.curve.a
+            val b = params.curve.b
 
             val t = Util.os2i(pseudoRandomFunction(nonceS, nonceT, p, cipherAlgorithm))
 
@@ -1101,19 +1101,19 @@ class PACEProtocol(
             params: DHParameterSpec
         ): AlgorithmParameterSpec {
             val g = params.getG()
-            require(!(g == null || g == BigInteger.ONE)) { "Invalid generator: " + g }
+            require(!(g == null || g == BigInteger.ONE)) { "Invalid generator: $g" }
 
-            val p = params.getP()
+            val p = params.p
 
             val q =
-                if (params is DHCParameterSpec) params.getQ() else BigInteger.ONE // FIXME: What if q not available? We use 1 here? Should be p-1? -- MO
+                if (params is DHCParameterSpec) params.q else BigInteger.ONE // FIXME: What if q not available? We use 1 here? Should be p-1? -- MO
 
             val x = Util.os2i(pseudoRandomFunction(nonceS, nonceT, p, cipherAlgorithm))
 
             val a = p.subtract(BigInteger.ONE).divide(q)
 
             val mappedGenerator = x.modPow(a, p)
-            return DHParameterSpec(p, mappedGenerator, params.getL())
+            return DHParameterSpec(p, mappedGenerator, params.l)
         }
 
         /*
@@ -1158,7 +1158,7 @@ class PACEProtocol(
                     c1 = C1_LENGTH_256
                 }
 
-                else -> throw IllegalArgumentException("Unknown length " + l + ", was expecting 128, 192, or 256")
+                else -> throw IllegalArgumentException("Unknown length $l, was expecting 128, 192, or 256")
             }
 
             val cipher =
@@ -1212,15 +1212,15 @@ class PACEProtocol(
          * 
          * @return the point on the curve that the input is mapped to
          */
-        fun icartPointEncode(t: BigInteger, params: ECParameterSpec?): ECPoint {
+        fun icartPointEncode(t: BigInteger, params: ECParameterSpec): ECPoint {
             val p = Util.getPrime(params)
             if (BigInteger.valueOf(3) != p.mod(BigInteger.valueOf(4))) {
                 throw InvalidParameterException("Cannot encode point because p != 3 (mod 4)")
             }
 
-            val cofactor = params!!.getCofactor()
-            val a = params.getCurve().getA()
-            val b = params.getCurve().getB()
+            val cofactor = params.cofactor
+            val a = params.curve.a
+            val b = params.curve.b
 
             /* 1. */
             val alpha = t.modPow(BigInteger.valueOf(2), p).negate().mod(p)
@@ -1279,30 +1279,30 @@ class PACEProtocol(
          */
         @Throws(GeneralSecurityException::class)
         fun updateParameterSpec(publicKey: PublicKey, privateKey: PrivateKey): PublicKey? {
-            val publicKeyAlgorithm = publicKey.getAlgorithm()
-            val privateKeyAlgorithm = privateKey.getAlgorithm()
+            val publicKeyAlgorithm = publicKey.algorithm
+            val privateKeyAlgorithm = privateKey.algorithm
 
             if ("EC" == publicKeyAlgorithm || "ECDH" == publicKeyAlgorithm) {
                 if (!("EC" == privateKeyAlgorithm || "ECDH" == privateKeyAlgorithm)) {
-                    throw NoSuchAlgorithmException("Unsupported key type public: " + publicKeyAlgorithm + ", private: " + privateKeyAlgorithm)
+                    throw NoSuchAlgorithmException("Unsupported key type public: $publicKeyAlgorithm, private: $privateKeyAlgorithm")
                 }
                 val keyFactory: KeyFactory = KeyFactory.getInstance("EC", BC_PROVIDER)
                 val keySpec: KeySpec =
-                    ECPublicKeySpec((publicKey as ECPublicKey).getW(), (privateKey as ECPrivateKey).getParams())
+                    ECPublicKeySpec((publicKey as ECPublicKey).w, (privateKey as ECPrivateKey).params)
                 return keyFactory.generatePublic(keySpec)
             } else if ("DH" == publicKeyAlgorithm) {
-                if (!("DH" == privateKeyAlgorithm)) {
-                    throw NoSuchAlgorithmException("Unsupported key type public: " + publicKeyAlgorithm + ", private: " + privateKeyAlgorithm)
+                if ("DH" != privateKeyAlgorithm) {
+                    throw NoSuchAlgorithmException("Unsupported key type public: $publicKeyAlgorithm, private: $privateKeyAlgorithm")
                 }
                 val keyFactory = KeyFactory.getInstance("DH")
                 val dhPublicKey = publicKey as DHPublicKey
                 val dhPrivateKey = privateKey as DHPrivateKey
-                val privateKeyParams = dhPrivateKey.getParams()
+                val privateKeyParams = dhPrivateKey.params
                 val keySpec: KeySpec =
-                    DHPublicKeySpec(dhPublicKey.getY(), privateKeyParams.getP(), privateKeyParams.getG())
+                    DHPublicKeySpec(dhPublicKey.y, privateKeyParams.p, privateKeyParams.g)
                 return keyFactory.generatePublic(keySpec)
             } else {
-                throw NoSuchAlgorithmException("Unsupported key type public: " + publicKeyAlgorithm + ", private: " + privateKeyAlgorithm)
+                throw NoSuchAlgorithmException("Unsupported key type public: $publicKeyAlgorithm, private: $privateKeyAlgorithm")
             }
         }
 
@@ -1339,7 +1339,7 @@ class PACEProtocol(
          * @throws GeneralSecurityException on error
          */
         @Throws(GeneralSecurityException::class)
-        fun computeKeySeedForPACE(cardAccessNumber: String?): ByteArray? {
+        fun computeKeySeedForPACE(cardAccessNumber: String): ByteArray {
             return Util.computeKeySeed(cardAccessNumber, "SHA-1", false)
         }
 
@@ -1377,14 +1377,13 @@ class PACEProtocol(
             try {
                 tlvOutputStream.writeTag(0x7F49) // FIXME: constant for 7F49 */
                 if (publicKey is DHPublicKey) {
-                    val dhPublicKey = publicKey
-                    val params = dhPublicKey.getParams()
-                    val p = params.getP()
-                    val l = params.getL()
-                    val generator = params.getG()
-                    val y = dhPublicKey.getY()
+                    val params = publicKey.params
+                    val p = params.p
+                    val l = params.l
+                    val generator = params.g
+                    val y = publicKey.y
 
-                    tlvOutputStream.write(ASN1ObjectIdentifier(oid).getEncoded()) /* Object Identifier, NOTE: encoding already contains 0x06 tag  */
+                    tlvOutputStream.write(ASN1ObjectIdentifier(oid).encoded) /* Object Identifier, NOTE: encoding already contains 0x06 tag  */
                     if (!isContextKnown) {
                         /* p: Prime modulus */
                         tlvOutputStream.writeTag(0x81)
@@ -1403,19 +1402,18 @@ class PACEProtocol(
                     tlvOutputStream.writeTag(0x84)
                     tlvOutputStream.writeValue(Util.i2os(y))
                 } else if (publicKey is ECPublicKey) {
-                    val ecPublicKey = publicKey
-                    val params = ecPublicKey.getParams()
+                    val params = publicKey.params
                     val p = Util.getPrime(params)
-                    val curve = params!!.getCurve()
-                    val a = curve.getA()
-                    val b = curve.getB()
-                    val generator = params.getGenerator()
-                    val order = params.getOrder()
-                    val coFactor = params.getCofactor()
-                    val publicPoint = ecPublicKey.getW()
+                    val curve = params!!.curve
+                    val a = curve.a
+                    val b = curve.b
+                    val generator = params.generator
+                    val order = params.order
+                    val coFactor = params.cofactor
+                    val publicPoint = publicKey.w
 
                     /* Object Identifier, NOTE: encoding already contains 0x06 tag */
-                    tlvOutputStream.write(ASN1ObjectIdentifier(oid).getEncoded())
+                    tlvOutputStream.write(ASN1ObjectIdentifier(oid).encoded)
 
                     if (!isContextKnown) {
                         /* Prime modulus */
@@ -1429,8 +1427,8 @@ class PACEProtocol(
                         /* Second coefficient */
                         tlvOutputStream.writeTag(0x83)
                         tlvOutputStream.writeValue(Util.i2os(b))
-                        val affineX = generator.getAffineX()
-                        val affineY = generator.getAffineY()
+                        val affineX = generator.affineX
+                        val affineY = generator.affineY
 
                         /* Base point, FIXME: correct encoding? */
                         tlvOutputStream.writeTag(0x84)
@@ -1448,7 +1446,7 @@ class PACEProtocol(
                     tlvOutputStream.writeValue(
                         Util.ecPoint2OS(
                             publicPoint,
-                            params.getCurve().getField().getFieldSize()
+                            params.curve.field.fieldSize
                         )
                     )
 
@@ -1487,15 +1485,13 @@ class PACEProtocol(
         @Throws(InvalidKeyException::class)
         fun encodePublicKeyForSmartCard(publicKey: PublicKey): ByteArray {
             requireNotNull(publicKey) { "Cannot encode null public key" }
-            if (publicKey is ECPublicKey) {
-                val ecPublicKey = publicKey
-                return encodeECPointForSmartCard(
-                    ecPublicKey.getW(),
-                    ecPublicKey.getParams().getCurve().getField().getFieldSize()
+            return if (publicKey is ECPublicKey) {
+                encodeECPointForSmartCard(
+                    publicKey.w,
+                    publicKey.params.curve.field.fieldSize
                 )
             } else if (publicKey is DHPublicKey) {
-                val dhPublicKey = publicKey
-                return Util.i2os(dhPublicKey.getY())
+                Util.i2os(publicKey.y)
             } else {
                 throw InvalidKeyException("Unsupported public key: " + publicKey.javaClass.getCanonicalName())
             }
@@ -1522,18 +1518,16 @@ class PACEProtocol(
          * 
          * @return the decoded public key object
          */
-        fun decodePublicKeyFromSmartCard(encodedPublicKey: ByteArray?, params: AlgorithmParameterSpec): PublicKey {
+        fun decodePublicKeyFromSmartCard(encodedPublicKey: ByteArray, params: AlgorithmParameterSpec): PublicKey? {
             requireNotNull(params) { "Params cannot be null" }
 
             try {
                 if (params is ECParameterSpec) {
                     val w = Util.os2ECPoint(encodedPublicKey)
-                    val ecParams = params
-                    return Util.getPublicKey("EC", ECPublicKeySpec(w, ecParams))
+                    return Util.getPublicKey("EC", ECPublicKeySpec(w, params))
                 } else if (params is DHParameterSpec) {
                     val y = Util.os2i(encodedPublicKey)
-                    val dhParams = params
-                    return Util.getPublicKey("DH", DHPublicKeySpec(y, dhParams.getP(), dhParams.getG()))
+                    return Util.getPublicKey("DH", DHPublicKeySpec(y, params.p, params.g))
                 }
 
                 throw IllegalArgumentException("Expected ECParameterSpec or DHParameterSpec, found " + params.javaClass.getCanonicalName())
@@ -1654,7 +1648,7 @@ class PACEProtocol(
             } else if (cipherAlg.startsWith("AES")) {
                 return "AESCMAC"
             } else {
-                throw InvalidAlgorithmParameterException("Cannot infer MAC algorithm from cipher algorithm \"" + cipherAlg + "\"")
+                throw InvalidAlgorithmParameterException("Cannot infer MAC algorithm from cipher algorithm \"$cipherAlg\"")
             }
         }
     }
