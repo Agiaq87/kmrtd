@@ -188,7 +188,7 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
     @Throws(CertificateEncodingException::class)
     override fun getEncoded(): ByteArray? {
         try {
-            return cvCertificate.getDEREncoded()
+            return cvCertificate.derEncoded
         } catch (ioe: IOException) {
             throw CertificateEncodingException(ioe)
         }
@@ -404,7 +404,7 @@ class CardVerifiableCertificate protected constructor(cvCertificate: CVCertifica
         get() {
             try {
                 val template =
-                    cvCertificate.getCertificateBody().getAuthorizationTemplate()
+                    cvCertificate.certificateBody.authorizationTemplate
                 return CVCAuthorizationTemplate(template)
             } catch (nsfe: NoSuchFieldException) {
                 throw CertificateException("No such field", nsfe)

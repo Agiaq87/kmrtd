@@ -28,6 +28,7 @@
 package kmrtd.cert
 
 import net.sf.scuba.data.Country
+import org.giaquinto.kmrtd.cert.UnknownCountry
 import java.io.Serializable
 import java.security.Principal
 import java.util.*
@@ -190,12 +191,12 @@ class CVCPrincipal(
     companion object {
         private val serialVersionUID = -4905647207367309688L
 
-        private val LOGGER: Logger = Logger.getLogger("kmrtd.cert")
+        val LOGGER: Logger = Logger.getLogger("kmrtd.cert")
 
         /**
          * Factory
          */
-        fun from(countryName: String): CVCPrincipal {
+        /*fun from(countryName: String): CVCPrincipal {
             require(!(countryName.length < 2 + 5 || countryName.length > 2 + 9 + 5)) { "Name should be <Country (2F)><Mnemonic (9V)><SeqNum (5F)> formatted, found \"$countryName\"" }
 
             val alpha2Code = countryName.substring(0, 2).uppercase(Locale.getDefault())
@@ -203,7 +204,7 @@ class CVCPrincipal(
                 Country.getInstance(alpha2Code)
             } catch (iae: IllegalArgumentException) {
                 LOGGER.log(Level.FINE, "Could not find country for $alpha2Code", iae)
-                object : Country() {
+                *//*object : Country() {
                     private val serialVersionUID = 345841304964161797L
 
                     override fun valueOf(): Int {
@@ -225,13 +226,14 @@ class CVCPrincipal(
                     override fun toAlpha3Code(): String {
                         return "XXX"
                     }
-                }
+                }*//*
+                UnknownCountry(alpha2Code)
             }
 
             val mnemonic = countryName.substring(2, countryName.length - 5)
             val seqNumber = countryName.substring(countryName.length - 5, countryName.length)
 
             return CVCPrincipal(country, mnemonic, seqNumber)
-        }
+        }*/
     }
 }

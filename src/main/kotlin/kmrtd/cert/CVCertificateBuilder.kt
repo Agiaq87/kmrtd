@@ -27,7 +27,12 @@
  */
 package kmrtd.cert
 
-import org.ejbca.cvc.*
+
+import org.ejbca.cvc.AccessRightEnum
+import org.ejbca.cvc.AuthorizationRoleEnum
+import org.ejbca.cvc.CAReferenceField
+import org.ejbca.cvc.CertificateGenerator
+import org.ejbca.cvc.HolderReferenceField
 import org.ejbca.cvc.exception.ConstructionException
 import java.io.IOException
 import java.security.*
@@ -92,8 +97,8 @@ object CVCertificateBuilder {
                             .toAlpha2Code(), holderRef.mnemonic,
                         holderRef.seqNumber
                     ),
-                    CVCertificateBuilder.getRole(authZTemplate.role),
-                    CVCertificateBuilder.getAccessRight(authZTemplate.accessRight),
+                    getRole(authZTemplate.role),
+                    getAccessRight(authZTemplate.accessRight),
                     validFrom,
                     validTo,
                     provider
