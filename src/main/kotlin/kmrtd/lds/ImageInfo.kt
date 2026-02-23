@@ -54,7 +54,7 @@ interface ImageInfo : LDSElement {
      * 
      * @return mime-type string
      */
-    val mimeType: String
+    val mimeType: String?
 
     /**
      * Returns the width of the image in pixels.

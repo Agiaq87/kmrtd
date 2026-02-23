@@ -103,11 +103,22 @@ class TerminalAuthenticationInfo internal constructor(
 
     /**
      * Returns a DER object with this SecurityInfo data (DER sequence).
-     * 
+     *
      * @return a DER object with this SecurityInfo data
-     * 
+     *
      */
     @Deprecated("this method will be removed from visible interface (because of dependency on BC API)")
+    override val dERObject: ASN1Primitive
+        get() {
+            val v = ASN1EncodableVector()
+            v.add(ASN1ObjectIdentifier(oid))
+            v.add(ASN1Integer(version.toLong()))
+            if (efCVCA != null) {
+                v.add(efCVCA)
+            }
+            return DLSequence(v)
+        }
+    /*@Deprecated("this method will be removed from visible interface (because of dependency on BC API)")
     override fun getDERObject(): ASN1Primitive {
         val v = ASN1EncodableVector()
         v.add(ASN1ObjectIdentifier(oid))
@@ -116,25 +127,29 @@ class TerminalAuthenticationInfo internal constructor(
             v.add(efCVCA)
         }
         return DLSequence(v)
-    }
+    }*/
 
     /**
      * Returns the object identifier of this Terminal Authentication info.
-     * 
+     *
      * @return an object identifier
      */
-    override fun getObjectIdentifier(): String? {
+    override val objectIdentifier: String?
+        get() = oid
+    /*override fun getObjectIdentifier(): String? {
         return oid
-    }
+    }*/
 
     /**
      * Returns the protocol object identifier as a human readable string.
-     * 
+     *
      * @return a string
      */
-    override fun getProtocolOIDString(): String? {
+    override val protocolOIDString: String?
+        get() = toProtocolOIDString(oid)
+    /*override fun getProtocolOIDString(): String? {
         return toProtocolOIDString(oid)
-    }
+    }*/
 
     val fileId: Int
         /**
@@ -166,7 +181,7 @@ class TerminalAuthenticationInfo internal constructor(
 
     override fun hashCode(): Int {
         return (123
-                + 7 * (if (oid == null) 0 else oid.hashCode()) + 5 * version + 3 * (if (efCVCA == null) 1 else efCVCA.hashCode()))
+                + 7 * (oid?.hashCode() ?: 0) + 5 * version + 3 * (efCVCA?.hashCode() ?: 1))
     }
 
     override fun equals(other: Any?): Boolean {
@@ -187,7 +202,7 @@ class TerminalAuthenticationInfo internal constructor(
             return false
         }
 
-        return getDERObject().equals(otherTerminalAuthenticationInfo.getDERObject())
+        return dERObject.equals(otherTerminalAuthenticationInfo.dERObject)
     }
 
     /**
@@ -195,7 +210,7 @@ class TerminalAuthenticationInfo internal constructor(
      */
     private fun checkFields() {
         try {
-            require(checkRequiredIdentifier(oid)) { "Wrong identifier: " + oid }
+            require(checkRequiredIdentifier(oid)) { "Wrong identifier: $oid" }
             if (version != VERSION_1 && version != VERSION_2) {
                 LOGGER.warning(
                     ("Wrong version. Was expecting " + VERSION_1 + " or " + VERSION_2
@@ -204,10 +219,10 @@ class TerminalAuthenticationInfo internal constructor(
             }
             if (efCVCA != null) {
                 val fid = efCVCA.getObjectAt(0) as ASN1OctetString
-                require(fid.getOctets().size == 2) { "Malformed FID." }
+                require(fid.octets.size == 2) { "Malformed FID." }
                 if (efCVCA.size() == 2) {
                     val sfi = efCVCA.getObjectAt(1) as ASN1OctetString
-                    require(sfi.getOctets().size == 1) { "Malformed SFI." }
+                    require(sfi.octets.size == 1) { "Malformed SFI." }
                 }
             }
         } catch (e: Exception) {
@@ -325,8 +340,8 @@ class TerminalAuthenticationInfo internal constructor(
             if (efCVCA == null) {
                 return -1
             }
-            val s: ASN1Sequence? = efCVCA
-            val fid = s!!.getObjectAt(0) as ASN1OctetString
+            val s: ASN1Sequence = efCVCA
+            val fid = s.getObjectAt(0) as ASN1OctetString
             val bytes = fid.octets
             return (((bytes[0].toInt() and 0xFF) shl 8) or (bytes[1].toInt() and 0xFF)).toShort()
         }

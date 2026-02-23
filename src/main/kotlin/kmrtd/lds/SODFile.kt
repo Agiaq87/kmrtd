@@ -188,7 +188,7 @@ class SODFile : AbstractTaggedLDSFile {
      */
     @JvmOverloads
     constructor(
-        digestAlgorithm: String?, digestEncryptionAlgorithm: String,
+        digestAlgorithm: String, digestEncryptionAlgorithm: String,
         digestEncryptionParameters: AlgorithmParameterSpec?,
         dataGroupHashes: MutableMap<Int?, ByteArray>,
         privateKey: PrivateKey?,
@@ -297,13 +297,13 @@ class SODFile : AbstractTaggedLDSFile {
      * 
      * @throws IOException if something goes wrong
      */
-    constructor(inputStream: InputStream?) : super(EF_SOD_TAG, inputStream) {
+    constructor(inputStream: InputStream) : super(EF_SOD_TAG, inputStream) {
         /* Will throw IAE if no signer info. */
         SignedDataUtil.getSignerInfo(signedData!!)
     }
 
     @Throws(IOException::class)
-    override fun readContent(inputStream: InputStream?) {
+    override fun readContent(inputStream: InputStream) {
         this.signedData = readSignedData(inputStream)
     }
 
@@ -312,7 +312,7 @@ class SODFile : AbstractTaggedLDSFile {
         writeData(this.signedData, outputStream)
     }
 
-    val dataGroupHashes: MutableMap<Int?, ByteArray?>
+    val dataGroupHashes: MutableMap<Int, ByteArray>
         /**
          * Returns the stored data group hashes indexed by data group number.
          * 
@@ -320,18 +320,18 @@ class SODFile : AbstractTaggedLDSFile {
          */
         get() {
             val hashObjects: Array<DataGroupHash> =
-                Companion.getLDSSecurityObject(signedData!!).getDatagroupHash()
-            val hashMap: MutableMap<Int?, ByteArray?> =
-                TreeMap<Int?, ByteArray?>() /* HashMap... get it? :D (not funny anymore, now that it's a TreeMap.) */
+                Companion.getLDSSecurityObject(signedData!!).datagroupHash
+            val hashMap: MutableMap<Int, ByteArray> =
+                TreeMap<Int, ByteArray>() /* HashMap... get it? :D (not funny anymore, now that it's a TreeMap.) */
             for (hashObject in hashObjects) {
                 val number = hashObject.getDataGroupNumber()
-                val hashValue = hashObject.getDataGroupHashValue().getOctets()
-                hashMap.put(number, hashValue)
+                val hashValue = hashObject.getDataGroupHashValue().octets
+                hashMap[number] = hashValue
             }
             return hashMap
         }
 
-    val encryptedDigest: ByteArray?
+    val encryptedDigest: ByteArray
         /**
          * Returns the signature (the encrypted digest) over the hashes.
          * 
@@ -400,10 +400,10 @@ class SODFile : AbstractTaggedLDSFile {
         get() {
             val ldsVersionInfo: LDSVersionInfo? =
                 Companion.getLDSSecurityObject(signedData!!).versionInfo
-            if (ldsVersionInfo == null) {
-                return null
+            return if (ldsVersionInfo == null) {
+                null
             } else {
-                return ldsVersionInfo.ldsVersion
+                ldsVersionInfo.ldsVersion
             }
         }
 
@@ -416,13 +416,7 @@ class SODFile : AbstractTaggedLDSFile {
          * @since LDS V1.8
          */
         get() {
-            val ldsVersionInfo: LDSVersionInfo? =
-                Companion.getLDSSecurityObject(signedData!!).versionInfo
-            if (ldsVersionInfo == null) {
-                return null
-            } else {
-                return ldsVersionInfo.unicodeVersion
-            }
+            return getLDSSecurityObject(signedData!!).versionInfo?.unicodeVersion
         }
 
     val docSigningCertificates: MutableList<X509Certificate>

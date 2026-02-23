@@ -135,7 +135,7 @@ class ActiveAuthenticationInfo internal constructor(
         result.append(" [")
         result.append("protocol: " + toProtocolOIDString(this.objectIdentifier))
         result.append(", ")
-        result.append("version: " + version)
+        result.append("version: $version")
         result.append(", ")
         result.append(
             "signatureAlgorithmOID: " + toSignatureAlgorithmOIDString(
@@ -174,7 +174,8 @@ class ActiveAuthenticationInfo internal constructor(
      */
     override fun hashCode(): Int {
         return (12345
-                + 3 * (if (this.objectIdentifier == null) 0 else objectIdentifier.hashCode()) + 5 * version + 11 * (if (signatureAlgorithmOID == null) 1 else signatureAlgorithmOID.hashCode()))
+                + 3 * (if (this.objectIdentifier == null) 0 else objectIdentifier.hashCode()) + 5 * version + 11 * (signatureAlgorithmOID?.hashCode()
+            ?: 1))
     }
 
     /**
@@ -184,7 +185,7 @@ class ActiveAuthenticationInfo internal constructor(
         try {
             require(checkRequiredIdentifier(this.objectIdentifier)) { "Wrong identifier: " + this.objectIdentifier }
             if (version != VERSION_1) {
-                LOGGER.warning("Wrong version: " + version)
+                LOGGER.warning("Wrong version: $version")
             }
 
             /* FIXME check to see if signatureAlgorithmOID is valid. */
@@ -218,17 +219,17 @@ class ActiveAuthenticationInfo internal constructor(
 
         /** Specified in BSI TR 03111 Section 5.2.1.  */
         const val ECDSA_PLAIN_SIGNATURES: String = "0.4.0.127.0.7.1.1.4.1"
-        val ECDSA_PLAIN_SHA1_OID: String = ECDSA_PLAIN_SIGNATURES + ".1" /* 0.4.0.127.0.7.1.1.4.1.1, ecdsa-plain-SHA1 */
-        val ECDSA_PLAIN_SHA224_OID: String =
-            ECDSA_PLAIN_SIGNATURES + ".2" /* 0.4.0.127.0.7.1.1.4.1.2, ecdsa-plain-SHA224 */
-        val ECDSA_PLAIN_SHA256_OID: String =
-            ECDSA_PLAIN_SIGNATURES + ".3" /* 0.4.0.127.0.7.1.1.4.1.3, ecdsa-plain-SHA256 */
-        val ECDSA_PLAIN_SHA384_OID: String =
-            ECDSA_PLAIN_SIGNATURES + ".4" /* 0.4.0.127.0.7.1.1.4.1.4, ecdsa-plain-SHA384 */
-        val ECDSA_PLAIN_SHA512_OID: String =
-            ECDSA_PLAIN_SIGNATURES + ".5" /* 0.4.0.127.0.7.1.1.4.1.5, ecdsa-plain-SHA512 */
-        val ECDSA_PLAIN_RIPEMD160_OID: String =
-            ECDSA_PLAIN_SIGNATURES + ".6" /* 0.4.0.127.0.7.1.1.4.1.6, ecdsa-plain-RIPEMD160 */
+        const val ECDSA_PLAIN_SHA1_OID: String = "$ECDSA_PLAIN_SIGNATURES.1" /* 0.4.0.127.0.7.1.1.4.1.1, ecdsa-plain-SHA1 */
+        const val ECDSA_PLAIN_SHA224_OID: String =
+            "$ECDSA_PLAIN_SIGNATURES.2" /* 0.4.0.127.0.7.1.1.4.1.2, ecdsa-plain-SHA224 */
+        const val ECDSA_PLAIN_SHA256_OID: String =
+            "$ECDSA_PLAIN_SIGNATURES.3" /* 0.4.0.127.0.7.1.1.4.1.3, ecdsa-plain-SHA256 */
+        const val ECDSA_PLAIN_SHA384_OID: String =
+            "$ECDSA_PLAIN_SIGNATURES.4" /* 0.4.0.127.0.7.1.1.4.1.4, ecdsa-plain-SHA384 */
+        const val ECDSA_PLAIN_SHA512_OID: String =
+            "$ECDSA_PLAIN_SIGNATURES.5" /* 0.4.0.127.0.7.1.1.4.1.5, ecdsa-plain-SHA512 */
+        const val ECDSA_PLAIN_RIPEMD160_OID: String =
+            "$ECDSA_PLAIN_SIGNATURES.6" /* 0.4.0.127.0.7.1.1.4.1.6, ecdsa-plain-RIPEMD160 */
 
         /**
          * Translates an OID string to a Java mnemonic algorithm string.
@@ -260,7 +261,7 @@ class ActiveAuthenticationInfo internal constructor(
                 return "RIPEMD160withECDSA"
             }
 
-            throw NoSuchAlgorithmException("Unknown OID " + oid)
+            throw NoSuchAlgorithmException("Unknown OID $oid")
         }
 
         /* ONLY NON-PUBLIC METHODS BELOW */

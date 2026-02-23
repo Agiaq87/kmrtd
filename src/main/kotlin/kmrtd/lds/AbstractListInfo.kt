@@ -54,10 +54,10 @@ abstract class AbstractListInfo<R : Serializable?> : AbstractLDSInfo() {
      */
     protected fun getSubRecords(): MutableList<R?> {
         if (this.subRecords == null) {
-            this.subRecords = ArrayList<R?>()
+            this.subRecords = ArrayList()
         }
 
-        return ArrayList<R?>(this.subRecords)
+        return ArrayList(this.subRecords)
     }
 
     /**

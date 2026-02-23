@@ -111,7 +111,7 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
      * 1.2.840.10046.2.1 (DH public number) or 1.2.840.10045.2.1 (EC public key)
      */
     init {
-        require(checkRequiredIdentifier(protocolOID)) { "Invalid protocol id: " + protocolOID }
+        require(checkRequiredIdentifier(protocolOID)) { "Invalid protocol id: $protocolOID" }
 
         this.objectIdentifier = protocolOID
         this.domainParameter = domainParameter
@@ -174,9 +174,9 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
             .append("protocol: ").append(toProtocolOIDString(this.objectIdentifier))
             .append(", ")
             .append("domainParameter: [")
-            .append("algorithm: ").append(domainParameter.getAlgorithm().getId()) // e.g. ID_EC_PUBLIC_KEY
+            .append("algorithm: ").append(domainParameter.algorithm.getId()) // e.g. ID_EC_PUBLIC_KEY
             .append(", ")
-            .append("parameters: ").append(domainParameter.getParameters()) // e.g. ASN1 sequence of length 6
+            .append("parameters: ").append(domainParameter.parameters) // e.g. ASN1 sequence of length 6
             .append(if (parameterId == null) "" else ", parameterId: $parameterId")
             .append("]")
             .toString()
@@ -184,7 +184,7 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
 
     override fun hashCode(): Int {
         return (111111111
-                + 7 * objectIdentifier.hashCode() + 5 * domainParameter.hashCode() + 3 * (if (parameterId == null) 333 else parameterId.hashCode()))
+                + 7 * objectIdentifier.hashCode() + 5 * domainParameter.hashCode() + 3 * (parameterId?.hashCode() ?: 333))
     }
 
     override fun equals(other: Any?): Boolean {
@@ -205,7 +205,7 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
     companion object {
         private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
-        private val serialVersionUID = -5851251908152594728L
+        private const val serialVersionUID = -5851251908152594728L
 
         /**
          * Value for parameter algorithm OID (part of parameters AlgorithmIdentifier).
@@ -256,9 +256,9 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
             paramSequenceList.add(versionObject)
 
             val fieldIdOID = ASN1ObjectIdentifier(ID_PRIME_FIELD)
-            val curve = ecParameterSpec.getCurve()
-            val field = curve.getField() as ECFieldFp
-            val p = ASN1Integer(field.getP())
+            val curve = ecParameterSpec.curve
+            val field = curve.field as ECFieldFp
+            val p = ASN1Integer(field.p)
             val fieldIdObject: ASN1Sequence = DLSequence(arrayOf<ASN1Encodable>(fieldIdOID, p))
             paramSequenceList.add(fieldIdObject)
 
@@ -339,7 +339,7 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
             try {
                 val versionObject = paramSequence.getObjectAt(0) as ASN1Integer
                 /* BigInteger version = */
-                (versionObject).getValue()
+                (versionObject).value
 
                 //        assert BigInteger.ONE.equals(version);
                 val fieldIdObject = paramSequence.getObjectAt(1) as ASN1Sequence

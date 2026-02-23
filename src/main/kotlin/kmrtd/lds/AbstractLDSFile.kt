@@ -92,6 +92,6 @@ abstract class AbstractLDSFile
     companion object {
         private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
-        private val serialVersionUID = -4908935713109830409L
+        private const val serialVersionUID = -4908935713109830409L
     }
 }

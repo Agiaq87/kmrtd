@@ -52,12 +52,10 @@ import org.bouncycastle.asn1.DLSequence
  * @version $Revision: $
  */
 class EFDIRInfo(efDIR: ByteArray) : SecurityInfo() {
-    private val efDIR: ByteArray
+    //requireNotNull(efDIR) { "Cannot create EFDIRInfo for null" }
+    private val efDIR: ByteArray = efDIR.copyOf(efDIR.size)
 
-    init {
-        requireNotNull(efDIR) { "Cannot create EFDIRInfo for null" }
-        this.efDIR = efDIR.copyOf(efDIR.size)
-    }
+    override val objectIdentifier: String = "2.23.136.1.1.13"
 
     val eFDIR: ByteArray
         /**
@@ -67,21 +65,18 @@ class EFDIRInfo(efDIR: ByteArray) : SecurityInfo() {
          */
         get() = efDIR.copyOf(efDIR.size)
 
-    override val dERObject: ASN1Primitive?
+    override val dERObject: ASN1Primitive
         get() {
             val v = ASN1EncodableVector()
-            v.add(ASN1ObjectIdentifier(Companion.objectIdentifier))
+            v.add(ASN1ObjectIdentifier(objectIdentifier))
             v.add(ASN1OctetString.getInstance(efDIR))
             return DLSequence.getInstance(v)
         }
 
-    override val protocolOIDString: String?
+    override val protocolOIDString: String
         get() = "id-EFDIR"
 
     companion object {
         private const val serialVersionUID = 6778691696414558842L
-
-        val objectIdentifier: String = "2.23.136.1.1.13"
-            get() = Companion.field
     }
 }

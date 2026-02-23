@@ -57,7 +57,7 @@ abstract class DisplayedImageDataGroup : DataGroup {
     constructor(dataGroupTag: Int, imageInfos: MutableList<DisplayedImageInfo>, displayedImageTagToUse: Int) : super(
         dataGroupTag
     ) {
-        requireNotNull(imageInfos) { "imageInfos cannot be null" }
+        //requireNotNull(imageInfos) { "imageInfos cannot be null" }
         this.displayedImageTagToUse = displayedImageTagToUse
         this.imageInfos = ArrayList<DisplayedImageInfo>(imageInfos)
         checkTypesConsistentWithTag()
@@ -71,7 +71,7 @@ abstract class DisplayedImageDataGroup : DataGroup {
      * 
      * @throws IOException on error reading the input stream
      */
-    constructor(dataGroupTag: Int, inputStream: InputStream?) : super(dataGroupTag, inputStream) {
+    constructor(dataGroupTag: Int, inputStream: InputStream) : super(dataGroupTag, inputStream) {
         if (this.imageInfos == null) {
             this.imageInfos = ArrayList<DisplayedImageInfo>()
         }
@@ -79,8 +79,8 @@ abstract class DisplayedImageDataGroup : DataGroup {
     }
 
     @Throws(IOException::class)
-    override fun readContent(inputStream: InputStream?) {
-        val tlvIn = if (inputStream is TLVInputStream) inputStream else TLVInputStream(inputStream)
+    override fun readContent(inputStream: InputStream) {
+        val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
         val countTag = tlvIn.readTag()
         require(countTag == DISPLAYED_IMAGE_COUNT_TAG) {
             "Expected tag 0x02 in displayed image structure, found " + Integer.toHexString(
@@ -109,8 +109,8 @@ abstract class DisplayedImageDataGroup : DataGroup {
      * @throws IOException on error writing to the stream
      */
     @Throws(IOException::class)
-    override fun writeContent(outputStream: OutputStream?) {
-        val tlvOut = if (outputStream is TLVOutputStream) outputStream else TLVOutputStream(outputStream)
+    override fun writeContent(outputStream: OutputStream) {
+        val tlvOut = outputStream as? TLVOutputStream ?: TLVOutputStream(outputStream)
         tlvOut.writeTag(DISPLAYED_IMAGE_COUNT_TAG)
         tlvOut.writeValue(byteArrayOf(imageInfos!!.size.toByte()))
         for (imageInfo in imageInfos!!) {
@@ -137,7 +137,7 @@ abstract class DisplayedImageDataGroup : DataGroup {
     }
 
     override fun hashCode(): Int {
-        return 1337 + (if (imageInfos == null) 1 else imageInfos.hashCode()) + 31337
+        return 1337 + (imageInfos?.hashCode() ?: 1) + 31337
     }
 
     override fun equals(other: Any?): Boolean {

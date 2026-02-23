@@ -67,11 +67,11 @@ abstract class AbstractLDSInfo : LDSElement {
      * @throws IOException on error writing to the stream
      */
     @Throws(IOException::class)
-    abstract fun writeObject(outputStream: OutputStream?)
+    abstract fun writeObject(outputStream: OutputStream)
 
     companion object {
         private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
-        private val serialVersionUID = -2340098256249194537L
+        private const val serialVersionUID = -2340098256249194537L
     }
 }

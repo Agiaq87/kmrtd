@@ -27,6 +27,7 @@
  */
 package kmrtd.lds
 
+import kmrtd.Util
 import org.bouncycastle.asn1.*
 import org.bouncycastle.asn1.cms.*
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers
@@ -135,7 +136,7 @@ object SignedDataUtil {
      */
     @JvmStatic
     @Throws(IOException::class)
-    fun readSignedData(inputStream: InputStream?): SignedData {
+    fun readSignedData(inputStream: InputStream): SignedData {
         val asn1InputStream = ASN1InputStream(inputStream, true)
         val sequence = ASN1Sequence.getInstance(asn1InputStream.readObject())
 
@@ -167,7 +168,7 @@ object SignedDataUtil {
      */
     @JvmStatic
     @Throws(IOException::class)
-    fun writeData(signedData: SignedData?, outputStream: OutputStream) {
+    fun writeData(signedData: SignedData, outputStream: OutputStream) {
         val v = ASN1EncodableVector()
         v.add(ASN1ObjectIdentifier(RFC_3369_SIGNED_DATA_OID))
         v.add(DERTaggedObject(0, signedData))
@@ -185,13 +186,13 @@ object SignedDataUtil {
      */
     @JvmStatic
     fun getContent(signedData: SignedData): ASN1Primitive? {
-        val encapContentInfo = signedData.getEncapContentInfo()
+        val encapContentInfo = signedData.encapContentInfo
 
-        val eContent = encapContentInfo.getContent() as ASN1OctetString
+        val eContent = encapContentInfo.content as ASN1OctetString
 
         var inputStream: ASN1InputStream? = null
         try {
-            inputStream = ASN1InputStream(ByteArrayInputStream(eContent.getOctets()))
+            inputStream = ASN1InputStream(ByteArrayInputStream(eContent.octets))
             return inputStream.readObject()
         } catch (ioe: IOException) {
             LOGGER.log(Level.WARNING, "Unexpected exception", ioe)
@@ -224,9 +225,7 @@ object SignedDataUtil {
             throw IOException("Was expecting an ASN1TaggedObject, found " + asn1Encodable.javaClass.canonicalName)
         }
 
-        val asn1TaggedObject = asn1Encodable
-
-        val tagClass = asn1TaggedObject.getTagClass()
+        val tagClass = asn1Encodable.getTagClass()
         if (tagClass != BERTags.CONTEXT_SPECIFIC) {
             throw IOException(
                 "Was expecting CONTEXT_SPECIFIC tag class in ASN1 tagged object, found " + Integer.toHexString(
@@ -235,12 +234,12 @@ object SignedDataUtil {
             )
         }
 
-        val tagNo = asn1TaggedObject.getTagNo()
+        val tagNo = asn1Encodable.getTagNo()
         if (tagNo != 0) {
             throw IOException("Was expecting tag 0, found " + Integer.toHexString(tagNo))
         }
 
-        return asn1TaggedObject.getExplicitBaseObject()
+        return asn1Encodable.getExplicitBaseObject()
     }
 
     /**
@@ -359,7 +358,7 @@ object SignedDataUtil {
 
         /* Signed attributes present (i.e. a structure containing a hash of the content), return that structure to be signed... */
         /* This option is taken by ICAO passports. */
-        var attributesBytes: ByteArray? = null
+        var attributesBytes: ByteArray?
         val digAlg = signerInfo.digestAlgorithm.algorithm.getId()
 
         try {
@@ -395,7 +394,7 @@ object SignedDataUtil {
     fun getIssuerAndSerialNumber(signedData: SignedData): IssuerAndSerialNumber? {
         val signerInfo = getSignerInfo(signedData)
         val signerIdentifier = signerInfo.sid
-        val signerIdentifierId = signerIdentifier.getId()
+        val signerIdentifierId = signerIdentifier.id
         if (!(signerIdentifierId is ASN1Sequence || signerIdentifierId is IssuerAndSerialNumber)) {
             /* NOTE: DE MasterList appears to use DER octet string here. */
             return null
@@ -418,19 +417,16 @@ object SignedDataUtil {
      * @return the subject-key-identifier
      */
     @JvmStatic
-    fun getSubjectKeyIdentifier(signedData: SignedData): ByteArray {
+    fun getSubjectKeyIdentifier(signedData: SignedData): ByteArray? {
         val signerInfo = getSignerInfo(signedData)
-        val signerIdentifier = signerInfo.getSID()
-        if (signerIdentifier == null) {
-            return null
-        }
+        val signerIdentifier = signerInfo.sid ?: return null
 
-        val signerIdentifierId = signerIdentifier.getId()
+        val signerIdentifierId = signerIdentifier.id
         if (signerIdentifierId == null || signerIdentifierId !is ASN1OctetString) {
             return null
         }
 
-        return signerIdentifierId.getOctets()
+        return signerIdentifierId.octets
     }
 
     /**
@@ -442,14 +438,11 @@ object SignedDataUtil {
      */
     fun getObjectsFromOctetString(octetString: ASN1OctetString): MutableList<ASN1Primitive?> {
         val result: MutableList<ASN1Primitive?> = ArrayList<ASN1Primitive?>()
-        val octets = octetString.getOctets()
+        val octets = octetString.octets
         val derInputStream = ASN1InputStream(ByteArrayInputStream(octets))
         try {
             while (true) {
-                val derObject = derInputStream.readObject()
-                if (derObject == null) {
-                    break
-                }
+                val derObject = derInputStream.readObject() ?: break
                 result.add(derObject)
             }
             derInputStream.close()
@@ -468,19 +461,18 @@ object SignedDataUtil {
      * @return the list of certificates
      */
     @JvmStatic
-    fun getCertificates(signedData: SignedData): MutableList<X509Certificate?> {
+    fun getCertificates(signedData: SignedData): MutableList<X509Certificate> {
         val encodedCertificates = signedData.certificates
-        val certificateCount = if (encodedCertificates == null) 0 else encodedCertificates.size()
+        val certificateCount = encodedCertificates?.size() ?: 0
 
-        val result: MutableList<X509Certificate?> = ArrayList<X509Certificate?>(certificateCount)
+        val result: MutableList<X509Certificate> = ArrayList<X509Certificate>(certificateCount)
         if (certificateCount <= 0) {
             return result
         }
 
         for (i in 0..<certificateCount) {
             try {
-                val certAsASN1Object = Certificate.getInstance(encodedCertificates!!.getObjectAt(i))
-                result.add(SignedDataUtil.decodeCertificate(certAsASN1Object!!))
+                result.add(decodeCertificate(Certificate.getInstance(encodedCertificates.getObjectAt(i))))
             } catch (e: Exception) {
                 LOGGER.log(Level.WARNING, "Exception in decoding certificate", e)
             }
@@ -500,15 +492,15 @@ object SignedDataUtil {
      * @throws GeneralSecurityException on error decoding
      */
     @Throws(IOException::class, GeneralSecurityException::class)
-    fun decodeCertificate(certAsASN1Object: Certificate): X509Certificate? {
+    fun decodeCertificate(certAsASN1Object: Certificate): X509Certificate {
         val certSpec = certAsASN1Object.getEncoded(ASN1Encoding.DER)
         /*
      * NOTE: We explicitly prefer Bouncy Castle here. The default Sun provider claims to support all X509 encoded
      * certificates but cannot handle named EC curves
      * for EC public keys.
      */
-        val factory = CertificateFactory.getInstance("X.509", Util.getBouncyCastleProvider())
-        return factory.generateCertificate(ByteArrayInputStream(certSpec)) as X509Certificate?
+        val factory = CertificateFactory.getInstance("X.509", Util.bouncyCastleProvider)
+        return factory.generateCertificate(ByteArrayInputStream(certSpec)) as X509Certificate
     }
 
     /**
@@ -528,7 +520,7 @@ object SignedDataUtil {
     @JvmStatic
     @Throws(GeneralSecurityException::class)
     fun createSignedData(
-        digestAlgorithm: String?, digestEncryptionAlgorithm: String,
+        digestAlgorithm: String, digestEncryptionAlgorithm: String,
         contentTypeOID: String, contentInfo: ContentInfo, encryptedDigest: ByteArray,
         docSigningCertificate: X509Certificate
     ): SignedData {
@@ -561,7 +553,7 @@ object SignedDataUtil {
     @JvmStatic
     @Throws(GeneralSecurityException::class)
     fun createSignedData(
-        digestAlgorithm: String?,
+        digestAlgorithm: String,
         digestEncryptionAlgorithm: String,
         digestEncryptionParameters: AlgorithmParameterSpec?,
         contentTypeOID: String,
@@ -602,7 +594,7 @@ object SignedDataUtil {
      */
     @Throws(GeneralSecurityException::class)
     fun createSignerInfo(
-        digestAlgorithm: String?,
+        digestAlgorithm: String,
         digestEncryptionAlgorithm: String, contentTypeOID: String, contentInfo: ContentInfo,
         encryptedDigest: ByteArray, docSigningCertificate: X509Certificate
     ): SignerInfo {
@@ -634,7 +626,7 @@ object SignedDataUtil {
      */
     @Throws(GeneralSecurityException::class)
     fun createSignerInfo(
-        digestAlgorithm: String?,
+        digestAlgorithm: String,
         digestEncryptionAlgorithm: String,
         digestEncryptionParameters: AlgorithmParameterSpec?,
         contentTypeOID: String,
@@ -642,11 +634,11 @@ object SignedDataUtil {
         encryptedDigest: ByteArray,
         docSigningCertificate: X509Certificate
     ): SignerInfo {
-        requireNotNull(encryptedDigest) { "Encrypted digest cannot be null" }
+        //requireNotNull(encryptedDigest) { "Encrypted digest cannot be null" }
 
         /* Get the issuer name (CN, O, OU, C) from the cert and put it in a SignerIdentifier struct. */
-        val docSignerName = X500Name.getInstance(docSigningCertificate.getIssuerX500Principal().getEncoded())
-        val serial = docSigningCertificate.getSerialNumber()
+        val docSignerName = X500Name.getInstance(docSigningCertificate.getIssuerX500Principal().encoded)
+        val serial = docSigningCertificate.serialNumber
         val sid = SignerIdentifier(IssuerAndSerialNumber(docSignerName, serial))
 
         val digestAlgorithmObject = AlgorithmIdentifier(ASN1ObjectIdentifier(lookupOIDByMnemonic(digestAlgorithm)))
@@ -684,7 +676,7 @@ object SignedDataUtil {
      */
     @Throws(GeneralSecurityException::class)
     fun createAuthenticatedAttributes(
-        digestAlgorithm: String?,
+        digestAlgorithm: String,
         contentTypeOID: String,
         contentInfo: ContentInfo
     ): ASN1Set {
@@ -694,7 +686,7 @@ object SignedDataUtil {
             digestAlgorithm = "SHA-256"
         }
         val dig = Util.getMessageDigest(digestAlgorithm)
-        val contentBytes = (contentInfo.getContent() as ASN1OctetString).getOctets()
+        val contentBytes = (contentInfo.content as ASN1OctetString).octets
         val digestedContentBytes = dig.digest(contentBytes)
         val digestedContent: ASN1OctetString = DEROctetString(digestedContentBytes)
         val contentTypeAttribute = Attribute(
@@ -737,10 +729,10 @@ object SignedDataUtil {
      */
     @Throws(CertificateException::class)
     fun createCertificate(certificate: X509Certificate): ASN1Sequence? {
-        requireNotNull(certificate) { "Cannot encode null certificate" }
+        //requireNotNull(certificate) { "Cannot encode null certificate" }
 
         try {
-            val certSpec = certificate.getEncoded()
+            val certSpec = certificate.encoded
             val asn1In = ASN1InputStream(certSpec)
             try {
                 return asn1In.readObject() as ASN1Sequence?
@@ -770,7 +762,7 @@ object SignedDataUtil {
      */
     @JvmStatic
     fun signData(
-        digestAlgorithm: String?,
+        digestAlgorithm: String,
         digestEncryptionAlgorithm: String,
         contentTypeOID: String,
         contentInfo: ContentInfo,
@@ -803,7 +795,7 @@ object SignedDataUtil {
      */
     @JvmStatic
     fun signData(
-        digestAlgorithm: String?,
+        digestAlgorithm: String,
         digestEncryptionAlgorithm: String,
         digestEncryptionParameters: AlgorithmParameterSpec?,
         contentTypeOID: String,
@@ -811,16 +803,15 @@ object SignedDataUtil {
         privateKey: PrivateKey?,
         provider: String?
     ): ByteArray? {
-        var encryptedDigest: ByteArray? = null
+        var encryptedDigest: ByteArray?
         try {
             val dataToBeSigned = createAuthenticatedAttributes(digestAlgorithm, contentTypeOID, contentInfo).getEncoded(
                 ASN1Encoding.DER
             )
-            var s: Signature? = null
-            if (provider != null) {
-                s = Signature.getInstance(digestEncryptionAlgorithm, provider)
+            val s: Signature = if (provider != null) {
+                Signature.getInstance(digestEncryptionAlgorithm, provider)
             } else {
-                s = Signature.getInstance(digestEncryptionAlgorithm)
+                Signature.getInstance(digestEncryptionAlgorithm)
             }
             if (digestEncryptionParameters != null) {
                 s.setParameter(digestEncryptionParameters)
@@ -844,7 +835,7 @@ object SignedDataUtil {
      */
     @JvmStatic
     fun getSignerInfo(signedData: SignedData): SignerInfo {
-        val signerInfos = signedData.getSignerInfos()
+        val signerInfos = signedData.signerInfos
         require(!(signerInfos == null || signerInfos.size() <= 0)) { "No signer info in signed data" }
 
         if (signerInfos.size() > 1) {
@@ -865,7 +856,7 @@ object SignedDataUtil {
      */
     @JvmStatic
     @Throws(NoSuchAlgorithmException::class)
-    fun lookupMnemonicByOID(oid: String?): String {
+    fun lookupMnemonicByOID(oid: String?): String? {
         if (oid == null) {
             return null
         }
@@ -954,7 +945,7 @@ object SignedDataUtil {
             return "MGF1"
         }
 
-        throw NoSuchAlgorithmException("Unknown OID " + oid)
+        throw NoSuchAlgorithmException("Unknown OID $oid")
     }
 
     /**
@@ -1088,7 +1079,7 @@ object SignedDataUtil {
             if (attrValuesSet.size() != 1) {
                 LOGGER.warning("Expected only one attribute value in signedAttribute message digest in eContent!")
             }
-            val storedDigestedContent = (attrValuesSet.getObjectAt(0) as ASN1OctetString).getOctets()
+            val storedDigestedContent = (attrValuesSet.getObjectAt(0) as ASN1OctetString).octets
 
             if (storedDigestedContent == null) {
                 LOGGER.warning("Error extracting signedAttribute message digest in eContent!")
@@ -1110,7 +1101,7 @@ object SignedDataUtil {
      * @return the attributes as a Java list
      */
     private fun getAttributes(signedAttributesSet: ASN1Set): MutableList<Attribute> {
-        val attributeObjects: MutableList<ASN1Sequence?> = Collections.list<Any?>(signedAttributesSet.getObjects())
+        val attributeObjects: MutableList<ASN1Sequence> = mutableListOf(signedAttributesSet.objects as ASN1Sequence)
         val attributes: MutableList<Attribute> = ArrayList<Attribute>(attributeObjects.size)
         for (attributeObject in attributeObjects) {
             val attribute = Attribute.getInstance(attributeObject)

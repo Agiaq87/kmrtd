@@ -206,6 +206,6 @@ class CardAccessFile : Serializable {
     companion object {
         private val LOGGER: Logger = Logger.getLogger("kmrtd.lds")
 
-        private val serialVersionUID = -3536507558193769951L
+        private const val serialVersionUID = -3536507558193769951L
     }
 }

@@ -55,7 +55,7 @@ abstract class DataGroup : AbstractTaggedLDSFile {
      * 
      * @throws IOException on error reading input stream
      */
-    protected constructor(dataGroupTag: Int, inputStream: InputStream?) : super(dataGroupTag, inputStream)
+    protected constructor(dataGroupTag: Int, inputStream: InputStream) : super(dataGroupTag, inputStream)
 
     /**
      * Returns a textual representation of this file.
@@ -63,10 +63,10 @@ abstract class DataGroup : AbstractTaggedLDSFile {
      * @return a textual representation of this file
      */
     override fun toString(): String {
-        return "DataGroup [" + Integer.toHexString(getTag()) + " (" + length + ")]"
+        return "DataGroup [" + Integer.toHexString(tag) + " (" + length + ")]"
     }
 
     companion object {
-        private val serialVersionUID = -4761360877353069639L
+        private const val serialVersionUID = -4761360877353069639L
     }
 }

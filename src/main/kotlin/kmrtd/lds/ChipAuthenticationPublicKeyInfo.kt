@@ -167,7 +167,7 @@ class ChipAuthenticationPublicKeyInfo @JvmOverloads constructor(
     }
 
     override fun hashCode(): Int {
-        return 123 + 1337 * (objectIdentifier.hashCode() + (if (keyId == null) 111 else keyId.hashCode()) + (if (this.subjectPublicKey == null) 111 else subjectPublicKey.hashCode()))
+        return 123 + 1337 * (objectIdentifier.hashCode() + (keyId?.hashCode() ?: 111) + (if (this.subjectPublicKey == null) 111 else subjectPublicKey.hashCode()))
     }
 
     override fun equals(other: Any?): Boolean {
@@ -226,7 +226,7 @@ class ChipAuthenticationPublicKeyInfo @JvmOverloads constructor(
                 return "ECDH"
             }
 
-            throw NumberFormatException("Unknown OID: \"" + oid + "\"")
+            throw NumberFormatException("Unknown OID: \"$oid\"")
         }
 
         /**

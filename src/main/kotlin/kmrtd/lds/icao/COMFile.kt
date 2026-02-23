@@ -199,9 +199,11 @@ class COMFile : AbstractTaggedLDSFile {
          * @return a string of the form "aa.bb.cc"
          */
         get() {
-            var unicodeVersion = (majorVersionUnicode
+            var unicodeVersion = (
+                    majorVersionUnicode
                     + "." + minorVersionUnicode
-                    + "." + releaseLevelUnicode)
+                    + "." + releaseLevelUnicode
+                    )
 
             try {
                 val major = majorVersionUnicode!!.toInt()

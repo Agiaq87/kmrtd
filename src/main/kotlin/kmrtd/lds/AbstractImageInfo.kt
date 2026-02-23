@@ -91,7 +91,7 @@ abstract class AbstractImageInfo
      * 
      * @param mimeType the new mime-type
      */
-  override var mimeType: String?
+  override var mimeType: String? = null
 ) : ImageInfo {
     /**
      * Returns the content-type,
@@ -108,13 +108,23 @@ abstract class AbstractImageInfo
      * 
      * @return the mime-type of the encoded image
      */
-    private var imageBytes: ByteArray?
+    private var imageBytes: ByteArray? = null
 
     // FIXME: It's not clear how serialization should work if not fully read. (Clients should only serialize if imageBytes != null.)
     @Transient
     private var splittableInputStream: SplittableInputStream? = null
     private var imagePositionInInputStream = 0
-    override var imageLength = 0
+    override val imageLength: Int = 0
+        get() {
+            if (splittableInputStream != null) {
+                return field
+            }
+
+            /* DEBUG: END */
+            checkNotNull(imageBytes) { "Cannot get length of null" }
+
+            return imageBytes!!.size
+        }
 
     /**
      * Returns the width of the image.
@@ -179,17 +189,17 @@ abstract class AbstractImageInfo
      * 
      * @return the length of the encoded image
      */
-    override fun getImageLength(): Int {
-        /* DEBUG: START */
+    /*override fun getImageLength(): Int {
+        *//* DEBUG: START *//*
         if (splittableInputStream != null) {
             return imageLength
         }
 
-        /* DEBUG: END */
+        *//* DEBUG: END *//*
         checkNotNull(imageBytes) { "Cannot get length of null" }
 
         return imageBytes!!.size
-    }
+    }*/
 
     /**
      * Returns a textual representation of this image info.
@@ -321,7 +331,7 @@ abstract class AbstractImageInfo
      * @param imageBytes the image bytes
      */
     protected fun setImageBytes(imageBytes: ByteArray) {
-        requireNotNull(imageBytes) { "Cannot set null image bytes" }
+        //requireNotNull(imageBytes) { "Cannot set null image bytes" }
 
         try {
             readImage(ByteArrayInputStream(imageBytes), imageBytes.size.toLong())
@@ -338,7 +348,7 @@ abstract class AbstractImageInfo
      * @throws IOException on error reading from the stream
      */
     @Throws(IOException::class)
-    protected abstract fun readObject(inputStream: InputStream?)
+    protected abstract fun readObject(inputStream: InputStream)
 
     /**
      * Writes this object to a stream.
@@ -348,7 +358,7 @@ abstract class AbstractImageInfo
      * @throws IOException on error writing to the stream
      */
     @Throws(IOException::class)
-    protected abstract fun writeObject(outputStream: OutputStream?)
+    protected abstract fun writeObject(outputStream: OutputStream)
 
     /* ONLY PRIVATE METHODS BELOW */
     /**
@@ -360,10 +370,9 @@ abstract class AbstractImageInfo
      */
     @Throws(IOException::class)
     private fun getImageBytes(): ByteArray {
-        var inputStream: InputStream? = null
         val length = imageLength
         val imageBytes = ByteArray(length)
-        inputStream = imageInputStream
+        val inputStream = imageInputStream
         val imageInputStream = DataInputStream(inputStream)
         imageInputStream.readFully(imageBytes)
         return imageBytes
@@ -381,15 +390,14 @@ abstract class AbstractImageInfo
          * 
          * @return a human readable string
          */
-        private fun typeToString(type: Int): String {
+        private fun typeToString(type: Int): String =
             when (type) {
-                ImageInfo.TYPE_PORTRAIT -> return "Portrait"
-                ImageInfo.TYPE_SIGNATURE_OR_MARK -> return "Signature or usual mark"
-                ImageInfo.TYPE_FINGER -> return "Finger"
-                ImageInfo.TYPE_IRIS -> return "Iris"
-                ImageInfo.TYPE_UNKNOWN -> return "Unknown"
+                ImageInfo.TYPE_PORTRAIT -> "Portrait"
+                ImageInfo.TYPE_SIGNATURE_OR_MARK -> "Signature or usual mark"
+                ImageInfo.TYPE_FINGER -> "Finger"
+                ImageInfo.TYPE_IRIS -> "Iris"
+                ImageInfo.TYPE_UNKNOWN -> "Unknown"
                 else -> throw NumberFormatException("Unknown type: " + Integer.toHexString(type))
             }
-        }
     }
 }

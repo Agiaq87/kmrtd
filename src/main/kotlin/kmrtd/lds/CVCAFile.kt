@@ -103,7 +103,7 @@ class CVCAFile : AbstractLDSFile {
      */
     @JvmOverloads
     constructor(fid: Short, caReference: String, altCAReference: String? = null) {
-        require(!(caReference == null || caReference.length > 16 || (altCAReference != null && altCAReference.length > 16)))
+        require(!(caReference.length > 16 || (altCAReference != null && altCAReference.length > 16)))
         this.fID = fid
         this.caReference = caReference
         this.altCAReference = altCAReference

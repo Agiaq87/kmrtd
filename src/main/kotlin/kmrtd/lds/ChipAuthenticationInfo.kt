@@ -128,7 +128,7 @@ class ChipAuthenticationInfo @JvmOverloads constructor(
         try {
             require(checkRequiredIdentifier(this.objectIdentifier)) { "Wrong identifier: " + this.objectIdentifier }
             if (version != VERSION_1 && version != VERSION_2) {
-                LOGGER.warning("Wrong version. Was expecting " + VERSION_1 + " or " + VERSION_2 + ", found " + version)
+                LOGGER.warning("Wrong version. Was expecting $VERSION_1 or $VERSION_2, found $version")
             }
         } catch (e: Exception) {
             LOGGER.log(Level.WARNING, "Unexpected exception", e)
@@ -140,11 +140,12 @@ class ChipAuthenticationInfo @JvmOverloads constructor(
         return ("ChipAuthenticationInfo ["
                 + "protocol: " + toProtocolOIDString(this.objectIdentifier)
                 + ", version: " + version
-                + ", keyId: " + (if (keyId == null) "-" else keyId) + "]")
+                + ", keyId: " + (keyId ?: "-") + "]")
     }
 
     override fun hashCode(): Int {
-        return 3 + 11 * (if (this.objectIdentifier == null) 0 else objectIdentifier.hashCode()) + 61 * version + 1991 * (if (keyId == null) 111 else keyId.hashCode())
+        return 3 + 11 * (if (this.objectIdentifier == null) 0 else objectIdentifier.hashCode()) + 61 * version + 1991 * (keyId?.hashCode()
+            ?: 111)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -222,7 +223,7 @@ class ChipAuthenticationInfo @JvmOverloads constructor(
                 return "ECDH"
             }
 
-            throw NumberFormatException("Unknown OID: \"" + oid + "\"")
+            throw NumberFormatException("Unknown OID: \"$oid\"")
         }
 
         /**
@@ -248,7 +249,7 @@ class ChipAuthenticationInfo @JvmOverloads constructor(
                 return "AES"
             }
 
-            throw NumberFormatException("Unknown OID: \"" + oid + "\"")
+            throw NumberFormatException("Unknown OID: \"$oid\"")
         }
 
         /**
@@ -274,7 +275,7 @@ class ChipAuthenticationInfo @JvmOverloads constructor(
                 return "SHA-256"
             }
 
-            throw NumberFormatException("Unknown OID: \"" + oid + "\"")
+            throw NumberFormatException("Unknown OID: \"$oid\"")
         }
 
         /**
@@ -302,7 +303,7 @@ class ChipAuthenticationInfo @JvmOverloads constructor(
                 return 256
             }
 
-            throw NumberFormatException("Unknown OID: \"" + oid + "\"")
+            throw NumberFormatException("Unknown OID: \"$oid\"")
         }
 
         /**

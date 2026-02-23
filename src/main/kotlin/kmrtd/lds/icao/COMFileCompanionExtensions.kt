@@ -1,8 +1,6 @@
-package org.giaquinto.kmrtd.lds.icao
+package kmrtd.lds.icao
 
-import kmrtd.lds.icao.COMFile
-import java.util.IllegalFormatConversionException
-import java.util.StringTokenizer
+import java.util.*
 
 /**
  * Constructs a new COM file.

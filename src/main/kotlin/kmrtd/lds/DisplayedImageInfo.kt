@@ -59,7 +59,7 @@ class DisplayedImageInfo : AbstractImageInfo {
      * @param type one of [ImageInfo.TYPE_PORTRAIT] or [ImageInfo.TYPE_SIGNATURE_OR_MARK]
      * @param imageBytes encoded image, for *Portrait* and *Signature or mark* use JPEG encoding
      */
-    constructor(type: Int, imageBytes: ByteArray?) : super(type, getMimeTypeFromType(type)) {
+    constructor(type: Int, imageBytes: ByteArray) : super(type, getMimeTypeFromType(type)) {
         displayedImageTag = getDisplayedImageTagFromType(type)
         setImageBytes(imageBytes)
     }
@@ -71,7 +71,7 @@ class DisplayedImageInfo : AbstractImageInfo {
      * 
      * @throws IOException if decoding fails
      */
-    constructor(`in`: InputStream?) {
+    constructor(`in`: InputStream) {
         readObject(`in`)
     }
 
@@ -84,7 +84,7 @@ class DisplayedImageInfo : AbstractImageInfo {
      * @throws IOException if reading fails
      */
     @Throws(IOException::class)
-    override fun readObject(inputStream: InputStream?) {
+    override fun readObject(inputStream: InputStream) {
         val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
 
         displayedImageTag = tlvIn.readTag()
@@ -94,7 +94,7 @@ class DisplayedImageInfo : AbstractImageInfo {
         ) { "Expected tag 0x5F40 or 0x5F43, found " + Integer.toHexString(displayedImageTag) }
 
         val type: Int = getTypeFromDisplayedImageTag(displayedImageTag)
-        type = type
+        //type = type
         mimeType = getMimeTypeFromType(type)
 
         val imageLength = tlvIn.readLength().toLong()
@@ -103,7 +103,7 @@ class DisplayedImageInfo : AbstractImageInfo {
     }
 
     @Throws(IOException::class)
-    public override fun writeObject(outputStream: OutputStream?) {
+    public override fun writeObject(outputStream: OutputStream) {
         val tlvOut = outputStream as? TLVOutputStream ?: TLVOutputStream(outputStream)
         tlvOut.writeTag(getDisplayedImageTagFromType(type))
         writeImage(tlvOut)
@@ -133,19 +133,19 @@ class DisplayedImageInfo : AbstractImageInfo {
         return result
     }
 
-    override fun equals(obj: Any?): Boolean {
-        if (this === obj) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (!super.equals(obj)) {
+        if (!super.equals(other)) {
             return false
         }
-        if (javaClass != obj!!.javaClass) {
+        if (javaClass != other!!.javaClass) {
             return false
         }
 
-        val other = obj as DisplayedImageInfo
-        return displayedImageTag == other.displayedImageTag
+        val that = other as DisplayedImageInfo
+        return displayedImageTag == that.displayedImageTag
     }
 
     companion object {
@@ -169,14 +169,13 @@ class DisplayedImageInfo : AbstractImageInfo {
          * 
          * @return the mime-type
          */
-        private fun getMimeTypeFromType(type: Int): String {
+        private fun getMimeTypeFromType(type: Int): String =
             when (type) {
-                ImageInfo.Companion.TYPE_PORTRAIT -> return "image/jpeg"
-                ImageInfo.Companion.TYPE_FINGER -> return "image/x-wsq"
-                ImageInfo.Companion.TYPE_SIGNATURE_OR_MARK -> return "image/jpeg"
+                ImageInfo.TYPE_PORTRAIT -> "image/jpeg"
+                ImageInfo.TYPE_FINGER -> "image/x-wsq"
+                ImageInfo.TYPE_SIGNATURE_OR_MARK -> "image/jpeg"
                 else -> throw NumberFormatException("Unknown type: " + Integer.toHexString(type))
             }
-        }
 
         /**
          * Derives the displayed image info tag from the image type.
@@ -185,13 +184,12 @@ class DisplayedImageInfo : AbstractImageInfo {
          * 
          * @return the corresponding image info tag
          */
-        private fun getDisplayedImageTagFromType(type: Int): Int {
+        private fun getDisplayedImageTagFromType(type: Int): Int =
             when (type) {
-                ImageInfo.Companion.TYPE_PORTRAIT -> return DISPLAYED_PORTRAIT_TAG
-                ImageInfo.Companion.TYPE_SIGNATURE_OR_MARK -> return DISPLAYED_SIGNATURE_OR_MARK_TAG
+                ImageInfo.TYPE_PORTRAIT -> DISPLAYED_PORTRAIT_TAG
+                ImageInfo.TYPE_SIGNATURE_OR_MARK -> DISPLAYED_SIGNATURE_OR_MARK_TAG
                 else -> throw NumberFormatException("Unknown type: " + Integer.toHexString(type))
             }
-        }
 
         /**
          * Derives the image info type from the given tag.
@@ -200,12 +198,11 @@ class DisplayedImageInfo : AbstractImageInfo {
          * 
          * @return the corresponding image info type
          */
-        private fun getTypeFromDisplayedImageTag(tag: Int): Int {
-            return when (tag) {
+        private fun getTypeFromDisplayedImageTag(tag: Int): Int =
+            when (tag) {
                 DISPLAYED_PORTRAIT_TAG -> ImageInfo.TYPE_PORTRAIT
                 DISPLAYED_SIGNATURE_OR_MARK_TAG -> ImageInfo.TYPE_SIGNATURE_OR_MARK
                 else -> throw NumberFormatException("Unknown tag: " + Integer.toHexString(tag))
             }
-        }
     }
 }

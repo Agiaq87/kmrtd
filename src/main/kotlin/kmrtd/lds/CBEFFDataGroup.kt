@@ -100,14 +100,14 @@ abstract class CBEFFDataGroup : DataGroup {
         this.random = Random()
     }
 
-    abstract val decoder: ISO781611Decoder<BiometricDataBlock?>
+    abstract val decoder: ISO781611Decoder<BiometricDataBlock>
 
-    abstract val encoder: ISO781611Encoder<BiometricDataBlock?>
+    abstract val encoder: ISO781611Encoder<BiometricDataBlock>
 
     @Throws(IOException::class)
-    override fun readContent(inputStream: InputStream?) {
+    override fun readContent(inputStream: InputStream) {
         val decoder = this.decoder
-        this.encodingType = decoder.getEncodingType()
+        this.encodingType = decoder.encodingType
         val complexCBEFFInfo = decoder.decode(inputStream)
         val records = complexCBEFFInfo.getSubRecords()
         for (cbeffInfo in records) {
@@ -115,21 +115,21 @@ abstract class CBEFFDataGroup : DataGroup {
                 throw IOException("Was expecting a SimpleCBEFFInfo, found " + cbeffInfo.javaClass.getSimpleName())
             }
             val simpleCBEFFInfo = cbeffInfo as SimpleCBEFFInfo<*>
-            val bdb: BiometricDataBlock? = simpleCBEFFInfo.getBiometricDataBlock()
+            val bdb: BiometricDataBlock? = simpleCBEFFInfo.biometricDataBlock
             add(bdb)
         }
-        encodingType = decoder.getEncodingType()
+        encodingType = decoder.encodingType
 
         /* FIXME: by symmetry, shouldn't there be a readOptionalRandomData here? */
     }
 
     @Throws(IOException::class)
-    override fun writeContent(outputStream: OutputStream?) {
+    override fun writeContent(outputStream: OutputStream) {
         val encoder = this.encoder
-        val cbeffInfo = ComplexCBEFFInfo<BiometricDataBlock?>()
+        val cbeffInfo = ComplexCBEFFInfo<BiometricDataBlock>()
         val records = getSubRecords()
         for (record in records) {
-            val simpleCBEFFInfo = SimpleCBEFFInfo<BiometricDataBlock?>(record)
+            val simpleCBEFFInfo = SimpleCBEFFInfo<BiometricDataBlock>(record)
             cbeffInfo.add(simpleCBEFFInfo)
         }
         encoder.encode(cbeffInfo, outputStream)
@@ -158,7 +158,7 @@ abstract class CBEFFDataGroup : DataGroup {
                 } else {
                     isFirst = false
                 }
-                result.append(if (subRecord == null) "null" else subRecord.toString())
+                result.append(subRecord?.toString() ?: "null")
             }
         }
         result.append(']')
@@ -170,11 +170,11 @@ abstract class CBEFFDataGroup : DataGroup {
      * 
      * @return the records in this data group
      */
-    fun getSubRecords(): MutableList<BiometricDataBlock?> {
+    fun getSubRecords(): MutableList<BiometricDataBlock> {
         if (subRecords == null) {
             subRecords = ArrayList<BiometricDataBlock?>()
         }
-        return ArrayList<BiometricDataBlock?>(subRecords)
+        return ArrayList<BiometricDataBlock>(subRecords)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -198,8 +198,8 @@ abstract class CBEFFDataGroup : DataGroup {
             }
 
             for (i in 0..<subRecordCount) {
-                val subRecord = subRecords.get(i)
-                val otherSubRecord = otherSubRecords.get(i)
+                val subRecord = subRecords[i]
+                val otherSubRecord = otherSubRecords[i]
                 if (subRecord == null) {
                     if (otherSubRecord != null) {
                         return false
@@ -241,12 +241,12 @@ abstract class CBEFFDataGroup : DataGroup {
      * @throws IOException on I/O errors
      */
     @Throws(IOException::class)
-    protected fun writeOptionalRandomData(outputStream: OutputStream?) {
+    protected fun writeOptionalRandomData(outputStream: OutputStream) {
         if (!subRecords!!.isEmpty()) {
             return
         }
 
-        val tlvOut = if (outputStream is TLVOutputStream) outputStream else TLVOutputStream(outputStream)
+        val tlvOut = outputStream as? TLVOutputStream ?: TLVOutputStream(outputStream)
         tlvOut.writeTag(ISO781611.DISCRETIONARY_DATA_FOR_PAYLOAD_TAG)
         val value = ByteArray(8)
         random.nextBytes(value)

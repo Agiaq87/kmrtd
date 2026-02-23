@@ -79,7 +79,7 @@ class CardSecurityFile : Serializable {
     private var securityInfos: MutableSet<SecurityInfo>? = null
 
     /** The signature bytes.  */
-    private var encryptedDigest: ByteArray?
+    private var encryptedDigest: ByteArray? = null
 
     /** The embedded document signer certificate.  */
     private var certificate: X509Certificate? = null
@@ -133,8 +133,8 @@ class CardSecurityFile : Serializable {
         encryptedDigest: ByteArray?,
         certificate: X509Certificate
     ) {
-        requireNotNull(securityInfos) { "Null securityInfos" }
-        requireNotNull(certificate) { "Null certificate" }
+        //requireNotNull(securityInfos) { "Null securityInfos" }
+        //requireNotNull(certificate) { "Null certificate" }
 
         this.digestAlgorithm = digestAlgorithm
         this.digestEncryptionAlgorithm = digestEncryptionAlgorithm
@@ -179,7 +179,7 @@ class CardSecurityFile : Serializable {
 
         val certificates = getCertificates(signedData)
         this.certificate =
-            if (certificates == null || certificates.isEmpty()) null else certificates.get(certificates.size - 1)
+            if (certificates.isEmpty()) null else certificates[certificates.size - 1]
         this.securityInfos = getSecurityInfos(signedData)
 
         this.encryptedDigest = getEncryptedDigest(signedData)
@@ -195,7 +195,7 @@ class CardSecurityFile : Serializable {
     @Throws(IOException::class)
     protected fun writeContent(outputStream: OutputStream) {
         try {
-            val contentInfo: ContentInfo = Companion.toContentInfo(CONTENT_TYPE_OID, securityInfos!!)
+            val contentInfo: ContentInfo =  toContentInfo(CONTENT_TYPE_OID, securityInfos!!)
             val signedData = SignedDataUtil.createSignedData(
                 digestAlgorithm,
                 digestEncryptionAlgorithm!!,
@@ -320,7 +320,7 @@ class CardSecurityFile : Serializable {
      * @return signature algorithm OID
      */
     override fun toString(): String {
-        return "CardSecurityFile [" + securityInfos.toString() + "]"
+        return "CardSecurityFile [$securityInfos]"
     }
 
     /**
@@ -357,7 +357,7 @@ class CardSecurityFile : Serializable {
     }
 
     companion object {
-        private val serialVersionUID = -3535507558193769952L
+        private const val serialVersionUID = -3535507558193769952L
 
         private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
@@ -405,10 +405,9 @@ class CardSecurityFile : Serializable {
                 throw IOException("Was expecting an ASN1Set, found " + encapsulatedContent!!.javaClass)
             }
 
-            val set = encapsulatedContent
             val securityInfos: MutableSet<SecurityInfo> = HashSet<SecurityInfo>()
-            for (i in 0..<set.size()) {
-                val `object` = set.getObjectAt(i)
+            for (i in 0..<encapsulatedContent.size()) {
+                val `object` = encapsulatedContent.getObjectAt(i)
                 try {
                     val securityInfo = getInstance(`object`)
                     if (securityInfo == null) {
