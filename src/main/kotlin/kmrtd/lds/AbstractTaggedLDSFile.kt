@@ -27,7 +27,7 @@
  */
 package kmrtd.lds
 
-import kmrtd.lds.LDSFile.length
+import kotlinx.serialization.Serializable
 import net.sf.scuba.tlv.TLVInputStream
 import net.sf.scuba.tlv.TLVOutputStream
 import java.io.ByteArrayOutputStream
@@ -44,15 +44,26 @@ import java.util.logging.Logger
  * 
  * @version $Revision: 1811 $
  */
-abstract class AbstractTaggedLDSFile : AbstractLDSFile {
+@Serializable
+abstract class AbstractTaggedLDSFile protected constructor(dataGroupTag: Int): AbstractLDSFile() {
     /**
      * Returns the tag that identifies this LDS file.
      * 
      * @return the tag of this LDS file
      */
-    open var tag: Int
-        private set
+    open var tag: Int = dataGroupTag
+    /**
+     * The length of the value of the data group.
+     *
+     * @return the length of the value of the data group
+     */
     override var length = 0
+        get()  {
+            if (field <= 0) {
+                field = this.content.size
+            }
+            return field
+        }
 
     /**
      * Constructs a data group. This constructor
@@ -60,9 +71,9 @@ abstract class AbstractTaggedLDSFile : AbstractLDSFile {
      * 
      * @param dataGroupTag data group tag
      */
-    protected constructor(dataGroupTag: Int) {
+    /*protected constructor(dataGroupTag: Int) {
         this.tag = dataGroupTag
-    }
+    }*/
 
     /**
      * Constructs a data group from the DER encoded data in the
@@ -73,8 +84,8 @@ abstract class AbstractTaggedLDSFile : AbstractLDSFile {
      * 
      * @throws IOException on error reading input stream
      */
-    protected constructor(tag: Int, inputStream: InputStream?) {
-        this.tag = tag
+    protected constructor(tag: Int, inputStream: InputStream) : this(tag) {
+        //this.tag = tag
         readObject(inputStream)
     }
 
@@ -86,7 +97,7 @@ abstract class AbstractTaggedLDSFile : AbstractLDSFile {
      * @throws IOException if reading from the stream fails
      */
     @Throws(IOException::class)
-    override fun readObject(inputStream: InputStream?) {
+    override fun readObject(inputStream: InputStream) {
         val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
         val inputTag = tlvIn.readTag()
         require(inputTag == tag) {
@@ -100,8 +111,8 @@ abstract class AbstractTaggedLDSFile : AbstractLDSFile {
     }
 
     @Throws(IOException::class)
-    override fun writeObject(outputStream: OutputStream?) {
-        val tlvOut = if (outputStream is TLVOutputStream) outputStream else TLVOutputStream(outputStream)
+    override fun writeObject(outputStream: OutputStream) {
+        val tlvOut = outputStream as? TLVOutputStream ?: TLVOutputStream(outputStream)
         val ourTag = this.tag
         if (tag != ourTag) {
             tag = ourTag
@@ -125,7 +136,7 @@ abstract class AbstractTaggedLDSFile : AbstractLDSFile {
      * @throws IOException on error reading from input stream
      */
     @Throws(IOException::class)
-    protected abstract fun readContent(inputStream: InputStream?)
+    protected abstract fun readContent(inputStream: InputStream)
 
     /**
      * Writes the contents of the data group to an output stream.
@@ -137,7 +148,7 @@ abstract class AbstractTaggedLDSFile : AbstractLDSFile {
      * @throws IOException on error writing to output stream
      */
     @Throws(IOException::class)
-    protected abstract fun writeContent(outputStream: OutputStream?)
+    protected abstract fun writeContent(outputStream: OutputStream)
 
     /**
      * Returns a textual representation of this file.
@@ -153,12 +164,12 @@ abstract class AbstractTaggedLDSFile : AbstractLDSFile {
      * 
      * @return the length of the value of the data group
      */
-    override fun getLength(): Int {
+    /*override fun getLength(): Int {
         if (length <= 0) {
-            length = this.content.length
+            length = this.content.size
         }
         return length
-    }
+    }*/
 
     private val content: ByteArray
         /**

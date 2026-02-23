@@ -27,6 +27,7 @@
  */
 package kmrtd.lds
 
+import kotlinx.serialization.Serializable
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -41,7 +42,8 @@ import java.util.logging.Logger
  * 
  * @version $Revision: 1775 $
  */
-internal abstract class AbstractLDSFile
+@Serializable
+abstract class AbstractLDSFile
 /**
  * Constructor only visible to the other
  * classes in this package.

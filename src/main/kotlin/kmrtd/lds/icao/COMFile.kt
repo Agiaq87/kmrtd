@@ -30,6 +30,7 @@ package kmrtd.lds.icao
 import kmrtd.lds.AbstractTaggedLDSFile
 import kmrtd.lds.LDSFile
 import kmrtd.lds.LDSFileUtil.lookupDataGroupNumberByTag
+import kotlinx.serialization.Serializable
 import net.sf.scuba.tlv.TLVInputStream
 import net.sf.scuba.tlv.TLVOutputStream
 import java.io.IOException
@@ -46,6 +47,7 @@ import java.util.*
  * 
  * @version $Revision: 1808 $
  */
+@Serializable
 class COMFile : AbstractTaggedLDSFile {
     private var versionLDS: String? = null
     private var updateLevelLDS: String? = null
@@ -67,8 +69,10 @@ class COMFile : AbstractTaggedLDSFile {
      * @throws IllegalArgumentException if the input is not well-formed
      */
     constructor(
-        versionLDS: String, updateLevelLDS: String,
-        majorVersionUnicode: String, minorVersionUnicode: String,
+        versionLDS: String,
+        updateLevelLDS: String,
+        majorVersionUnicode: String,
+        minorVersionUnicode: String,
         releaseLevelUnicode: String, tagList: IntArray
     ) : super(LDSFile.EF_COM_TAG) {
         initialize(versionLDS, updateLevelLDS, majorVersionUnicode, minorVersionUnicode, releaseLevelUnicode, tagList)
@@ -81,7 +85,11 @@ class COMFile : AbstractTaggedLDSFile {
      * @param unicodeVer a "x.y.z" version number
      * @param tagList list of tags
      */
-    constructor(ldsVer: String, unicodeVer: String, tagList: IntArray) : super(LDSFile.EF_COM_TAG) {
+    constructor(
+        ldsVer: String,
+        unicodeVer: String,
+        tagList: IntArray
+    ) : super(LDSFile.EF_COM_TAG) {
         try {
             requireNotNull(ldsVer) { "Null versionLDS" }
             requireNotNull(unicodeVer) { "Null versionUnicode" }
@@ -111,18 +119,18 @@ class COMFile : AbstractTaggedLDSFile {
 
     /**
      * Constructs a new EF_COM file based on the encoded
-     * value in `in`.
+     * value in inputStream.
      * 
-     * @param in should contain a TLV object with appropriate
+     * @param inputStream should contain a TLV object with appropriate
      * tag and contents
      * 
      * @throws IOException if the input could not be decoded
      */
-    constructor(`in`: InputStream?) : super(LDSFile.Companion.EF_COM_TAG, `in`)
+    constructor(inputStream: InputStream) : super(LDSFile.EF_COM_TAG, inputStream)
 
     @Throws(IOException::class)
-    override fun readContent(`in`: InputStream?) {
-        val tlvIn = if (`in` is TLVInputStream) `in` else TLVInputStream(`in`)
+    override fun readContent(inputStream: InputStream) {
+        val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
         val versionLDSTag = tlvIn.readTag()
         require(versionLDSTag == VERSION_LDS_TAG) {
             "Excepected VERSION_LDS_TAG (" + Integer.toHexString(VERSION_LDS_TAG) + "), found " + Integer.toHexString(
@@ -172,7 +180,7 @@ class COMFile : AbstractTaggedLDSFile {
          * @return a string of the form "a.b"
          */
         get() {
-            var ldsVersion = versionLDS + "." + updateLevelLDS
+            var ldsVersion = "$versionLDS.$updateLevelLDS"
             try {
                 val major = versionLDS!!.toInt()
                 val minor = updateLevelLDS!!.toInt()
@@ -235,8 +243,8 @@ class COMFile : AbstractTaggedLDSFile {
     }
 
     @Throws(IOException::class)
-    override fun writeContent(out: OutputStream?) {
-        val tlvOut = out as? TLVOutputStream ?: TLVOutputStream(out)
+    override fun writeContent(outputStream: OutputStream) {
+        val tlvOut = outputStream as? TLVOutputStream ?: TLVOutputStream(outputStream)
         tlvOut.writeTag(VERSION_LDS_TAG)
         tlvOut.writeValue((versionLDS + updateLevelLDS).toByteArray())
         tlvOut.writeTag(VERSION_UNICODE_TAG)
@@ -254,7 +262,7 @@ class COMFile : AbstractTaggedLDSFile {
      * 
      * @return a textual representation of this file
      */
-    public override fun toString(): String {
+    override fun toString(): String {
         val result = StringBuilder()
         result.append("COMFile ")
         result.append("LDS $versionLDS.$updateLevelLDS")
@@ -315,9 +323,12 @@ class COMFile : AbstractTaggedLDSFile {
      * @param tagList the data group tag presence list
      */
     private fun initialize(
-        versionLDS: String, updateLevelLDS: String,
-        majorVersionUnicode: String, minorVersionUnicode: String,
-        releaseLevelUnicode: String, tagList: IntArray
+        versionLDS: String,
+        updateLevelLDS: String,
+        majorVersionUnicode: String,
+        minorVersionUnicode: String,
+        releaseLevelUnicode: String,
+        tagList: IntArray
     ) {
         requireNotNull(tagList) { "Null tag list" }
         require(!(versionLDS == null || versionLDS.length != 2 || updateLevelLDS == null || updateLevelLDS.length != 2 || majorVersionUnicode == null || majorVersionUnicode.length != 2 || minorVersionUnicode == null || minorVersionUnicode.length != 2 || releaseLevelUnicode == null || releaseLevelUnicode.length != 2 || tagList == null))
