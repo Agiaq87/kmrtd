@@ -1118,7 +1118,7 @@ object Util {
      * 
      * @return either ID_PK_ECDH or ID_PK_DH
      */
-    fun inferProtocolIdentifier(publicKey: PublicKey): String? {
+    fun inferProtocolIdentifier(publicKey: PublicKey): String {
         val algorithm = publicKey.getAlgorithm()
         if ("EC" == algorithm || "ECDH" == algorithm) {
             return SecurityInfo.ID_PK_ECDH

@@ -71,7 +71,7 @@ class DG14File : DataGroup {
     constructor(inputStream: InputStream?) : super(LDSFile.EF_DG14_TAG, inputStream)
 
     @Throws(IOException::class)
-    override fun readContent(inputStream: InputStream?) {
+    override fun readContent(inputStream: InputStream) {
         val asn1In = ASN1InputStream(inputStream, true)
         val asn1Primitive = asn1In.readObject()
         val set = ASN1Set.getInstance(asn1Primitive)

@@ -153,7 +153,7 @@ abstract class AbstractListInfo<R : Serializable?> : AbstractLDSInfo() {
      * @param outputStream the stream to write to
      */
     @Throws(IOException::class)
-    abstract override fun writeObject(outputStream: OutputStream?)
+    abstract override fun writeObject(outputStream: OutputStream)
 
     /**
      * Reads this value from a stream.
@@ -163,7 +163,7 @@ abstract class AbstractListInfo<R : Serializable?> : AbstractLDSInfo() {
      * @throws IOException on error reading from the stream
      */
     @Throws(IOException::class)
-    abstract fun readObject(inputStream: InputStream?)
+    abstract fun readObject(inputStream: InputStream)
 
     companion object {
         private const val serialVersionUID = 2970076896364365191L

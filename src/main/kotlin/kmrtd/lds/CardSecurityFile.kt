@@ -105,7 +105,7 @@ class CardSecurityFile : Serializable {
      */
     @JvmOverloads
     constructor(
-        digestAlgorithm: String?,
+        digestAlgorithm: String,
         digestEncryptionAlgorithm: String,
         securityInfos: MutableCollection<SecurityInfo>,
         privateKey: PrivateKey?,
@@ -150,7 +150,7 @@ class CardSecurityFile : Serializable {
      * 
      * @throws IOException on error reading input stream
      */
-    constructor(inputStream: InputStream?) {
+    constructor(inputStream: InputStream) {
         readContent(inputStream)
     }
 
@@ -171,7 +171,7 @@ class CardSecurityFile : Serializable {
      * @throws IOException on error reading from the stream
      */
     @Throws(IOException::class)
-    protected fun readContent(inputStream: InputStream?) {
+    protected fun readContent(inputStream: InputStream) {
         val signedData = readSignedData(inputStream)
 
         this.digestAlgorithm = getSignerInfoDigestAlgorithm(signedData)

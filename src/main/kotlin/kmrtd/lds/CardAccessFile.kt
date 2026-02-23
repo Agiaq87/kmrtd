@@ -64,7 +64,7 @@ class CardAccessFile : Serializable {
      * 
      * @throws IOException on error reading input stream
      */
-    constructor(inputStream: InputStream?) {
+    constructor(inputStream: InputStream) {
         readContent(inputStream)
     }
 
@@ -76,7 +76,7 @@ class CardAccessFile : Serializable {
      * @throws IOException on error reading from the stream
      */
     @Throws(IOException::class)
-    protected fun readContent(inputStream: InputStream?) {
+    protected fun readContent(inputStream: InputStream) {
         securityInfos = HashSet<SecurityInfo>()
         val asn1In = ASN1InputStream(inputStream)
         val set = asn1In.readObject() as ASN1Set

@@ -102,9 +102,9 @@ abstract class SecurityInfo : AbstractLDSInfo() {
         const val ID_AA: String = "2.23.136.1.1.5"
 
         @JvmField
-        val ID_PK_DH: String? = EACObjectIdentifiers.id_PK_DH.getId()
+        val ID_PK_DH: String = EACObjectIdentifiers.id_PK_DH.getId()
         @JvmField
-        val ID_PK_ECDH: String? = EACObjectIdentifiers.id_PK_ECDH.getId()
+        val ID_PK_ECDH: String = EACObjectIdentifiers.id_PK_ECDH.getId()
 
         /** Used in Chip Authentication 1 and 2.  */
         @JvmField

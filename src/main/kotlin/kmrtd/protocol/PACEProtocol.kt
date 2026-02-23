@@ -780,7 +780,7 @@ class PACEProtocol(
     }
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("kmrtd")
+        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
 
         private val BC_PROVIDER: Provider = Util.bouncyCastleProvider
 

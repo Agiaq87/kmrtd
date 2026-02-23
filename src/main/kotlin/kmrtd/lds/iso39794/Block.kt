@@ -33,8 +33,8 @@ import java.io.Serializable
 import java.util.logging.Level
 import java.util.logging.Logger
 
-internal abstract class Block : Serializable {
-    abstract val aSN1Object: ASN1Encodable?
+abstract class Block : Serializable {
+    abstract val aSN1Object: ASN1Encodable
 
     val encoded: ByteArray?
         get() {
@@ -51,7 +51,7 @@ internal abstract class Block : Serializable {
     abstract override fun equals(other: Any?): Boolean
 
     companion object {
-        private val serialVersionUID = -8585852930916738115L
+        private const val serialVersionUID = -8585852930916738115L
 
         @JvmField
         protected val LOGGER: Logger = Logger.getLogger("kmrtd.lds.iso39794")

@@ -57,7 +57,7 @@ import kotlin.math.min
 class DefaultFileSystem @JvmOverloads constructor(
     private val service: APDULevelReadBinaryCapable,
     private val isSFIEnabled: Boolean,
-    private val fidToSFI: MutableMap<Short?, Byte> = LDSFileUtil.FID_TO_SFI
+    private val fidToSFI: MutableMap<Short, Byte> = LDSFileUtil.FID_TO_SFI
 ) : FileSystemStructured {
     /** Indicates the file that is (or should be) selected.  */
     private var selectedFID: Short = 0

@@ -61,7 +61,7 @@ abstract class AbstractMRTDCardService : FileSystemCardService() {
      * @throws CardServiceException if authentication failed
      */
     @Throws(CardServiceException::class)
-    abstract fun doBAC(bacKey: AccessKeySpec?): BACResult?
+    abstract fun doBAC(bacKey: AccessKeySpec): BACResult?
 
     /**
      * Performs the *Basic Access Control* protocol.
@@ -80,7 +80,7 @@ abstract class AbstractMRTDCardService : FileSystemCardService() {
      * @throws GeneralSecurityException on security primitives related problems
      */
     @Throws(CardServiceException::class, GeneralSecurityException::class)
-    abstract fun doBAC(kEnc: SecretKey?, kMac: SecretKey?): BACResult?
+    abstract fun doBAC(kEnc: SecretKey, kMac: SecretKey): BACResult?
 
     /**
      * Performs the PACE 2.0 / SAC protocol.
@@ -97,7 +97,7 @@ abstract class AbstractMRTDCardService : FileSystemCardService() {
      */
     @Deprecated("Use the variant with additional parameter identifier")
     @Throws(CardServiceException::class)
-    fun doPACE(keySpec: AccessKeySpec?, oid: String?, params: AlgorithmParameterSpec?): PACEResult? {
+    fun doPACE(keySpec: AccessKeySpec, oid: String, params: AlgorithmParameterSpec): PACEResult? {
         return doPACE(keySpec, oid, params, null)
     }
 
@@ -116,9 +116,9 @@ abstract class AbstractMRTDCardService : FileSystemCardService() {
      */
     @Throws(CardServiceException::class)
     abstract fun doPACE(
-        keySpec: AccessKeySpec?,
-        oid: String?,
-        params: AlgorithmParameterSpec?,
+        keySpec: AccessKeySpec,
+        oid: String,
+        params: AlgorithmParameterSpec,
         parameterId: BigInteger?
     ): PACEResult?
 
@@ -157,10 +157,10 @@ abstract class AbstractMRTDCardService : FileSystemCardService() {
      */
     @Throws(CardServiceException::class)
     abstract fun doAA(
-        publicKey: PublicKey?,
-        digestAlgorithm: String?,
-        signatureAlgorithm: String?,
-        challenge: ByteArray?
+        publicKey: PublicKey,
+        digestAlgorithm: String,
+        signatureAlgorithm: String,
+        challenge: ByteArray
     ): AAResult?
 
     /**
@@ -179,7 +179,7 @@ abstract class AbstractMRTDCardService : FileSystemCardService() {
      * @throws CardServiceException if CA failed or some error occurred
      */
     @Throws(CardServiceException::class)
-    abstract fun doEACCA(keyId: BigInteger?, oid: String?, publicKeyOID: String?, publicKey: PublicKey?): EACCAResult?
+    abstract fun doEACCA(keyId: BigInteger, oid: String, publicKeyOID: String, publicKey: PublicKey): EACCAResult?
 
     /**
      * Performs *Terminal Authentication* (TA) part of EAC (version 1). For details see
@@ -202,8 +202,8 @@ abstract class AbstractMRTDCardService : FileSystemCardService() {
      */
     @Throws(CardServiceException::class)
     abstract fun doEACTA(
-        caReference: CVCPrincipal?, terminalCertificates: MutableList<CardVerifiableCertificate?>?,
-        terminalKey: PrivateKey?, taAlg: String?, chipAuthenticationResult: EACCAResult?, documentNumber: String?
+        caReference: CVCPrincipal, terminalCertificates: MutableList<CardVerifiableCertificate>,
+        terminalKey: PrivateKey, taAlg: String, chipAuthenticationResult: EACCAResult, documentNumber: String
     ): EACTAResult?
 
     /**
@@ -227,8 +227,8 @@ abstract class AbstractMRTDCardService : FileSystemCardService() {
      */
     @Throws(CardServiceException::class)
     abstract fun doEACTA(
-        caReference: CVCPrincipal?, terminalCertificates: MutableList<CardVerifiableCertificate?>?,
-        terminalKey: PrivateKey?, taAlg: String?, chipAuthenticationResult: EACCAResult?, paceResult: PACEResult?
+        caReference: CVCPrincipal, terminalCertificates: MutableList<CardVerifiableCertificate>,
+        terminalKey: PrivateKey, taAlg: String, chipAuthenticationResult: EACCAResult, paceResult: PACEResult
     ): EACTAResult?
 
     /**

@@ -39,9 +39,9 @@ import javax.crypto.spec.IvParameterSpec
 /**
  * Secure messaging wrapper for APDUs.
  * Initially based on Section E.3 of ICAO-TR-PKI.
- * 
+ *
  * @author The JMRTD team (info@jmrtd.org)
- * 
+ *
  * @version $Revision: 1805 $
  */
 class DESedeSecureMessagingWrapper
@@ -49,13 +49,13 @@ class DESedeSecureMessagingWrapper
  * Constructs a secure messaging wrapper based on the secure messaging
  * session keys and the initial value of the send sequence counter.
  * Used in BAC and EAC 1.
- * 
+ *
  * @param ksEnc the session key for encryption
  * @param ksMac the session key for macs
  * @param maxTranceiveLength the maximum tranceive length, typical values are 256 or 65536
  * @param shouldCheckMAC a boolean indicating whether this wrapper will check the MAC in wrapped response APDUs
  * @param ssc the initial value of the send sequence counter
- * 
+ *
  * @throws GeneralSecurityException when the available JCE providers cannot provide the necessary cryptographic primitives
  */
     (ksEnc: SecretKey?, ksMac: SecretKey?, maxTranceiveLength: Int, shouldCheckMAC: Boolean, ssc: Long) :
@@ -72,24 +72,28 @@ class DESedeSecureMessagingWrapper
      * Constructs a secure messaging wrapper based on the secure messaging
      * session keys. The initial value of the send sequence counter is set to
      * `0L`.
-     * 
+     *
      * @param ksEnc the session key for encryption
      * @param ksMac the session key for macs
      * @param shouldCheckMAC a boolean indicating whether this wrapper will check the MAC in wrapped response APDUs
-     * 
+     *
      * @throws GeneralSecurityException
      * when the available JCE providers cannot provide the necessary
      * cryptographic primitives
      * (`"DESede/CBC/Nopadding"` Cipher, `"ISO9797Alg3Mac"` Mac).
      */
+    override val iV: IvParameterSpec
+        get() = ZERO_IV_PARAM_SPEC
+
+
     /**
      * Constructs a secure messaging wrapper based on the secure messaging
      * session keys. The initial value of the send sequence counter is set to
      * `0L`.
-     * 
+     *
      * @param ksEnc the session key for encryption
      * @param ksMac the session key for macs
-     * 
+     *
      * @throws GeneralSecurityException
      * when the available JCE providers cannot provide the necessary
      * cryptographic primitives
@@ -108,11 +112,11 @@ class DESedeSecureMessagingWrapper
      * Constructs a secure messaging wrapper based on the secure messaging
      * session keys and the initial value of the send sequence counter.
      * Used in BAC and EAC 1.
-     * 
+     *
      * @param ksEnc the session key for encryption
      * @param ksMac the session key for macs
      * @param ssc the initial value of the send sequence counter
-     * 
+     *
      * @throws GeneralSecurityException when the available JCE providers cannot provide the necessary cryptographic primitives
      */
     constructor(ksEnc: SecretKey?, ksMac: SecretKey?, ssc: Long) : this(ksEnc, ksMac, 256, true, ssc)
@@ -120,46 +124,66 @@ class DESedeSecureMessagingWrapper
     /**
      * Constructs a secure messaging wrapper based on the given existing secure messaging wrapper.
      * This is a convenience copy constructor.
-     * 
+     *
      * @param wrapper an existing wrapper
-     * 
+     *
      * @throws GeneralSecurityException when the available JCE providers cannot provide the necessary cryptographic primitives
      */
     constructor(wrapper: DESedeSecureMessagingWrapper) : this(
-        wrapper.getEncryptionKey(),
-        wrapper.getMACKey(),
+        wrapper.encryptionKey,
+        wrapper.mACKey,
         wrapper.maxTranceiveLength,
         wrapper.shouldCheckMAC(),
-        wrapper.getSendSequenceCounter()
+        wrapper.sendSequenceCounter
     )
 
     /**
      * Returns the type of secure messaging wrapper.
      * In this case `"DESede"` will be returned.
-     * 
+     *
      * @return the type of secure messaging wrapper
      */
-    override fun getType(): String {
-        return "DESede"
-    }
+    override fun getType(): String = "DESede"
 
     /**
      * Returns the length (in bytes) to use for padding.
      * For 3DES this is 8.
-     * 
+     *
      * @return the length to use for padding
      */
-    public override fun getPadLength(): Int {
+    override val padLength: Int
+        get() = 8
+    /*public override fun getPadLength(): Int {
         return 8
-    }
+    }*/
 
-    public override fun getEncodedSendSequenceCounter(): ByteArray? {
+    override val encodedSendSequenceCounter: ByteArray
+        get() {
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            try {
+                val dataOutputStream = DataOutputStream(byteArrayOutputStream)
+                dataOutputStream.writeLong(sendSequenceCounter)
+            } catch (ioe: IOException) {
+                /* Never happens. */
+                LOGGER.log(Level.FINE, "Error writing to stream", ioe)
+            } finally {
+                try {
+                    byteArrayOutputStream.close()
+                } catch (ioe: IOException) {
+                    LOGGER.log(Level.FINE, "Error closing stream", ioe)
+                }
+            }
+
+            return byteArrayOutputStream.toByteArray()
+        }
+
+    /*public override fun getEncodedSendSequenceCounter(): ByteArray? {
         val byteArrayOutputStream = ByteArrayOutputStream()
         try {
             val dataOutputStream = DataOutputStream(byteArrayOutputStream)
-            dataOutputStream.writeLong(getSendSequenceCounter())
+            dataOutputStream.writeLong(sendSequenceCounter)
         } catch (ioe: IOException) {
-            /* Never happens. */
+            *//* Never happens. *//*
             LOGGER.log(Level.FINE, "Error writing to stream", ioe)
         } finally {
             try {
@@ -170,14 +194,14 @@ class DESedeSecureMessagingWrapper
         }
 
         return byteArrayOutputStream.toByteArray()
-    }
+    }*/
 
     override fun toString(): String {
         return StringBuilder()
             .append("DESedeSecureMessagingWrapper [")
-            .append("ssc: ").append(getSendSequenceCounter())
-            .append(", kEnc: ").append(getEncryptionKey())
-            .append(", kMac: ").append(getMACKey())
+            .append("ssc: ").append(sendSequenceCounter)
+            .append(", kEnc: ").append(encryptionKey)
+            .append(", kMac: ").append(mACKey)
             .append(", shouldCheckMAC: ").append(shouldCheckMAC())
             .append(", maxTranceiveLength: ").append(maxTranceiveLength)
             .append("]")
@@ -202,9 +226,9 @@ class DESedeSecureMessagingWrapper
         return super.equals(obj)
     }
 
-    override fun getIV(): IvParameterSpec {
-        return ZERO_IV_PARAM_SPEC
-    }
+    /*override fun getIV(): IvParameterSpec {
+        return
+    }*/
 
     companion object {
         private val serialVersionUID = -2859033943345961793L

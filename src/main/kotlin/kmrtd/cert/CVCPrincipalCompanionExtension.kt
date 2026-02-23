@@ -6,6 +6,7 @@ package org.giaquinto.kmrtd.cert
  * Licensed under LGPL 3.0
  */
 import kmrtd.cert.CVCPrincipal
+import kmrtd.cert.UnknownCountry
 import net.sf.scuba.data.Country
 import java.util.Locale
 import java.util.logging.Level

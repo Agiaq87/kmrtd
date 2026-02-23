@@ -52,7 +52,7 @@ class DG1File : DataGroup {
      * 
      * @param mrzInfo the MRZ information to store in this file
      */
-    constructor(mrzInfo: MRZInfo) : super(LDSFile.Companion.EF_DG1_TAG) {
+    constructor(mrzInfo: MRZInfo) : super(LDSFile.EF_DG1_TAG) {
         this.mrzInfo = mrzInfo
     }
 
@@ -63,23 +63,23 @@ class DG1File : DataGroup {
      * 
      * @throws IOException if something goes wrong
      */
-    constructor(inputStream: InputStream?) : super(LDSFile.Companion.EF_DG1_TAG, inputStream)
+    constructor(inputStream: InputStream) : super(LDSFile.Companion.EF_DG1_TAG, inputStream)
 
     @Throws(IOException::class)
-    override fun readContent(inputStream: InputStream?) {
+    override fun readContent(inputStream: InputStream) {
         val tlvIn = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
         tlvIn.skipToTag(MRZ_INFO_TAG.toInt())
         val length = tlvIn.readLength()
         this.mrzInfo = MRZInfo(tlvIn, length)
     }
 
-    val mRZInfo: MRZInfo
+    val mRZInfo: MRZInfo?
         /**
          * Returns the MRZ information stored in this file.
          * 
          * @return the MRZ information
          */
-        get() = mrzInfo!!
+        get() = mrzInfo
 
     /**
      * Returns a textual representation of this file.
@@ -107,10 +107,10 @@ class DG1File : DataGroup {
     }
 
     @Throws(IOException::class)
-    override fun writeContent(out: OutputStream?) {
-        val tlvOut = out as? TLVOutputStream ?: TLVOutputStream(out)
+    override fun writeContent(outputStream: OutputStream) {
+        val tlvOut = outputStream as? TLVOutputStream ?: TLVOutputStream(outputStream)
         tlvOut.writeTag(MRZ_INFO_TAG.toInt())
-        val value = mrzInfo!!.encoded
+        val value = mrzInfo?.encoded
         tlvOut.writeValue(value)
     }
 

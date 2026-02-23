@@ -53,7 +53,8 @@ import javax.crypto.SecretKey
  * @version $Revision:352 $
  */
 class PassportService(
-    private val service: CardService, private val maxTranceiveLengthForPACEProtocol: Int,
+    private val service: CardService,
+    private val maxTranceiveLengthForPACEProtocol: Int,
     /**
      * Returns the maximum tranceive length of (protected) APDUs.
      * 
@@ -67,21 +68,32 @@ class PassportService(
 ) : AbstractMRTDCardService() {
     private var isOpen = false
 
-    private var wrapper: SecureMessagingWrapper? = null
+    override var wrapper: SecureMessagingWrapper? = null
+    override val maxReadBinaryLength: Int
+        get() {
+            if (appletFileSystem == null) {
+                return NORMAL_MAX_TRANCEIVE_LENGTH
+            }
 
+            return appletFileSystem.maxReadBinaryLength
+        }
     private var isAppletSelected = false
 
     private val rootFileSystem: DefaultFileSystem
 
     private val appletFileSystem: DefaultFileSystem?
 
-    private val bacSender: BACAPDUSender?
-    private val paceSender: PACEAPDUSender?
-    private val aaSender: AAAPDUSender?
-    private val eacCASender: EACCAAPDUSender?
-    private val eacTASender: EACTAAPDUSender?
-    private val readBinarySender: ReadBinaryAPDUSender
+    private val bacSender: BACAPDUSender = BACAPDUSender(service)
+    private val paceSender: PACEAPDUSender = PACEAPDUSender(service)
+    private val aaSender: AAAPDUSender = AAAPDUSender(service)
+    private val eacCASender: EACCAAPDUSender = EACCAAPDUSender(service)
+    private val eacTASender: EACTAAPDUSender = EACTAAPDUSender(service)
+    private val readBinarySender: ReadBinaryAPDUSender = ReadBinaryAPDUSender(service)
 
+
+    override fun isOpen(): Boolean {
+        return isOpen
+    }
     /**
      * Creates a new passport service for accessing the passport.
      * 
@@ -119,12 +131,6 @@ class PassportService(
      * check MACs on response APDUs
      */
     init {
-        this.bacSender = BACAPDUSender(service)
-        this.paceSender = PACEAPDUSender(service)
-        this.aaSender = AAAPDUSender(service)
-        this.eacCASender = EACCAAPDUSender(service)
-        this.eacTASender = EACTAAPDUSender(service)
-        this.readBinarySender = ReadBinaryAPDUSender(service)
 
         this.rootFileSystem = DefaultFileSystem(
             readBinarySender,
@@ -141,7 +147,7 @@ class PassportService(
      */
     @Throws(CardServiceException::class)
     override fun open() {
-        if (isOpen()) {
+        if (isOpen) {
             return
         }
         synchronized(this) {
@@ -192,9 +198,9 @@ class PassportService(
      * 
      * @return a boolean that indicates whether this service is open
      */
-    override fun isOpen(): Boolean {
+    /*override fun isOpen(): Boolean {
         return isOpen
-    }
+    }*/
 
     /**
      * Performs the *Basic Access Control* protocol.
@@ -209,14 +215,14 @@ class PassportService(
      */
     @Synchronized
     @Throws(CardServiceException::class)
-    override fun doBAC(bacKey: AccessKeySpec?): BACResult {
+    override fun doBAC(bacKey: AccessKeySpec): BACResult {
         require(bacKey is BACKeySpec) { "Unsupported key type" }
         val bacResult = (BACProtocol(
             bacSender,
             this.maxTranceiveLength, shouldCheckMAC
         )).doBAC(bacKey)
         wrapper = bacResult.wrapper
-        appletFileSystem!!.setWrapper(wrapper)
+        appletFileSystem?.setWrapper(wrapper)
         return bacResult
     }
 
@@ -238,13 +244,13 @@ class PassportService(
      */
     @Synchronized
     @Throws(CardServiceException::class, GeneralSecurityException::class)
-    override fun doBAC(kEnc: SecretKey?, kMac: SecretKey?): BACResult {
+    override fun doBAC(kEnc: SecretKey, kMac: SecretKey): BACResult {
         val bacResult = (BACProtocol(
             bacSender,
             this.maxTranceiveLength, shouldCheckMAC
         )).doBAC(kEnc, kMac)
         wrapper = bacResult.wrapper
-        appletFileSystem!!.setWrapper(wrapper)
+        appletFileSystem?.setWrapper(wrapper)
         return bacResult
     }
 
@@ -264,9 +270,9 @@ class PassportService(
     @Synchronized
     @Throws(CardServiceException::class)
     override fun doPACE(
-        keySpec: AccessKeySpec?,
-        oid: String?,
-        params: AlgorithmParameterSpec?,
+        keySpec: AccessKeySpec,
+        oid: String,
+        params: AlgorithmParameterSpec,
         parameterId: BigInteger?
     ): PACEResult {
         val paceResult = (PACEProtocol(
@@ -274,7 +280,7 @@ class PassportService(
             this.maxTranceiveLength, shouldCheckMAC
         )).doPACE(keySpec, oid, params, parameterId)
         wrapper = paceResult.wrapper
-        appletFileSystem!!.setWrapper(wrapper)
+        appletFileSystem?.setWrapper(wrapper)
         return paceResult
     }
 
@@ -295,13 +301,13 @@ class PassportService(
      */
     @Synchronized
     @Throws(CardServiceException::class)
-    override fun doEACCA(keyId: BigInteger?, oid: String?, publicKeyOID: String?, publicKey: PublicKey?): EACCAResult {
+    override fun doEACCA(keyId: BigInteger, oid: String, publicKeyOID: String, publicKey: PublicKey): EACCAResult {
         val caResult = (EACCAProtocol(
             eacCASender, getWrapper(),
             this.maxTranceiveLength, shouldCheckMAC
         )).doCA(keyId, oid, publicKeyOID, publicKey)
         wrapper = caResult.wrapper
-        appletFileSystem!!.setWrapper(wrapper)
+        appletFileSystem?.setWrapper(wrapper)
         return caResult
     }
 
@@ -340,9 +346,9 @@ class PassportService(
     @Synchronized
     @Throws(CardServiceException::class)
     override fun doEACTA(
-        caReference: CVCPrincipal?, terminalCertificates: MutableList<CardVerifiableCertificate?>?,
-        terminalKey: PrivateKey?, taAlg: String?, chipAuthenticationResult: EACCAResult?, documentNumber: String?
-    ): EACTAResult? {
+        caReference: CVCPrincipal, terminalCertificates: MutableList<CardVerifiableCertificate>,
+        terminalKey: PrivateKey, taAlg: String, chipAuthenticationResult: EACCAResult, documentNumber: String
+    ): EACTAResult {
         return (EACTAProtocol(eacTASender, getWrapper())).doEACTA(
             caReference,
             terminalCertificates,
@@ -375,9 +381,9 @@ class PassportService(
     @Synchronized
     @Throws(CardServiceException::class)
     override fun doEACTA(
-        caReference: CVCPrincipal?, terminalCertificates: MutableList<CardVerifiableCertificate?>?,
-        terminalKey: PrivateKey?, taAlg: String?, chipAuthenticationResult: EACCAResult?, paceResult: PACEResult
-    ): EACTAResult? {
+        caReference: CVCPrincipal, terminalCertificates: MutableList<CardVerifiableCertificate>,
+        terminalKey: PrivateKey, taAlg: String, chipAuthenticationResult: EACCAResult, paceResult: PACEResult
+    ): EACTAResult {
         return (EACTAProtocol(eacTASender, getWrapper())).doTA(
             caReference,
             terminalCertificates,
@@ -402,12 +408,12 @@ class PassportService(
      */
     @Throws(CardServiceException::class)
     override fun doAA(
-        publicKey: PublicKey?,
-        digestAlgorithm: String?,
-        signatureAlgorithm: String?,
-        challenge: ByteArray?
-    ): AAResult? {
-        return (AAProtocol(aaSender, getWrapper())).doAA(publicKey, digestAlgorithm, signatureAlgorithm, challenge)
+        publicKey: PublicKey,
+        digestAlgorithm: String,
+        signatureAlgorithm: String,
+        challenge: ByteArray
+    ): AAResult {
+        return (AAProtocol(aaSender, wrapper)).doAA(publicKey, digestAlgorithm, signatureAlgorithm, challenge)
     }
 
     /**
@@ -429,8 +435,8 @@ class PassportService(
      * @return the wrapper
      */
     override fun getWrapper(): SecureMessagingWrapper? {
-        val ldsSecureMessagingWrapper = appletFileSystem!!.getWrapper() as SecureMessagingWrapper?
-        if (ldsSecureMessagingWrapper != null && ldsSecureMessagingWrapper.getSendSequenceCounter() > wrapper!!.getSendSequenceCounter()) {
+        val ldsSecureMessagingWrapper = appletFileSystem?.getWrapper() as SecureMessagingWrapper?
+        if (ldsSecureMessagingWrapper != null && ldsSecureMessagingWrapper.sendSequenceCounter > wrapper?.sendSequenceCounter) {
             wrapper = ldsSecureMessagingWrapper
         }
         return wrapper
@@ -450,7 +456,7 @@ class PassportService(
      */
     @Throws(CardServiceException::class)
     override fun getATR(): ByteArray? {
-        return service.getATR()
+        return service.atr
     }
 
     /**
@@ -511,8 +517,8 @@ class PassportService(
                 return CardFileInputStream(maxBlockSize, rootFileSystem)
             }
         } else {
-            synchronized(appletFileSystem!!) {
-                appletFileSystem.selectFile(fid)
+            synchronized(appletFileSystem) {
+                appletFileSystem?.selectFile(fid)
                 return CardFileInputStream(maxBlockSize, appletFileSystem)
             }
         }
@@ -525,13 +531,13 @@ class PassportService(
      * 
      * @return the currently set maximum length to be requested in READ BINARY commands
      */
-    override fun getMaxReadBinaryLength(): Int {
+    /*override fun getMaxReadBinaryLength(): Int {
         if (appletFileSystem == null) {
             return NORMAL_MAX_TRANCEIVE_LENGTH
         }
 
         return appletFileSystem.maxReadBinaryLength
-    }
+    }*/
 
     override fun addAPDUListener(l: APDUListener?) {
         service.addAPDUListener(l)
@@ -542,12 +548,12 @@ class PassportService(
     }
 
     override fun getAPDUListeners(): MutableCollection<APDUListener>? {
-        return service.getAPDUListeners()
+        return service.apduListeners
     }
 
     override fun notifyExchangedAPDU(event: APDUEvent?) {
         val apduListeners = getAPDUListeners()
-        if (apduListeners == null || apduListeners.isEmpty()) {
+        if (apduListeners.isNullOrEmpty()) {
             return
         }
 

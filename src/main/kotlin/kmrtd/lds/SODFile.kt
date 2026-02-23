@@ -121,7 +121,7 @@ class SODFile : AbstractTaggedLDSFile {
         dataGroupHashes: MutableMap<Int?, ByteArray>,
         privateKey: PrivateKey?,
         docSigningCertificate: X509Certificate, provider: String? = null,
-        ldsVersion: String? = null, unicodeVersion: String = null
+        ldsVersion: String? = null, unicodeVersion: String? = null
     ) : super(EF_SOD_TAG) {
         try {
             val contentInfo: ContentInfo =
@@ -630,7 +630,7 @@ class SODFile : AbstractTaggedLDSFile {
         private fun toContentInfo(
             contentTypeOID: String, digestAlgorithm: String?,
             dataGroupHashes: MutableMap<Int?, ByteArray>,
-            ldsVersion: String?, unicodeVersion: String
+            ldsVersion: String?, unicodeVersion: String?
         ): ContentInfo {
             val dataGroupHashesArray = arrayOfNulls<DataGroupHash>(dataGroupHashes.size)
 

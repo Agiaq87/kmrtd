@@ -71,7 +71,7 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
     protected abstract fun writeField(tag: Int, tlvOut: TLVOutputStream?)
 
     @Throws(IOException::class)
-    override fun readContent(inputStream: InputStream?) {
+    override fun readContent(inputStream: InputStream) {
         val tlvInputStream = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
         val tagList: MutableList<Int?> = readTagList(tlvInputStream)
         /* Now read the fields in order. */
@@ -82,7 +82,7 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
 
 
     @Throws(IOException::class)
-    override fun writeContent(out: OutputStream?) {
+    override fun writeContent(outputStream: OutputStream) {
         val tlvOut = out as? TLVOutputStream ?: TLVOutputStream(out)
         val tagList = this.tagPresenceList
         writeTagList(tagList, tlvOut)

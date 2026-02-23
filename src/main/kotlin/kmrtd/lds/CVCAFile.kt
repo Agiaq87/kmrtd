@@ -157,6 +157,14 @@ class CVCAFile : AbstractLDSFile {
         outputStream.write(result)
     }
 
+    override val length: Int
+        /**
+         * Returns the length of the content of this CVCA file. This always returns {@value #LENGTH}.
+         *
+         * @return {@value #LENGTH}
+         */
+        get() = 36
+
     val cAReference: CVCPrincipal?
         /**
          * Returns the CA Certificate identifier.
@@ -168,9 +176,10 @@ class CVCAFile : AbstractLDSFile {
     /**
      * Returns the second (alternative) CA Certificate identifier, null if none
      * exists.
-     * 
+     *
      * @return the second (alternative) CA Certificate identifier
      */
+
     fun getAltCAReference(): CVCPrincipal? {
         return if (altCAReference == null) null else CVCPrincipal(altCAReference)
     }
@@ -222,12 +231,5 @@ class CVCAFile : AbstractLDSFile {
         private val serialVersionUID = -1100904058684365703L
 
         const val CAR_TAG: Byte = 0x42
-        val length: Int
-            /**
-             * Returns the length of the content of this CVCA file. This always returns {@value #LENGTH}.
-             * 
-             * @return {@value #LENGTH}
-             */
-            get() = 36
     }
 }

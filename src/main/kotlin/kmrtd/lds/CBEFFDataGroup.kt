@@ -92,7 +92,7 @@ abstract class CBEFFDataGroup : DataGroup {
      * 
      * @throws IOException on error
      */
-    protected constructor(dataGroupTag: Int, inputStream: InputStream?, shouldAddRandomDataIfEmpty: Boolean) : super(
+    protected constructor(dataGroupTag: Int, inputStream: InputStream, shouldAddRandomDataIfEmpty: Boolean) : super(
         dataGroupTag,
         inputStream
     ) {

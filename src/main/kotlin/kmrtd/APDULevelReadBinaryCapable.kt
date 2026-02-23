@@ -46,7 +46,7 @@ interface APDULevelReadBinaryCapable {
      * @throws CardServiceException on tranceive error
      */
     @Throws(CardServiceException::class)
-    fun sendSelectApplet(wrapper: APDUWrapper, aid: ByteArray)
+    fun sendSelectApplet(wrapper: APDUWrapper?, aid: ByteArray)
 
     /**
      * Sends a `SELECT MF` command to the card.
