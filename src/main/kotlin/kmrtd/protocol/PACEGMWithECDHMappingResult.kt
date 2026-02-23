@@ -43,9 +43,15 @@ import java.security.spec.ECPoint
  */
 class PACEGMWithECDHMappingResult(
     staticParameters: AlgorithmParameterSpec?,
-    piccNonce: ByteArray?, piccMappingPublicKey: PublicKey?, pcdMappingKeyPair: KeyPair?, sharedSecretPoint: ECPoint,
+    piccNonce: ByteArray?,
+    piccMappingPublicKey: PublicKey?,
+    pcdMappingKeyPair: KeyPair?,
+    sharedSecretPoint: ECPoint,
     ephemeralParameters: AlgorithmParameterSpec?
-) : PACEGMMappingResult(staticParameters, piccNonce, piccMappingPublicKey, pcdMappingKeyPair, ephemeralParameters) {
+) : PACEGMMappingResult(staticParameters,
+    piccNonce, piccMappingPublicKey,
+    pcdMappingKeyPair, ephemeralParameters
+) {
     private val sharedSecretPointX: BigInteger? = sharedSecretPoint.affineX
 
     private val sharedSecretPointY: BigInteger? = sharedSecretPoint.affineY
@@ -61,8 +67,8 @@ class PACEGMWithECDHMappingResult(
     override fun hashCode(): Int {
         val prime = 31
         var result = super.hashCode()
-        result = (prime * result + (if (sharedSecretPointX == null) 0 else sharedSecretPointX.hashCode())
-                + (if (sharedSecretPointY == null) 0 else sharedSecretPointY.hashCode()))
+        result = (prime * result + (sharedSecretPointX?.hashCode() ?: 0)
+                + (sharedSecretPointY?.hashCode() ?: 0))
 
         return result
     }

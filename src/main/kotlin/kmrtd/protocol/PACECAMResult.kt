@@ -45,7 +45,9 @@ class PACECAMResult(
     agreementAlg: String?, cipherAlg: String?, digestAlg: String?, keyLength: Int,
     mappingResult: PACEMappingResult?,
     pcdKeyPair: KeyPair?, piccPublicKey: PublicKey?,
-    encryptedChipAuthenticationData: ByteArray?, chipAuthenticationData: ByteArray?, wrapper: SecureMessagingWrapper?
+    encryptedChipAuthenticationData: ByteArray?,
+    chipAuthenticationData: ByteArray?,
+    wrapper: SecureMessagingWrapper?
 ) : PACEResult(
     paceKey,
     MappingType.CAM,
@@ -141,7 +143,7 @@ class PACECAMResult(
         if (!super.equals(obj)) {
             return false
         }
-        if (javaClass != obj!!.javaClass) {
+        if (javaClass != obj?.javaClass) {
             return false
         }
 
@@ -151,23 +153,21 @@ class PACECAMResult(
         )
     }
 
-    public override fun toString(): String {
-        return StringBuilder()
-            .append("PACECAMResult [")
-            .append("paceKey: ").append(pACEKey).append(", ")
-            .append("mappingType: ").append(mappingType).append(", ")
-            .append("agreementAlg: ").append(agreementAlg).append(", ")
-            .append("cipherAlg: ").append(cipherAlg).append(", ")
-            .append("digestAlg: ").append(digestAlg).append(", ")
-            .append("keyLength: ").append(keyLength).append(", ")
-            .append("mappingResult: ").append(mappingResult).append(", ")
-            .append("pcdKeyPair: ").append(pCDKeyPair).append(", ")
-            .append("piccPublicKey: ").append(pICCPublicKey).append(", ")
-            .append("encryptedChipAuthenticationData: ").append(Hex.bytesToHexString(encryptedChipAuthenticationData))
-            .append(", ")
-            .append("wrapper: ").append(wrapper).append(", ")
-            .append("chipAuthenticationData: ").append(Hex.bytesToHexString(chipAuthenticationData))
-            .append("]").toString()
+    public override fun toString(): String = buildString {
+            append("PACECAMResult [")
+            append("paceKey: $pACEKey, ")
+            append("mappingType: $mappingType, ")
+            append("agreementAlg: $agreementAlg, ")
+            append("cipherAlg: $cipherAlg, ")
+            append("digestAlg: $digestAlg, ")
+            append("keyLength: $keyLength, ")
+            append("mappingResult: $mappingResult, ")
+            append("pcdKeyPair: $pCDKeyPair, ")
+            append("piccPublicKey: $pICCPublicKey, ")
+            append("encryptedChipAuthenticationData: ${Hex.bytesToHexString(encryptedChipAuthenticationData)}, ")
+            append("wrapper: $wrapper, ")
+            append("chipAuthenticationData: ${Hex.bytesToHexString(chipAuthenticationData)}]")
+
     }
 
     companion object {

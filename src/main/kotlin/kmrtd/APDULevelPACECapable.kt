@@ -54,7 +54,7 @@ interface APDULevelPACECapable {
         wrapper: APDUWrapper,
         oid: String,
         refPublicKeyOrSecretKey: Int,
-        refPrivateKeyOrForComputingSessionKey: ByteArray
+        refPrivateKeyOrForComputingSessionKey: ByteArray?
     )
 
     /**

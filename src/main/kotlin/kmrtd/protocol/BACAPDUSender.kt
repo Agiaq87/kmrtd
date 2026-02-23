@@ -152,8 +152,8 @@ class BACAPDUSender(private val service: CardService) : APDULevelBACCapable {
                 throw CardServiceException("Mutual authentication failed, received null response APDU")
             }
 
-            var responseAPDUBytes = responseAPDU.getBytes()
-            var sw = responseAPDU.getSW().toShort()
+            var responseAPDUBytes = responseAPDU.bytes
+            var sw = responseAPDU.sw.toShort()
             if (responseAPDUBytes == null) {
                 throw CardServiceException(
                     "Mutual authentication failed, received empty data in response APDU",
@@ -173,8 +173,8 @@ class BACAPDUSender(private val service: CardService) : APDULevelBACCapable {
                     le
                 )
                 responseAPDU = service.transmit(commandAPDU)
-                responseAPDUBytes = responseAPDU.getBytes()
-                sw = responseAPDU.getSW().toShort()
+                responseAPDUBytes = responseAPDU.bytes
+                sw = responseAPDU.sw.toShort()
             }
 
             if (responseAPDUBytes.size != 42) {

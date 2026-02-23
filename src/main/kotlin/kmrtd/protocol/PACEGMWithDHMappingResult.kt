@@ -39,20 +39,26 @@ import java.security.spec.AlgorithmParameterSpec
  * @version $Revision: $
  */
 class PACEGMWithDHMappingResult(
-    staticParameters: AlgorithmParameterSpec?, piccNonce: ByteArray?,
-    piccMappingPublicKey: PublicKey?, pcdMappingKeyPair: KeyPair?,
-    sharedSecret: ByteArray?, ephemeralParameters: AlgorithmParameterSpec?
-) : PACEGMMappingResult(staticParameters, piccNonce, piccMappingPublicKey, pcdMappingKeyPair, ephemeralParameters) {
-    private val sharedSecret: ByteArray? = if (sharedSecret == null) null else sharedSecret.copyOf(sharedSecret.size)
+    staticParameters: AlgorithmParameterSpec?,
+    piccNonce: ByteArray?,
+    piccMappingPublicKey: PublicKey?,
+    pcdMappingKeyPair: KeyPair?,
+    sharedSecret: ByteArray?,
+    ephemeralParameters: AlgorithmParameterSpec?
+) : PACEGMMappingResult(staticParameters,
+    piccNonce, piccMappingPublicKey,
+    pcdMappingKeyPair, ephemeralParameters
+) {
+    private val sharedSecret: ByteArray? = sharedSecret?.copyOf(sharedSecret.size)
 
     /**
      * Returns the shared secret that was derived during this protocol step.
      * 
      * @return the shared secret
      */
-    fun getSharedSecret(): ByteArray? {
+    /*fun getSharedSecret(): ByteArray? {
         return if (sharedSecret == null) null else sharedSecret.copyOf(sharedSecret.size)
-    }
+    }*/
 
     override fun hashCode(): Int {
         val prime = 31

@@ -62,8 +62,10 @@ class PACEAPDUSender(service: CardService) : APDULevelPACECapable {
     @Synchronized
     @Throws(CardServiceException::class)
     override fun sendMSESetATMutualAuth(
-        wrapper: APDUWrapper?, oid: String,
-        refPublicKeyOrSecretKey: Int, refPrivateKeyOrForComputingSessionKey: ByteArray?
+        wrapper: APDUWrapper,
+        oid: String,
+        refPublicKeyOrSecretKey: Int,
+        refPrivateKeyOrForComputingSessionKey: ByteArray?
     ) {
         var refPrivateKeyOrForComputingSessionKey = refPrivateKeyOrForComputingSessionKey
         requireNotNull(oid) { "OID cannot be null" }
@@ -111,7 +113,7 @@ class PACEAPDUSender(service: CardService) : APDULevelPACECapable {
         val rapdu = secureMessagingSender.transmit(wrapper, capdu)
 
         /* Handle error status word. */
-        val sw = rapdu.getSW().toShort()
+        val sw = rapdu.sw.toShort()
         if (sw != ISO7816.SW_NO_ERROR) {
             throw CardServiceException("Sending MSE AT failed", sw.toInt())
         }
@@ -131,7 +133,7 @@ class PACEAPDUSender(service: CardService) : APDULevelPACECapable {
      */
     @Synchronized
     @Throws(CardServiceException::class)
-    override fun sendGeneralAuthenticate(wrapper: APDUWrapper?, data: ByteArray, le: Int, isLast: Boolean): ByteArray {
+    override fun sendGeneralAuthenticate(wrapper: APDUWrapper, data: ByteArray, le: Int, isLast: Boolean): ByteArray {
         /* Tranceive APDU. */
         val commandData = TLVUtil.wrapDO(0x7C, data) // FIXME: constant for 0x7C
         val capdu = CommandAPDU(
@@ -145,7 +147,7 @@ class PACEAPDUSender(service: CardService) : APDULevelPACECapable {
         val rapdu = secureMessagingSender.transmit(wrapper, capdu)
 
         /* Handle error status word. */
-        val sw = rapdu.getSW().toShort()
+        val sw = rapdu.sw.toShort()
         if (sw != ISO7816.SW_NO_ERROR) {
             throw CardServiceException("Sending general authenticate failed", sw.toInt())
         }
@@ -173,6 +175,6 @@ class PACEAPDUSender(service: CardService) : APDULevelPACECapable {
         /** The general Authenticate command is used to perform the PACE protocol. See Section 3.2.2 of SAC-TR 1.01.  */
         private val INS_PACE_GENERAL_AUTHENTICATE = 0x86.toByte()
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd.protocol")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd.protocol")
     }
 }

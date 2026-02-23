@@ -70,7 +70,7 @@ import javax.crypto.spec.SecretKeySpec
  */
 class PACEProtocol(
     private val service: APDULevelPACECapable,
-    private var wrapper: SecureMessagingWrapper?,
+    private var wrapper: SecureMessagingWrapper,
     private val maxTranceiveLengthForProtocol: Int,
     private val maxTranceiveLengthForSecureMessaging: Int,
     private val shouldCheckMAC: Boolean
@@ -91,7 +91,7 @@ class PACEProtocol(
      */
     @Deprecated("Use the other constructor with explicit max tranceive lengths for protocol and secure messaging")
     constructor(
-        service: APDULevelPACECapable, wrapper: SecureMessagingWrapper?,
+        service: APDULevelPACECapable, wrapper: SecureMessagingWrapper,
         maxTranceiveLength: Int, shouldCheckMAC: Boolean
     ) : this(service, wrapper, 256, maxTranceiveLength, shouldCheckMAC)
 

@@ -57,7 +57,8 @@ class EACTAResult(
      * @return CA certificate's reference
      */
     val cAReference: CVCPrincipal?,
-    terminalCertificates: MutableList<CardVerifiableCertificate?>, terminalKey: PrivateKey?,
+    terminalCertificates: MutableList<CardVerifiableCertificate>,
+    terminalKey: PrivateKey?,
     documentNumber: String?, cardChallenge: ByteArray?
 ) : Serializable {
     /**
@@ -67,7 +68,7 @@ class EACTAResult(
      * @return the chain of CVCertificates used to authenticate the terminal to
      * the card
      */
-    val cVCertificates: MutableList<CardVerifiableCertificate>? = ArrayList<CardVerifiableCertificate>()
+    val cVCertificates: MutableList<CardVerifiableCertificate> = ArrayList()
 
     /**
      * Returns the PCD's private key used during EAC.
@@ -101,8 +102,8 @@ class EACTAResult(
      * @param cardChallenge the challenge
      */
     init {
-        for (terinalCertificate in terminalCertificates) {
-            this.cVCertificates!!.add(terinalCertificate!!)
+        for (terminalCertificate in terminalCertificates) {
+            this.cVCertificates.add(terminalCertificate)
         }
         this.terminalKey = terminalKey
         this.documentNumber = documentNumber
@@ -116,11 +117,11 @@ class EACTAResult(
      */
     override fun toString(): String {
         val result = StringBuilder()
-        result.append("TAResult [chipAuthenticationResult: $chipAuthenticationResult").append(", ")
-        result.append("caReference: " + this.cAReference).append(", ")
+        result.append("TAResult [chipAuthenticationResult: $chipAuthenticationResult, ")
+        result.append("caReference: $cAReference, ")
         result.append("terminalCertificates: [")
         var isFirst = true
-        for (cert in this.cVCertificates!!) {
+        for (cert in this.cVCertificates) {
             if (isFirst) {
                 isFirst = false
             } else {
@@ -128,10 +129,9 @@ class EACTAResult(
             }
             result.append(toString(cert))
         }
-        result.append("terminalKey = ").append(Util.getDetailedPrivateKeyAlgorithm(terminalKey)).append(", ")
-        result.append("documentNumber = ").append(documentNumber).append(", ")
-        result.append("cardChallenge = ").append(Hex.bytesToHexString(cardChallenge)).append(", ")
-        result.append("]")
+        result.append("terminalKey = ${Util.getDetailedPrivateKeyAlgorithm(terminalKey)}, ")
+        result.append("documentNumber = $documentNumber, ")
+        result.append("cardChallenge = ${Hex.bytesToHexString(cardChallenge)}, ]")
         return result.toString()
     }
 
@@ -140,10 +140,10 @@ class EACTAResult(
         var result = 1
         result = prime * result + (if (this.cAReference == null) 0 else cAReference.hashCode())
         result = prime * result + cardChallenge.contentHashCode()
-        result = prime * result + (if (chipAuthenticationResult == null) 0 else chipAuthenticationResult.hashCode())
-        result = prime * result + (if (documentNumber == null) 0 else documentNumber.hashCode())
-        result = prime * result + (if (this.cVCertificates == null) 0 else cVCertificates.hashCode())
-        result = prime * result + (if (terminalKey == null) 0 else terminalKey.hashCode())
+        result = prime * result + (chipAuthenticationResult?.hashCode() ?: 0)
+        result = prime * result + (documentNumber?.hashCode() ?: 0)
+        result = prime * result + (cVCertificates.hashCode())
+        result = prime * result + (terminalKey?.hashCode() ?: 0)
         return result
     }
 
@@ -172,7 +172,7 @@ class EACTAResult(
             if (other.chipAuthenticationResult != null) {
                 return false
             }
-        } else if (!chipAuthenticationResult.equals(other.chipAuthenticationResult)) {
+        } else if (chipAuthenticationResult != other.chipAuthenticationResult) {
             return false
         }
         if (documentNumber == null) {
@@ -182,11 +182,7 @@ class EACTAResult(
         } else if (documentNumber != other.documentNumber) {
             return false
         }
-        if (this.cVCertificates == null) {
-            if (other.cVCertificates != null) {
-                return false
-            }
-        } else if (this.cVCertificates != other.cVCertificates) {
+        if (this.cVCertificates != other.cVCertificates) {
             return false
         }
         if (terminalKey == null) {
@@ -207,7 +203,7 @@ class EACTAResult(
         val result = StringBuilder()
         result.append("CardVerifiableCertificate [")
         try {
-            val reference = certificate.getHolderReference()
+            val reference = certificate.holderReference
             if (this.cAReference != reference) {
                 result.append("holderReference: $reference")
             }
