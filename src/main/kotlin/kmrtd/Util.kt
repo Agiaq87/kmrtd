@@ -434,10 +434,10 @@ object Util {
         val out = ByteArrayOutputStream()
         try {
             val obj = asn1In.readObject() as ASN1Sequence
-            val e: Enumeration<ASN1Primitive?> = obj.getObjects()
+            val e: Enumeration<ASN1Primitive?> = obj.getObjects() as Enumeration<ASN1Primitive?>
             while (e.hasMoreElements()) {
                 val i = e.nextElement() as ASN1Integer
-                var t = i.getValue().toByteArray()
+                var t = i.value.toByteArray()
                 t = alignKeyDataToSize(t, keySize)
                 out.write(t)
             }
@@ -775,7 +775,7 @@ object Util {
      * 
      * @return a JCA compliant explicit parameter specification
      */
-    fun toExplicitECParameterSpec(parameterSpec: ECNamedCurveParameterSpec): ECParameterSpec {
+    fun toExplicitECParameterSpec(parameterSpec: ECNamedCurveParameterSpec): ECParameterSpec? {
         return toExplicitECParameterSpec(toECNamedCurveSpec(parameterSpec))
     }
 
@@ -786,7 +786,7 @@ object Util {
      * 
      * @return another specification not name based
      */
-    fun toExplicitECParameterSpec(params: ECParameterSpec?): ECParameterSpec {
+    fun toExplicitECParameterSpec(params: ECParameterSpec?): ECParameterSpec? {
         if (params == null) {
             return null
         }
@@ -910,8 +910,8 @@ object Util {
                         var generator = params.g
                         val curve = generator.getCurve()
                         generator = curve.createPoint(
-                            generator.getAffineXCoord().toBigInteger(),
-                            generator.getAffineYCoord().toBigInteger()
+                            generator.affineXCoord.toBigInteger(),
+                            generator.affineYCoord.toBigInteger()
                         )
                         params = X9ECParameters(
                             params.curve,
@@ -1568,7 +1568,7 @@ object Util {
      * @throws GeneralSecurityException on error
      */
     @Throws(GeneralSecurityException::class)
-    fun getPublicKey(algorithm: String, keySpec: KeySpec?): PublicKey? {
+    fun getPublicKey(algorithm: String, keySpec: KeySpec?): PublicKey {
         try {
             val kf = KeyFactory.getInstance(algorithm)
             return kf.generatePublic(keySpec)

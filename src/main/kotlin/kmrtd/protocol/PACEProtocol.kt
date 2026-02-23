@@ -225,11 +225,11 @@ class PACEProtocol(
      * Exchange PK_PCD~ and PK_PICC~ with PICC.
      * Check that PK_PCD~ and PK_PICC~ differ.
      */
-        val ephemeralPICCPublicKey = doPACEStep3ExchangePublicKeys(ephemeralPCDKeyPair.public, ephemeralParams!!)
+        val ephemeralPICCPublicKey = doPACEStep3ExchangePublicKeys(ephemeralPCDKeyPair.public, ephemeralParams)
 
         /* Key agreement K = KA(SK_PCD~, PK_PICC~, D~). */
         val sharedSecretBytes =
-            doPACEStep3KeyAgreement(agreementAlg, ephemeralPCDKeyPair.private, ephemeralPICCPublicKey!!)
+            doPACEStep3KeyAgreement(agreementAlg, ephemeralPCDKeyPair.private, ephemeralPICCPublicKey)
 
         /* Derive secure messaging keys. */
         /* Compute session keys K_mac = KDF_mac(K), K_enc = KDF_enc(K). */
@@ -262,7 +262,7 @@ class PACEProtocol(
      *  - The new session keys and the new SSC are used to protect subsequent commands/responses.
      */
         try {
-            val ssc = if (wrapper == null) 0L else wrapper!!.sendSequenceCounter
+            val ssc = if (wrapper == null) 0L else wrapper.sendSequenceCounter
             if (cipherAlg.startsWith("DESede")) {
                 wrapper = DESedeSecureMessagingWrapper(
                     encKey,
@@ -418,8 +418,8 @@ class PACEProtocol(
             val keyPairGenerator: KeyPairGenerator = KeyPairGenerator.getInstance(agreementAlg, BC_PROVIDER)
             keyPairGenerator.initialize(params)
             val pcdMappingKeyPair = keyPairGenerator.generateKeyPair()
-            val pcdMappingPublicKey = pcdMappingKeyPair.getPublic()
-            val pcdMappingPrivateKey = pcdMappingKeyPair.getPrivate()
+            val pcdMappingPublicKey = pcdMappingKeyPair.public
+            val pcdMappingPrivateKey = pcdMappingKeyPair.private
 
             val pcdMappingEncodedPublicKey: ByteArray = encodePublicKeyForSmartCard(pcdMappingPublicKey)
             val step2Data = TLVUtil.wrapDO(0x81, pcdMappingEncodedPublicKey)
@@ -465,10 +465,7 @@ class PACEProtocol(
                     ephemeralParameters
                 )
             } else {
-                throw IllegalArgumentException(
-                    ("Unsupported parameters for mapping nonce, expected \"ECDH\" / ECParameterSpec or \"DH\" / DHParameterSpec"
-                            + ", found \"" + agreementAlg + "\" /" + params.javaClass.getCanonicalName())
-                )
+                throw IllegalArgumentException("Unsupported parameters for mapping nonce, expected \"ECDH\" / ECParameterSpec or \"DH\" / DHParameterSpec, found \"$agreementAlg\" / ${params::class.java.canonicalName}")
             }
         } catch (cse: CardServiceException) {
             throw CardServiceProtocolException("PICC side exception in mapping nonce step", 2, cse)
@@ -540,7 +537,7 @@ class PACEProtocol(
                     piccNonce,
                     pcdNonce,
                     staticPACECipher.algorithm,
-                    (params as javax.crypto.spec.DHParameterSpec?)!!
+                    (params as javax.crypto.spec.DHParameterSpec?)
                 )
                 return PACEIMMappingResult(params, piccNonce, pcdNonce, ephemeralParameters)
             } else {
@@ -595,7 +592,7 @@ class PACEProtocol(
      * @throws CardServiceProtocolException on error
      */
     @Throws(CardServiceProtocolException::class)
-    fun doPACEStep3ExchangePublicKeys(pcdPublicKey: PublicKey, ephemeralParams: AlgorithmParameterSpec): PublicKey? {
+    fun doPACEStep3ExchangePublicKeys(pcdPublicKey: PublicKey, ephemeralParams: AlgorithmParameterSpec): PublicKey {
         try {
             val pcdEncodedPublicKey: ByteArray = encodePublicKeyForSmartCard(pcdPublicKey)
             val step3Data = TLVUtil.wrapDO(0x83, pcdEncodedPublicKey)
@@ -606,7 +603,7 @@ class PACEProtocol(
                 false
             )
             val piccEncodedPublicKey = TLVUtil.unwrapDO(0x84, step3Response)
-            val piccPublicKey: PublicKey? = decodePublicKeyFromSmartCard(piccEncodedPublicKey, ephemeralParams)
+            val piccPublicKey: PublicKey = decodePublicKeyFromSmartCard(piccEncodedPublicKey, ephemeralParams)
 
             if (keysAreEqual(pcdPublicKey, piccPublicKey)) {
                 throw CardServiceProtocolException(
@@ -636,7 +633,7 @@ class PACEProtocol(
      * @throws CardServiceProtocolException on error
      */
     @Throws(CardServiceProtocolException::class)
-    fun doPACEStep3KeyAgreement(agreementAlg: String, pcdPrivateKey: PrivateKey, piccPublicKey: PublicKey): ByteArray? {
+    fun doPACEStep3KeyAgreement(agreementAlg: String, pcdPrivateKey: PrivateKey, piccPublicKey: PublicKey): ByteArray {
         try {
             val keyAgreement: KeyAgreement = KeyAgreement.getInstance(agreementAlg, BC_PROVIDER)
             keyAgreement.init(pcdPrivateKey)
@@ -1406,7 +1403,7 @@ class PACEProtocol(
                 } else if (publicKey is ECPublicKey) {
                     val params = publicKey.params
                     val p = Util.getPrime(params)
-                    val curve = params!!.curve
+                    val curve = params.curve
                     val a = curve.a
                     val b = curve.b
                     val generator = params.generator
@@ -1520,7 +1517,7 @@ class PACEProtocol(
          * 
          * @return the decoded public key object
          */
-        fun decodePublicKeyFromSmartCard(encodedPublicKey: ByteArray, params: AlgorithmParameterSpec): PublicKey? {
+        fun decodePublicKeyFromSmartCard(encodedPublicKey: ByteArray, params: AlgorithmParameterSpec): PublicKey {
             requireNotNull(params) { "Params cannot be null" }
 
             try {
