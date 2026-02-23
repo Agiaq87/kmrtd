@@ -69,9 +69,11 @@ import javax.crypto.spec.SecretKeySpec
  * @since 0.5.6
  */
 class PACEProtocol(
-    private val service: APDULevelPACECapable, private var wrapper: SecureMessagingWrapper?,
+    private val service: APDULevelPACECapable,
+    private var wrapper: SecureMessagingWrapper?,
     private val maxTranceiveLengthForProtocol: Int,
-    private val maxTranceiveLengthForSecureMessaging: Int, private val shouldCheckMAC: Boolean
+    private val maxTranceiveLengthForSecureMessaging: Int,
+    private val shouldCheckMAC: Boolean
 ) {
     private val random: Random = SecureRandom()
 

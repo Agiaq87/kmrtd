@@ -48,7 +48,7 @@ class AAProtocol
  * 
  * @param service the service for APDU communication
  * @param wrapper the secure messaging wrapper
- */(private val service: APDULevelAACapable, private val wrapper: SecureMessagingWrapper?) {
+ */(private val service: APDULevelAACapable, private val wrapper: SecureMessagingWrapper) {
     /**
      * Performs the Active Authentication protocol.
      * 
@@ -69,7 +69,7 @@ class AAProtocol
         challenge: ByteArray
     ): AAResult {
         try {
-            require(!(challenge == null || challenge.size != 8)) { "AA failed: bad challenge" }
+            require(challenge.size == 8) { "AA failed: bad challenge" }
             val response =
                 service.sendInternalAuthenticate(wrapper, Util.getApproximateSignatureSize(publicKey), challenge)
             return AAResult(publicKey, digestAlgorithm, signatureAlgorithm, challenge, response)

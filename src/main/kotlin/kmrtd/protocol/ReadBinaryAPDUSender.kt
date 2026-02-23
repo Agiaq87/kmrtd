@@ -34,7 +34,7 @@ class ReadBinaryAPDUSender(private val service: CardService) : APDULevelReadBina
      */
     @Synchronized
     @Throws(CardServiceException::class)
-    override fun sendSelectApplet(wrapper: APDUWrapper?, aid: ByteArray) {
+    override fun sendSelectApplet(wrapper: APDUWrapper, aid: ByteArray) {
         requireNotNull(aid) { "AID cannot be null" }
         val commandAPDU = CommandAPDU(
             ISO7816.CLA_ISO7816.toInt(),
@@ -77,7 +77,7 @@ class ReadBinaryAPDUSender(private val service: CardService) : APDULevelReadBina
      */
     @Synchronized
     @Throws(CardServiceException::class)
-    override fun sendSelectFile(wrapper: APDUWrapper?, fid: Short) {
+    override fun sendSelectFile(wrapper: APDUWrapper, fid: Short) {
         val fiddle = byteArrayOf(((fid.toInt() shr 8) and 0xFF).toByte(), (fid.toInt() and 0xFF).toByte())
         val commandAPDU = CommandAPDU(
             ISO7816.CLA_ISO7816.toInt(),
@@ -117,7 +117,7 @@ class ReadBinaryAPDUSender(private val service: CardService) : APDULevelReadBina
     @Synchronized
     @Throws(CardServiceException::class)
     override fun sendReadBinary(
-        wrapper: APDUWrapper?,
+        wrapper: APDUWrapper,
         sfi: Int,
         offset: Int,
         le: Int,

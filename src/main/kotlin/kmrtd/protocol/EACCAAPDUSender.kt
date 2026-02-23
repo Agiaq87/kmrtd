@@ -62,16 +62,14 @@ class EACCAAPDUSender(service: CardService) : APDULevelEACCACapable {
      */
     @Synchronized
     @Throws(CardServiceException::class)
-    override fun sendMSEKAT(wrapper: APDUWrapper?, keyData: ByteArray, idData: ByteArray?) {
-        val data = ByteArray(keyData.size + (if (idData != null) idData.size else 0))
+    override fun sendMSEKAT(wrapper: APDUWrapper, keyData: ByteArray, idData: ByteArray) {
+        val data = ByteArray(keyData.size + (idData.size))
         System.arraycopy(keyData, 0, data, 0, keyData.size)
-        if (idData != null) {
-            System.arraycopy(idData, 0, data, keyData.size, idData.size)
-        }
+        System.arraycopy(idData, 0, data, keyData.size, idData.size)
 
         val commandAPDU = CommandAPDU(ISO7816.CLA_ISO7816.toInt(), ISO7816.INS_MSE.toInt(), 0x41, 0xA6, data)
         val responseAPDU = secureMessagingSender.transmit(wrapper, commandAPDU)
-        val sw = responseAPDU.getSW().toShort()
+        val sw = responseAPDU.sw.toShort()
         if (sw != ISO7816.SW_NO_ERROR) {
             throw CardServiceException("Sending MSE KAT failed", sw.toInt())
         }
@@ -90,12 +88,12 @@ class EACCAAPDUSender(service: CardService) : APDULevelEACCACapable {
      */
     @Synchronized
     @Throws(CardServiceException::class)
-    override fun sendMSESetATIntAuth(wrapper: APDUWrapper?, oid: String?, keyId: BigInteger?) {
+    override fun sendMSESetATIntAuth(wrapper: APDUWrapper, oid: String, keyId: BigInteger) {
         val p1 = 0x41
         val p2 = 0xA4
         //  int p2 = 0xA6;
         var rapdu: ResponseAPDU? = null
-        if (keyId == null || keyId.compareTo(BigInteger.ZERO) < 0) {
+        if (keyId < BigInteger.ZERO) {
             val capdu = CommandAPDU(ISO7816.CLA_ISO7816.toInt(), ISO7816.INS_MSE.toInt(), p1, p2, Util.toOIDBytes(oid))
             rapdu = secureMessagingSender.transmit(wrapper, capdu)
         } else {
@@ -118,7 +116,7 @@ class EACCAAPDUSender(service: CardService) : APDULevelEACCACapable {
             )
             rapdu = secureMessagingSender.transmit(wrapper, capdu)
         }
-        val sw = if (rapdu == null) -1 else rapdu.sw.toShort()
+        val sw = rapdu.sw.toShort()
         if (sw != ISO7816.SW_NO_ERROR) {
             throw CardServiceException("Sending MSE AT failed", sw.toInt())
         }
@@ -139,7 +137,7 @@ class EACCAAPDUSender(service: CardService) : APDULevelEACCACapable {
      */
     @Synchronized
     @Throws(CardServiceException::class)
-    override fun sendGeneralAuthenticate(wrapper: APDUWrapper?, data: ByteArray, isLast: Boolean): ByteArray {
+    override fun sendGeneralAuthenticate(wrapper: APDUWrapper, data: ByteArray, isLast: Boolean): ByteArray {
         return sendGeneralAuthenticate(wrapper, data, 256, isLast)
     }
 

@@ -93,5 +93,5 @@ interface APDULevelReadBinaryCapable {
         le: Int,
         isSFIEnabled: Boolean,
         isTLVEncodedOffsetNeeded: Boolean
-    ): ByteArray
+    ): ByteArray?
 }

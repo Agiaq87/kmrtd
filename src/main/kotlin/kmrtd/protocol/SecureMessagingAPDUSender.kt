@@ -99,7 +99,7 @@ class SecureMessagingAPDUSender
                 notifyExchangedAPDU(
                     WrappedAPDUEvent(
                         this,
-                        wrapper.getType(),
+                        wrapper.type,
                         ++apduCount,
                         plainCapdu,
                         responseAPDU,
@@ -171,7 +171,7 @@ class SecureMessagingAPDUSender
     private fun sendUsingCommandChaining(commandAPDU: CommandAPDU, chunkSize: Int): MutableList<ResponseAPDU?> {
         val data = commandAPDU.getData()
         val segments = Util.partition(chunkSize, data)
-        val responseAPDUs: MutableList<ResponseAPDU?> = ArrayList<ResponseAPDU?>(segments.size)
+        val responseAPDUs: MutableList<ResponseAPDU?> = ArrayList(segments.size)
         var index = 0
         for (segment in segments) {
             val isLast = ++index >= segments.size
@@ -229,7 +229,7 @@ class SecureMessagingAPDUSender
                 )
                 val rapdu = transmit(wrapper, capdu)
                 data = rapdu.getData()
-                sw = rapdu.getSW().toShort()
+                sw = rapdu.sw.toShort()
             }
 
             return byteArrayOutputStream.toByteArray()

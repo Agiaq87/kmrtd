@@ -59,25 +59,32 @@ class AAAPDUSender(service: CardService) : APDULevelAACapable {
      */
     @Synchronized
     @Throws(CardServiceException::class)
-    override fun sendInternalAuthenticate(wrapper: APDUWrapper?, signatureLength: Int, rndIFD: ByteArray): ByteArray? {
-        require(!(rndIFD == null || rndIFD.size != 8)) { "rndIFD wrong length" }
+    override fun sendInternalAuthenticate(wrapper: APDUWrapper, signatureLength: Int, rndIFD: ByteArray): ByteArray {
+        require(rndIFD.size == 8) { "rndIFD wrong length" }
 
         val le = if (signatureLength <= 231 * 8) 256 else 65536
         var commandAPDU =
-            CommandAPDU(ISO7816.CLA_ISO7816.toInt(), ISO7816.INS_INTERNAL_AUTHENTICATE.toInt(), 0x00, 0x00, rndIFD, le)
+            CommandAPDU(
+                ISO7816.CLA_ISO7816.toInt(),
+                ISO7816.INS_INTERNAL_AUTHENTICATE.toInt(),
+                0x00,
+                0x00,
+                rndIFD,
+                le
+            )
 
-        var responseAPDU: ResponseAPDU? = null
         var sw: Short = -1
+        var responseAPDU: ResponseAPDU? = null
         try {
             responseAPDU = secureMessagingSender.transmit(wrapper, commandAPDU)
             sw = responseAPDU.sw.toShort()
         } catch (cse: CardServiceException) {
             LOGGER.log(
                 Level.INFO,
-                "Exception during transmission of command APDU = " + Hex.bytesToHexString(commandAPDU.getBytes()),
+                "Exception during transmission of command APDU = ${Hex.bytesToHexString(commandAPDU.bytes)}",
                 cse
             )
-            sw = cse.getSW().toShort()
+            sw = cse.sw.toShort()
         }
 
         if (sw == ISO7816.SW_NO_ERROR && responseAPDU != null) {
@@ -85,7 +92,7 @@ class AAAPDUSender(service: CardService) : APDULevelAACapable {
         }
 
         if ((sw.toInt() and 0xFF00) == 0x6100 && le == 256) {
-            val normalLengthResponse = if (responseAPDU == null) null else responseAPDU.getData()
+            val normalLengthResponse = responseAPDU?.getData()
 
             /* Something is wrong with that length. Try different length. */
             commandAPDU = CommandAPDU(
@@ -97,11 +104,11 @@ class AAAPDUSender(service: CardService) : APDULevelAACapable {
                 65536
             )
             responseAPDU = secureMessagingSender.transmit(wrapper, commandAPDU)
-            val extendedLengthResponse: ByteArray = (if (responseAPDU == null) null else responseAPDU.getData())!!
+            val extendedLengthResponse: ByteArray = (responseAPDU.getData())
 
-            if (normalLengthResponse == null && extendedLengthResponse == null) {
+            /*if (normalLengthResponse == null && extendedLengthResponse == null) {
                 throw CardServiceException("Internal Authenticate failed", sw.toInt())
-            }
+            }*/
             if (normalLengthResponse != null && extendedLengthResponse == null) {
                 return normalLengthResponse
             }
@@ -110,10 +117,12 @@ class AAAPDUSender(service: CardService) : APDULevelAACapable {
             }
 
             /* Both are non-null. Send the one with the most data. */
-            if (normalLengthResponse!!.size > extendedLengthResponse.size) {
-                return normalLengthResponse
-            } else {
-                return extendedLengthResponse
+            normalLengthResponse?.size?.let {
+                return if (it > extendedLengthResponse.size) {
+                    normalLengthResponse
+                } else {
+                    extendedLengthResponse
+                }
             }
         } else if (responseAPDU != null && responseAPDU.getData() != null) {
             /* If we got some data, return it, independent of what the status is. */

@@ -72,13 +72,13 @@ class AAResult
      * 
      * @return the challenge
      */
-    val challenge: ByteArray?,
+    val challenge: ByteArray,
     /**
      * Returns the response that was sent back by the ICC.
      * 
      * @return the response that was sent back by the ICC
      */
-    val response: ByteArray?
+    val response: ByteArray
 ) : Serializable {
     override fun toString(): String {
         return StringBuilder()
@@ -95,50 +95,50 @@ class AAResult
         val prime = 1991
         var result = 1234567891
         result = prime * result + challenge.contentHashCode()
-        result = prime * result + (if (digestAlgorithm == null) 0 else digestAlgorithm.hashCode())
-        result = prime * result + (if (publicKey == null) 0 else publicKey.hashCode())
+        result = prime * result + (digestAlgorithm?.hashCode() ?: 0)
+        result = prime * result + (publicKey?.hashCode() ?: 0)
         result = prime * result + response.contentHashCode()
-        result = prime * result + (if (signatureAlgorithm == null) 0 else signatureAlgorithm.hashCode())
+        result = prime * result + (signatureAlgorithm?.hashCode() ?: 0)
         return result
     }
 
-    override fun equals(obj: Any?): Boolean {
-        if (this === obj) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (obj == null) {
+        if (other == null) {
             return false
         }
-        if (javaClass != obj.javaClass) {
+        if (javaClass != other.javaClass) {
             return false
         }
 
-        val other = obj as AAResult
-        if (!challenge.contentEquals(other.challenge)) {
+        val that = other as AAResult
+        if (!challenge.contentEquals(that.challenge)) {
             return false
         }
         if (digestAlgorithm == null) {
-            if (other.digestAlgorithm != null) {
+            if (that.digestAlgorithm != null) {
                 return false
             }
-        } else if (digestAlgorithm != other.digestAlgorithm) {
+        } else if (digestAlgorithm != that.digestAlgorithm) {
             return false
         }
         if (publicKey == null) {
-            if (other.publicKey != null) {
+            if (that.publicKey != null) {
                 return false
             }
-        } else if (publicKey != other.publicKey) {
+        } else if (publicKey != that.publicKey) {
             return false
         }
-        if (!response.contentEquals(other.response)) {
+        if (!response.contentEquals(that.response)) {
             return false
         }
         if (signatureAlgorithm == null) {
-            if (other.signatureAlgorithm != null) {
+            if (that.signatureAlgorithm != null) {
                 return false
             }
-        } else if (signatureAlgorithm != other.signatureAlgorithm) {
+        } else if (signatureAlgorithm != that.signatureAlgorithm) {
             return false
         }
 

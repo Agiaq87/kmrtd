@@ -64,7 +64,7 @@ class BACProtocol(
     @Throws(CardServiceException::class)
     fun doBAC(bacKey: AccessKeySpec): BACResult {
         try {
-            val keySeed = bacKey.getKey()
+            val keySeed = bacKey.key
             val kEnc = Util.deriveKey(keySeed, Util.ENC_MODE)
             val kMac = Util.deriveKey(keySeed, Util.MAC_MODE)
 
@@ -90,7 +90,7 @@ class BACProtocol(
      * @throws GeneralSecurityException on security primitives related problems
      */
     @Throws(CardServiceException::class, GeneralSecurityException::class)
-    fun doBAC(kEnc: SecretKey?, kMac: SecretKey?): BACResult {
+    fun doBAC(kEnc: SecretKey, kMac: SecretKey): BACResult {
         return BACResult(doBACStep(kEnc, kMac))
     }
 
@@ -106,7 +106,7 @@ class BACProtocol(
      * @throws GeneralSecurityException on security primitives related problems
      */
     @Throws(CardServiceException::class, GeneralSecurityException::class)
-    private fun doBACStep(kEnc: SecretKey?, kMac: SecretKey?): SecureMessagingWrapper {
+    private fun doBACStep(kEnc: SecretKey, kMac: SecretKey): SecureMessagingWrapper {
         var rndICC: ByteArray? = null
         try {
             rndICC = service.sendGetChallenge()
@@ -148,14 +148,15 @@ class BACProtocol(
          * @throws GeneralSecurityException on error applying the low level cryptographic primitives
          */
         @Throws(GeneralSecurityException::class)
-        fun computeKeySeedForBAC(bacKey: BACKeySpec): ByteArray? {
-            var documentNumber = bacKey.getDocumentNumber()
-            val dateOfBirth = bacKey.getDateOfBirth()
-            val dateOfExpiry = bacKey.getDateOfExpiry()
+        fun computeKeySeedForBAC(bacKey: BACKeySpec): ByteArray {
+            var documentNumber = bacKey.documentNumber.value
+            val dateOfBirth = bacKey.dateOfBirth.date
+            val dateOfExpiry = bacKey.dateOfExpiry.date
 
-            require(!(dateOfBirth == null || dateOfBirth.length != 6)) { "Wrong date format used for date of birth. Expected yyMMdd, found $dateOfBirth" }
-            require(!(dateOfExpiry == null || dateOfExpiry.length != 6)) { "Wrong date format used for date of expiry. Expected yyMMdd, found $dateOfExpiry" }
-            requireNotNull(documentNumber) { "Wrong document number. Found $documentNumber" }
+            // With Value classe this control is not necessary
+            /*require(dateOfBirth.date.length == 6) { "Wrong date format used for date of birth. Expected yyMMdd, found $dateOfBirth" }
+            require(dateOfExpiry.date.length == 6) { "Wrong date format used for date of expiry. Expected yyMMdd, found $dateOfExpiry" }
+            requireNotNull(documentNumber) { "Wrong document number. Found $documentNumber" }*/
 
             documentNumber = fixDocumentNumber(documentNumber)
 
@@ -172,7 +173,7 @@ class BACProtocol(
          * @return the initial send sequence counter to use
          */
         fun computeSendSequenceCounter(rndICC: ByteArray, rndIFD: ByteArray): Long {
-            check(!(rndICC == null || rndICC.size != 8 || rndIFD == null || rndIFD.size != 8)) { "Wrong length input" }
+            check(!(rndICC.size != 8 || rndIFD.size != 8)) { "Wrong length input" }
             var ssc: Long = 0
             for (i in 4..7) {
                 ssc = ssc shl 8
@@ -202,7 +203,7 @@ class BACProtocol(
             documentNumber: String?,
             dateOfBirth: String?,
             dateOfExpiry: String?
-        ): ByteArray? {
+        ): ByteArray {
             return Util.computeKeySeed(documentNumber, dateOfBirth, dateOfExpiry, "SHA-1", true)
         }
 
@@ -213,9 +214,9 @@ class BACProtocol(
          * 
          * @return the documentNumber with at least length 9
          */
-        private fun fixDocumentNumber(documentNumber: String?): String {
+        private fun fixDocumentNumber(documentNumber: String): String {
             val maxDocumentNumber =
-                StringBuilder(if (documentNumber == null) "" else documentNumber.replace('<', ' ').trim { it <= ' ' }
+                StringBuilder(documentNumber.replace('<', ' ').trim { it <= ' ' }
                     .replace(' ', '<'))
             while (maxDocumentNumber.length < 9) {
                 maxDocumentNumber.append('<')

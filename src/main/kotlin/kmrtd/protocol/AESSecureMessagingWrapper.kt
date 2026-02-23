@@ -79,11 +79,11 @@ class AESSecureMessagingWrapper(
      * @throws GeneralSecurityException when the available JCE providers cannot provide the necessary cryptographic primitives
      */
     constructor(wrapper: AESSecureMessagingWrapper) : this(
-        wrapper.getEncryptionKey(),
-        wrapper.getMACKey(),
+        wrapper.encryptionKey,
+        wrapper.mACKey,
         wrapper.maxTranceiveLength,
         wrapper.shouldCheckMAC(),
-        wrapper.getSendSequenceCounter()
+        wrapper.sendSequenceCounter
     )
 
     /**
@@ -125,7 +125,7 @@ class AESSecureMessagingWrapper(
 
             /* A long will take 8 bytes. */
             val dataOutputStream = DataOutputStream(byteArrayOutputStream)
-            dataOutputStream.writeLong(getSendSequenceCounter())
+            dataOutputStream.writeLong(sendSequenceCounter)
             dataOutputStream.close()
             return byteArrayOutputStream.toByteArray()
         } catch (ioe: IOException) {
@@ -144,9 +144,9 @@ class AESSecureMessagingWrapper(
     override fun toString(): String {
         return StringBuilder()
             .append("AESSecureMessagingWrapper [")
-            .append("ssc: ").append(getSendSequenceCounter())
-            .append(", kEnc: ").append(getEncryptionKey())
-            .append(", kMac: ").append(getMACKey())
+            .append("ssc: ").append(sendSequenceCounter)
+            .append(", kEnc: ").append(encryptionKey)
+            .append(", kMac: ").append(mACKey)
             .append(", shouldCheckMAC: ").append(shouldCheckMAC())
             .append(", maxTranceiveLength: ").append(maxTranceiveLength)
             .append("]")

@@ -60,7 +60,9 @@ abstract class SecureMessagingWrapper protected constructor(
      * 
      * @return the MAC key
      */
-    val mACKey: SecretKey?, cipherAlg: String?, macAlg: String?,
+    val mACKey: SecretKey?,
+    cipherAlg: String?,
+    macAlg: String?,
     /**
      * Returns the maximum tranceive length of wrapped command and response APDUs,
      * typical values are 256 and 65536.
@@ -121,7 +123,7 @@ abstract class SecureMessagingWrapper protected constructor(
         this.sendSequenceCounter++
         try {
             val data = responseAPDU.getData()
-            check(!(data == null || data.size <= 0)) {
+            check(!(data == null || data.isEmpty())) {
                 "Card indicates SM error, SW = " + Integer.toHexString(
                     responseAPDU.sw and 0xFFFF
                 )
@@ -215,7 +217,7 @@ abstract class SecureMessagingWrapper protected constructor(
         val maskedHeader = byteArrayOf((cla or 0x0C.toByte().toInt()).toByte(), ins.toByte(), p1.toByte(), p2.toByte())
         val paddedMaskedHeader = Util.pad(maskedHeader, this.padLength)
 
-        val hasDO85 = (commandAPDU.getINS().toByte() == ISO7816.INS_READ_BINARY2)
+        val hasDO85 = (commandAPDU.ins.toByte() == ISO7816.INS_READ_BINARY2)
 
         var do8587 = ByteArray(0)
         var do97 = ByteArray(0)
@@ -374,7 +376,7 @@ abstract class SecureMessagingWrapper protected constructor(
      * @return a byte array with the encoded expected length
      */
     private fun encodeLe(le: Int): ByteArray {
-        if (0 <= le && le <= 256) {
+        if (le in 0..256) {
             /* NOTE: Both 0x00 and 0x100 are mapped to 0x00. */
             return byteArrayOf(le.toByte())
         } else {

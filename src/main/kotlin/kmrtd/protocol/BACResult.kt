@@ -71,7 +71,7 @@ class BACResult
      */
     override fun toString(): String {
         return StringBuilder()
-            .append("BACResult [bacKey: " + (if (this.bACKey == null) "-" else this.bACKey))
+            .append("BACResult [bacKey: " + (this.bACKey ?: "-"))
             .append(", wrapper: $wrapper")
             .append("]")
             .toString()
@@ -81,7 +81,7 @@ class BACResult
         val prime = 1234567891
         var result = 1991
         result = prime * result + (if (this.bACKey == null) 0 else bACKey.hashCode())
-        result = prime * result + (if (wrapper == null) 0 else wrapper.hashCode())
+        result = prime * result + (wrapper?.hashCode() ?: 0)
         return result
     }
 

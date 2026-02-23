@@ -104,7 +104,7 @@ class BACAPDUSender(private val service: CardService) : APDULevelBACCapable {
     @Throws(CardServiceException::class)
     override fun sendMutualAuth(
         rndIFD: ByteArray,
-        rndICC: ByteArray?,
+        rndICC: ByteArray,
         kIFD: ByteArray,
         kEnc: SecretKey,
         kMac: SecretKey
@@ -119,17 +119,17 @@ class BACAPDUSender(private val service: CardService) : APDULevelBACCapable {
             requireNotNull(kEnc) { "kEnc == null" }
             requireNotNull(kMac) { "kMac == null" }
 
-            cipher!!.init(Cipher.ENCRYPT_MODE, kEnc, ZERO_IV_PARAM_SPEC)
+            cipher?.init(Cipher.ENCRYPT_MODE, kEnc, ZERO_IV_PARAM_SPEC)
             val plaintext = ByteArray(32)
             System.arraycopy(rndIFD, 0, plaintext, 0, 8)
             System.arraycopy(rndICC, 0, plaintext, 8, 8)
             System.arraycopy(kIFD, 0, plaintext, 16, 16)
-            val ciphertext = cipher.doFinal(plaintext)
-            check(ciphertext.size == 32) { "Cryptogram wrong length " + ciphertext.size }
+            val ciphertext = cipher?.doFinal(plaintext)
+            check(ciphertext?.size == 32) { "Cryptogram wrong length " + ciphertext?.size }
 
             mac!!.init(kMac)
-            val mactext = mac.doFinal(Util.pad(ciphertext, 8))
-            check(mactext.size == 8) { "MAC wrong length" }
+            val mactext = mac?.doFinal(Util.pad(ciphertext, 8))
+            check(mactext?.size == 8) { "MAC wrong length" }
 
             val p1 = 0x00.toByte()
             val p2 = 0x00.toByte()
@@ -186,12 +186,12 @@ class BACAPDUSender(private val service: CardService) : APDULevelBACCapable {
             }
 
             /* Decrypt the response. */
-            cipher.init(Cipher.DECRYPT_MODE, kEnc, ZERO_IV_PARAM_SPEC)
-            val result = cipher.doFinal(responseAPDUBytes, 0, responseAPDUBytes.size - 8 - 2)
-            if (result.size != 32) {
+            cipher?.init(Cipher.DECRYPT_MODE, kEnc, ZERO_IV_PARAM_SPEC)
+            val result = cipher?.doFinal(responseAPDUBytes, 0, responseAPDUBytes.size - 8 - 2)
+            if (result?.size != 32) {
                 /* The PICC allowed access, but probably the resulting secure channel will be wrong. */
                 throw CardServiceException(
-                    "Cryptogram wrong length, was expecting 32, found " + result.size,
+                    "Cryptogram wrong length, was expecting 32, found " + result?.size,
                     sw.toInt()
                 )
             }
@@ -204,7 +204,7 @@ class BACAPDUSender(private val service: CardService) : APDULevelBACCapable {
     }
 
     companion object {
-        private val BC_PROVIDER: Provider = Util.getBouncyCastleProvider()
+        private val BC_PROVIDER: Provider = Util.bouncyCastleProvider
 
         /** Initialization vector used by the cipher below.  */
         private val ZERO_IV_PARAM_SPEC = IvParameterSpec(byteArrayOf(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00))
