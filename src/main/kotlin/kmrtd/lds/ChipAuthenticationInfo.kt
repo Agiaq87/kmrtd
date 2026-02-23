@@ -166,7 +166,7 @@ class ChipAuthenticationInfo @JvmOverloads constructor(
     companion object {
         private const val serialVersionUID = 5591988305059068535L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         /** Chip Authentication version 1.  */
         const val VERSION_1: Int = 1

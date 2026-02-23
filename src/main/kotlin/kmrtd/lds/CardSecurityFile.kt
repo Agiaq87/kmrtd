@@ -359,7 +359,7 @@ class CardSecurityFile : Serializable {
     companion object {
         private val serialVersionUID = -3535507558193769952L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         private const val CONTENT_TYPE_OID = "0.4.0.127.0.7.3.2.1" // FIXME
 

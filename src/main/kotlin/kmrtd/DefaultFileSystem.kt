@@ -465,7 +465,7 @@ class DefaultFileSystem @JvmOverloads constructor(
         /** Invalid short identifier.  */
         val NO_SFI: Int = -1
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         /** Number of bytes to read at start of file to determine file length.  */
         private const val READ_AHEAD_LENGTH = 8

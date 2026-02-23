@@ -212,7 +212,7 @@ class ActiveAuthenticationInfo internal constructor(
     companion object {
         private const val serialVersionUID = 6830847342039845308L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd.lds")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd.lds")
 
         const val VERSION_1: Int = 1
 

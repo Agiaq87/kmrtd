@@ -292,7 +292,7 @@ class PACEInfo(oid: String?, version: Int, parameterId: BigInteger?) : SecurityI
     companion object {
         private const val serialVersionUID = 7960925013249578359L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd.lds")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd.lds")
 
         private const val VERSION_2 = 2
 

@@ -230,6 +230,6 @@ class DG14File : DataGroup {
     companion object {
         private val serialVersionUID = -3536507558193769953L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
     }
 }

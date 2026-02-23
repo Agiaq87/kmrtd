@@ -70,7 +70,7 @@ abstract class AbstractLDSInfo : LDSElement {
     abstract fun writeObject(outputStream: OutputStream?)
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         private val serialVersionUID = -2340098256249194537L
     }

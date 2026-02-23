@@ -203,7 +203,7 @@ class PACEDomainParameterInfo @JvmOverloads constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         private val serialVersionUID = -5851251908152594728L
 

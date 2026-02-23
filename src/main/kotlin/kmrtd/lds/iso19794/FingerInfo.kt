@@ -450,7 +450,7 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
     companion object {
         private const val serialVersionUID = 5808625058034008176L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         /** Format identifier 'F', 'I', 'R', 0x00. Specified in ISO/IEC 19794-4 Section 7.1, Table 2.   */
         private const val FORMAT_IDENTIFIER = 0x46495200

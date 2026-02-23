@@ -281,6 +281,6 @@ abstract class CBEFFDataGroup : DataGroup {
         private const val serialVersionUID = 2702959939408371946L
 
         @JvmField
-        protected val LOGGER: Logger = Logger.getLogger("org.jmrtd.lds")
+        protected val LOGGER: Logger = Logger.getLogger("kmrtd.lds")
     }
 }

@@ -121,7 +121,7 @@ class DG15File : DataGroup {
     companion object {
         private const val serialVersionUID = 3834304239673755744L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         private val PUBLIC_KEY_ALGORITHMS = arrayOf<String?>("RSA", "EC")
 

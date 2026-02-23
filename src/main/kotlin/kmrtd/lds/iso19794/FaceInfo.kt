@@ -306,7 +306,7 @@ class FaceInfo : AbstractListInfo<FaceImageInfo?>, BiometricDataBlock {
     companion object {
         private val serialVersionUID = -6053206262773400725L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         /** Facial Record Header 'F', 'A', 'C', 0x00. Section 5.4, Table 2 of ISO/IEC 19794-5.  */
         private const val FORMAT_IDENTIFIER = 0x46414300

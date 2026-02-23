@@ -599,7 +599,7 @@ class SODFile : AbstractTaggedLDSFile {
          */
         private const val SDU_LDS_SOD_OID = "1.2.528.1.1006.1.20.1"
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         /**
          * Extracts the digest algorithm from the security object.

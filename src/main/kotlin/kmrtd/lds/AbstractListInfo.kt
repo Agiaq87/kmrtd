@@ -168,6 +168,6 @@ abstract class AbstractListInfo<R : Serializable?> : AbstractLDSInfo() {
     companion object {
         private const val serialVersionUID = 2970076896364365191L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
     }
 }

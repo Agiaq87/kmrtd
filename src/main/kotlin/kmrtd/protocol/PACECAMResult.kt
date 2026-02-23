@@ -104,13 +104,15 @@ class PACECAMResult(
      * @return the encrypted Chip Authentication data
      */
     fun getEncryptedChipAuthenticationData(): ByteArray? {
-        if (encryptedChipAuthenticationData == null) {
+        val data = encryptedChipAuthenticationData ?: return null
+        /*if (encryptedChipAuthenticationData == null) {
             return null
         }
 
-        val result = ByteArray(encryptedChipAuthenticationData!!.size)
-        System.arraycopy(encryptedChipAuthenticationData, 0, result, 0, encryptedChipAuthenticationData!!.size)
-        return result
+        val result = ByteArray(encryptedChipAuthenticationData?.size)*/
+        //System.arraycopy(encryptedChipAuthenticationData, 0, result, 0, encryptedChipAuthenticationData?.size)
+        //return result
+        return data.copyOf()
     }
 
     /**
@@ -119,13 +121,15 @@ class PACECAMResult(
      * @return the decrypted Chip Authentication data
      */
     fun getChipAuthenticationData(): ByteArray? {
-        if (chipAuthenticationData == null) {
+        val data = chipAuthenticationData ?: return null
+        /*if (chipAuthenticationData == null) {
             return null
         }
 
-        val result = ByteArray(chipAuthenticationData!!.size)
-        System.arraycopy(chipAuthenticationData, 0, result, 0, chipAuthenticationData!!.size)
-        return result
+        val result = ByteArray(chipAuthenticationData?.size)
+        System.arraycopy(chipAuthenticationData, 0, result, 0, chipAuthenticationData?.size)
+        return result*/
+        return data.copyOf()
     }
 
     public override fun hashCode(): Int {

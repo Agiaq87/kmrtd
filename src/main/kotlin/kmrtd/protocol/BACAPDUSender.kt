@@ -28,24 +28,25 @@ import javax.crypto.spec.IvParameterSpec
  */
 class BACAPDUSender(private val service: CardService) : APDULevelBACCapable {
     /** DESede encryption/decryption cipher.  */
-    private var cipher: Cipher? = null
+    private val cipher: Cipher = Util.getCipher("DESede/CBC/NoPadding")
 
     /** ISO9797Alg3Mac.  */
-    private var mac: Mac? = null
+    private val mac: Mac = Mac.getInstance("ISO9797Alg3Mac", BC_PROVIDER)
 
     /**
      * Creates an APDU sender for tranceiving BAC protocol APDUs.
      * 
      * @param service the card service for tranceiving APDUs
      */
-    init {
+    // Note that Mac and Cipher are always present
+    /*init {
         try {
             this.mac = Mac.getInstance("ISO9797Alg3Mac", BC_PROVIDER)
             this.cipher = Util.getCipher("DESede/CBC/NoPadding")
         } catch (gse: GeneralSecurityException) {
             throw IllegalStateException("Unexpected security exception during initialization", gse)
         }
-    }
+    }*/
 
     /**
      * Sends a `GET CHALLENGE` command to the passport.
@@ -76,7 +77,7 @@ class BACAPDUSender(private val service: CardService) : APDULevelBACCapable {
         val responseAPDU = service.transmit(commandAPDU)
         val challenge = responseAPDU.getData()
         if (challenge == null || challenge.size != 8) {
-            throw CardServiceException("Get challenge failed", responseAPDU.getSW())
+            throw CardServiceException("Get challenge failed", responseAPDU.sw)
         }
         return challenge
     }
@@ -119,17 +120,17 @@ class BACAPDUSender(private val service: CardService) : APDULevelBACCapable {
             requireNotNull(kEnc) { "kEnc == null" }
             requireNotNull(kMac) { "kMac == null" }
 
-            cipher?.init(Cipher.ENCRYPT_MODE, kEnc, ZERO_IV_PARAM_SPEC)
+            cipher.init(Cipher.ENCRYPT_MODE, kEnc, ZERO_IV_PARAM_SPEC)
             val plaintext = ByteArray(32)
             System.arraycopy(rndIFD, 0, plaintext, 0, 8)
             System.arraycopy(rndICC, 0, plaintext, 8, 8)
             System.arraycopy(kIFD, 0, plaintext, 16, 16)
-            val ciphertext = cipher?.doFinal(plaintext)
+            val ciphertext = cipher.doFinal(plaintext)
             check(ciphertext?.size == 32) { "Cryptogram wrong length " + ciphertext?.size }
 
-            mac!!.init(kMac)
-            val mactext = mac?.doFinal(Util.pad(ciphertext, 8))
-            check(mactext?.size == 8) { "MAC wrong length" }
+            mac.init(kMac)
+            val mactext = mac.doFinal(Util.pad(ciphertext, 8))
+            check(mactext.size == 8) { "MAC wrong length" }
 
             val p1 = 0x00.toByte()
             val p2 = 0x00.toByte()
@@ -186,8 +187,8 @@ class BACAPDUSender(private val service: CardService) : APDULevelBACCapable {
             }
 
             /* Decrypt the response. */
-            cipher?.init(Cipher.DECRYPT_MODE, kEnc, ZERO_IV_PARAM_SPEC)
-            val result = cipher?.doFinal(responseAPDUBytes, 0, responseAPDUBytes.size - 8 - 2)
+            cipher.init(Cipher.DECRYPT_MODE, kEnc, ZERO_IV_PARAM_SPEC)
+            val result = cipher.doFinal(responseAPDUBytes, 0, responseAPDUBytes.size - 8 - 2)
             if (result?.size != 32) {
                 /* The PICC allowed access, but probably the resulting secure channel will be wrong. */
                 throw CardServiceException(

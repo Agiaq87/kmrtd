@@ -193,7 +193,7 @@ abstract class DisplayedImageDataGroup : DataGroup {
     companion object {
         private const val serialVersionUID = 5994136177872308962L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         private const val DISPLAYED_IMAGE_COUNT_TAG = 0x02
     }

@@ -93,7 +93,7 @@ abstract class SecurityInfo : AbstractLDSInfo() {
     companion object {
         private val serialVersionUID = -7919854443619069808L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         /**
          * Used in ECDSA based Active Authentication.

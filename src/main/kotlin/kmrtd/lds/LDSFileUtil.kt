@@ -44,7 +44,7 @@ import java.util.logging.Logger
  * @version $Revision: 1885 $
  */
 object LDSFileUtil {
-    private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+    private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
     val FID_TO_SFI: MutableMap<Short?, Byte> = createFIDToSFIMap()
 

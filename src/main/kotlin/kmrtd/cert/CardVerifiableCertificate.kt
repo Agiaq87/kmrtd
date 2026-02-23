@@ -425,6 +425,6 @@ class CardVerifiableCertificate constructor(private val cvCertificate: CVCertifi
     companion object {
         private val serialVersionUID = -3585440601605666288L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
     }
 }

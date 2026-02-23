@@ -99,7 +99,7 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
         const val CONTENT_SPECIFIC_CONSTRUCTED_TAG: Int = 0xA0 // 5F0F is always used inside A0 constructed object
         const val COUNT_TAG: Int = 0x02 // Used in A0 constructed object to indicate single byte count of simple objects
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         @Throws(IOException::class)
         protected fun readTagList(tlvInputStream: TLVInputStream): MutableList<Int?> {

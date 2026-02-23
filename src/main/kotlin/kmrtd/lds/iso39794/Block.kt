@@ -54,6 +54,6 @@ internal abstract class Block : Serializable {
         private val serialVersionUID = -8585852930916738115L
 
         @JvmField
-        protected val LOGGER: Logger = Logger.getLogger("org.jmrtd.lds.iso39794")
+        protected val LOGGER: Logger = Logger.getLogger("kmrtd.lds.iso39794")
     }
 }

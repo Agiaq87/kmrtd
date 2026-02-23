@@ -116,7 +116,7 @@ class ICAOCountry : Country {
     companion object {
         private const val serialVersionUID = 2942942609311086138L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         val DE: ICAOCountry = ICAOCountry("DE", "D<<", "Germany", "German")
         val RKS: ICAOCountry = ICAOCountry("KS", "RKS", "Republic of Kosovo", "Kosovar")

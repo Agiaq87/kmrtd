@@ -880,7 +880,7 @@ class FaceImageInfo : AbstractImageInfo {
     companion object {
         private val serialVersionUID = -1751069410327594067L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         /* These correspond to values in Table 4 in 5.5.4 in ISO/IEC 19794-5:2005(E). */
         const val EYE_COLOR_UNSPECIFIED: Int = 0x00

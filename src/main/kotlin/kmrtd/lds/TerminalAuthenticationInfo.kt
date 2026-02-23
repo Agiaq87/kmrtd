@@ -260,7 +260,7 @@ class TerminalAuthenticationInfo internal constructor(
     companion object {
         private const val serialVersionUID = 6220506985707094044L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd.lds")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd.lds")
 
         const val VERSION_1: Int = 1
         private const val VERSION_2 = 2

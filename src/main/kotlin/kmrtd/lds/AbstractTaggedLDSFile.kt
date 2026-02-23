@@ -190,6 +190,6 @@ abstract class AbstractTaggedLDSFile : AbstractLDSFile {
     companion object {
         private val serialVersionUID = -4761360877353069639L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
     }
 }

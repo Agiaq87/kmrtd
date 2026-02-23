@@ -209,7 +209,7 @@ class DESedeSecureMessagingWrapper
     companion object {
         private val serialVersionUID = -2859033943345961793L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         /** Initialization vector consisting of 8 zero bytes.  */
         val ZERO_IV_PARAM_SPEC: IvParameterSpec = IvParameterSpec(byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0))

@@ -61,7 +61,7 @@ import java.util.logging.Logger
  * @version $Revision: 1889 $
  */
 object SignedDataUtil {
-    private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+    private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
     /** SignedData related object identifier.  */
     const val RFC_3369_SIGNED_DATA_OID: String =

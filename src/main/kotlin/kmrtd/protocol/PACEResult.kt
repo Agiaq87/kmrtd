@@ -132,9 +132,16 @@ open class PACEResult
             .append(", digestAlg: $digestAlg")
             .append(", keyLength: $keyLength")
             .append(", mappingResult: $mappingResult")
-            .append(", piccPublicKey: " + Util.getDetailedPublicKeyAlgorithm(this.pICCPublicKey))
-            .append(", pcdPrivateKey: " + Util.getDetailedPrivateKeyAlgorithm(pCDKeyPair!!.private))
-            .append(", pcdPublicKey: " + Util.getDetailedPublicKeyAlgorithm(pCDKeyPair.public))
+            .append(", piccPublicKey: ${Util.getDetailedPublicKeyAlgorithm(this.pICCPublicKey)}")
+            .append(
+                (", pcdPrivateKey: " + pCDKeyPair?.private?.let { Util.getDetailedPrivateKeyAlgorithm(pCDKeyPair.private) })
+                    ?: "null"
+
+            )
+            .append(
+                (", pcdPublicKey: " + pCDKeyPair?.public?.let { Util.getDetailedPublicKeyAlgorithm(pCDKeyPair.public) })
+                    ?: "null"
+            )
             .toString()
     }
 

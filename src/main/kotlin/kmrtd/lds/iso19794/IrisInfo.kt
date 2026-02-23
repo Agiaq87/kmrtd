@@ -600,7 +600,7 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
     companion object {
         private val serialVersionUID = -3415309711643815511L
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         /** Format identifier 'I', 'I', 'R', 0x00.  */
         private const val FORMAT_IDENTIFIER = 0x49495200

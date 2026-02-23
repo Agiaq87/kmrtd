@@ -194,13 +194,13 @@ class ReadBinaryAPDUSender(private val service: CardService) : APDULevelReadBina
                 )
             )
         }
-        Companion.checkStatusWordAfterFileOperation(commandAPDU, responseAPDU!!)
+        checkStatusWordAfterFileOperation(commandAPDU, responseAPDU)
 
         return responseData
     }
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd.protocol")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd.protocol")
 
         /* PRIVATE BELOW */
         /**
@@ -254,7 +254,7 @@ class ReadBinaryAPDUSender(private val service: CardService) : APDULevelReadBina
          * @throws CardServiceException if the response APDU's status word indicates some error
          */
         @Throws(CardServiceException::class)
-        private fun checkStatusWordAfterFileOperation(commandAPDU: CommandAPDU, responseAPDU: ResponseAPDU) {
+        private fun checkStatusWordAfterFileOperation(commandAPDU: CommandAPDU, responseAPDU: ResponseAPDU?) {
             if (responseAPDU == null) {
                 throw CardServiceException("No response APDU")
             }
@@ -267,13 +267,13 @@ class ReadBinaryAPDUSender(private val service: CardService) : APDULevelReadBina
                 )
 
             /* If wrong length (6700) and no data. We abort. */
-            if ((sw.toInt() and ISO7816.SW_WRONG_LENGTH.toInt()) == ISO7816.SW_WRONG_LENGTH.toInt() && (data == null || data.size == 0)) {
+            if ((sw.toInt() and ISO7816.SW_WRONG_LENGTH.toInt()) == ISO7816.SW_WRONG_LENGTH.toInt() && (data == null || data.isEmpty())) {
                 throw CardServiceException("Wrong length, $commandResponseMessage", sw.toInt())
             }
 
             when (sw) {
                 ISO7816.SW_NO_ERROR -> return
-                ISO7816.SW_END_OF_FILE -> if (data == null || data.size == 0) {
+                ISO7816.SW_END_OF_FILE -> if (data == null || data.isEmpty()) {
                     throw CardServiceException("End of file, $commandResponseMessage", sw.toInt())
                 } else {
                     /* May have data. Caller should check SW and stop calling on EOF. */

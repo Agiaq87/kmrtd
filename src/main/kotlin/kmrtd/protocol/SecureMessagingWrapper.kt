@@ -40,6 +40,7 @@ import java.util.logging.Logger
 import javax.crypto.Cipher
 import javax.crypto.Mac
 import javax.crypto.SecretKey
+import javax.crypto.spec.IvParameterSpec
 
 /**
  * Secure messaging wrapper base class.
@@ -61,8 +62,8 @@ abstract class SecureMessagingWrapper protected constructor(
      * @return the MAC key
      */
     val mACKey: SecretKey?,
-    cipherAlg: String?,
-    macAlg: String?,
+    cipherAlg: String,
+    macAlg: String,
     /**
      * Returns the maximum tranceive length of wrapped command and response APDUs,
      * typical values are 256 and 65536.
@@ -147,7 +148,7 @@ abstract class SecureMessagingWrapper protected constructor(
      * @throws GeneralSecurityException on security related error
      */
     @Throws(GeneralSecurityException::class)
-    protected fun checkMac(rapdu: ByteArray, cc: ByteArray): Boolean {
+    protected fun checkMac(rapdu: ByteArray, cc: ByteArray?): Boolean {
         try {
             val byteArrayOutputStream = ByteArrayOutputStream()
             val dataOutputStream = DataOutputStream(byteArrayOutputStream)
@@ -159,7 +160,7 @@ abstract class SecureMessagingWrapper protected constructor(
             mac.init(this.mACKey)
             var cc2 = mac.doFinal(byteArrayOutputStream.toByteArray())
 
-            if (cc2.size > 8 && cc.size == 8) {
+            if (cc2.size > 8 && cc?.size == 8) {
                 val newCC2 = ByteArray(8)
                 System.arraycopy(cc2, 0, newCC2, 0, newCC2.size)
                 cc2 = newCC2
@@ -332,7 +333,7 @@ abstract class SecureMessagingWrapper protected constructor(
      */
     @Throws(GeneralSecurityException::class, IOException::class)
     private fun unwrapResponseAPDU(responseAPDU: ResponseAPDU): ResponseAPDU {
-        val rapdu = responseAPDU.getBytes()
+        val rapdu = responseAPDU.bytes
         require(!(rapdu == null || rapdu.size < 2)) { "Invalid response APDU" }
         cipher.init(Cipher.DECRYPT_MODE, this.encryptionKey, this.iV)
 
@@ -340,11 +341,10 @@ abstract class SecureMessagingWrapper protected constructor(
         var cc: ByteArray? = null
         var sw: Short = 0
         val inputStream = DataInputStream(ByteArrayInputStream(rapdu))
-        try {
+        inputStream.use { inputStream ->
             var isFinished = false
             while (!isFinished) {
-                val tag = inputStream.readByte().toInt()
-                when (tag) {
+                when (val tag = inputStream.readByte()) {
                     0x87.toByte() -> data = readDO87(inputStream, false)
                     0x85.toByte() -> data = readDO87(inputStream, true)
                     0x99.toByte() -> sw = readDO99(inputStream)
@@ -353,13 +353,11 @@ abstract class SecureMessagingWrapper protected constructor(
                         isFinished = true
                     }
 
-                    else -> LOGGER.warning("Unexpected tag " + Integer.toHexString(tag))
+                    else -> LOGGER.warning("Unexpected tag " + Integer.toHexString(tag.toInt()))
                 }
             }
-        } finally {
-            inputStream.close()
         }
-        check(!(shouldCheckMAC() && !checkMac(rapdu, cc!!))) { "Invalid MAC" }
+        check(!(shouldCheckMAC() && !checkMac(rapdu, cc))) { "Invalid MAC" }
         val bOut = ByteArrayOutputStream()
         bOut.write(data, 0, data.size)
         bOut.write((sw.toInt() and 0xFF00) shr 8)

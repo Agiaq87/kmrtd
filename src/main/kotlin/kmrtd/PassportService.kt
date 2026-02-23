@@ -572,7 +572,7 @@ class PassportService(
         /** Shared secret type for PACE according to BSI TR-03110 v2.03 B.11.1.  */
         const val PUK_PACE_KEY_REFERENCE: Byte = 0x04
 
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         /** Card Access.  */
         const val EF_CARD_ACCESS: Short = 0x011C

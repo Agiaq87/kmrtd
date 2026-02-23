@@ -202,7 +202,7 @@ class EACCAAPDUSender(service: CardService) : APDULevelEACCACapable {
     }
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd.protocol")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd.protocol")
 
         /** The general Authenticate command is used to perform the EAC-CA protocol.  */
         private val INS_BSI_GENERAL_AUTHENTICATE = 0x86.toByte()

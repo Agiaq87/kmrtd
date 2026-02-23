@@ -139,7 +139,7 @@ class EACCAProtocol
     }
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         private val BC_PROVIDER: Provider = Util.getBouncyCastleProvider()
 

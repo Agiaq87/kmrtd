@@ -34,7 +34,7 @@ import java.math.BigInteger
 import java.util.logging.Logger
 
 object ASN1Util {
-    private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+    private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
     @Throws(IOException::class)
     fun readASN1Object(inputStream: InputStream?): ASN1Encodable? {

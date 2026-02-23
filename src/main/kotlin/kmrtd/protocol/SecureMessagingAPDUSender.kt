@@ -72,7 +72,7 @@ class SecureMessagingAPDUSender
         }
         var responseAPDU = service.transmit(commandAPDU)
         val rawRapdu: ResponseAPDU? = responseAPDU
-        val sw = responseAPDU.getSW().toShort()
+        val sw = responseAPDU.sw.toShort()
         if (wrapper == null) {
             notifyExchangedAPDU(APDUEvent(this, "PLAIN", ++apduCount, commandAPDU, responseAPDU))
         } else {
@@ -246,6 +246,6 @@ class SecureMessagingAPDUSender
     }
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd.protocol")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd.protocol")
     }
 }

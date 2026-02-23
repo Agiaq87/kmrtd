@@ -88,7 +88,7 @@ internal abstract class AbstractLDSFile
     protected abstract fun writeObject(outputStream: OutputStream)
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         private val serialVersionUID = -4908935713109830409L
     }

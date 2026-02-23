@@ -134,6 +134,6 @@ class AAAPDUSender(service: CardService) : APDULevelAACapable {
     }
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd.protocol")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd.protocol")
     }
 }

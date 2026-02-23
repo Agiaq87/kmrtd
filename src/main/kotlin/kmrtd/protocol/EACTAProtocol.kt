@@ -323,7 +323,7 @@ class EACTAProtocol
     }
 
     companion object {
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd.protocol")
+        private val LOGGER: Logger = Logger.getLogger("kmrtd.protocol")
 
         private const val TAG_CVCERTIFICATE_SIGNATURE = 0x5F37
 
