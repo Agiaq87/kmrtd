@@ -140,7 +140,7 @@ class DG11File : AdditionalDetailDataGroup {
      * 
      * @return the proof of citizenship
      */
-    var proofOfCitizenship: ByteArray?
+    var proofOfCitizenship: ByteArray? = null
         private set
 
     /**
@@ -159,7 +159,7 @@ class DG11File : AdditionalDetailDataGroup {
     var custodyInformation: String? = null
         private set
 
-    override var tagPresenceList: MutableList<Int?>? = null
+    override var tagPresenceList: MutableList<Int>? = null
 
     /**
      * Constructs a file from binary representation.
@@ -168,7 +168,7 @@ class DG11File : AdditionalDetailDataGroup {
      * 
      * @throws IOException if reading fails
      */
-    constructor(inputStream: InputStream?) : super(LDSFile.Companion.EF_DG11_TAG, inputStream)
+    constructor(inputStream: InputStream) : super(LDSFile.Companion.EF_DG11_TAG, inputStream)
 
     /**
      * Constructs a new file. Use `null` if data element is not present.
@@ -273,11 +273,11 @@ class DG11File : AdditionalDetailDataGroup {
      * 
      * @return list of tags
      */
-    public override fun getTagPresenceList(): MutableList<Int?> {
+    public override fun getTagPresenceList(): MutableList<Int> {
         if (tagPresenceList != null) {
             return tagPresenceList!!
         }
-        tagPresenceList = ArrayList<Int?>(12)
+        tagPresenceList = ArrayList<Int>(12)
         if (nameOfHolder != null) {
             tagPresenceList!!.add(FULL_NAME_TAG)
         }
@@ -325,8 +325,8 @@ class DG11File : AdditionalDetailDataGroup {
      * 
      * @return the other names, or empty list when not present
      */
-    fun getOtherNames(): MutableList<String?>? {
-        return if (otherNames == null) null else ArrayList<String?>(otherNames)
+    fun getOtherNames(): MutableList<String>? {
+        return if (otherNames == null) null else ArrayList<String>(otherNames)
     }
 
     /**

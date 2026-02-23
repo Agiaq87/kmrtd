@@ -44,7 +44,7 @@ import java.util.logging.Logger
  * 
  * @version $Revision: 1907 $
  */
-internal abstract class AdditionalDetailDataGroup : DataGroup {
+abstract class AdditionalDetailDataGroup : DataGroup {
     constructor(tag: Int) : super(EF_DG11_TAG)
 
     /**
@@ -55,35 +55,35 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
      * 
      * @throws IOException if reading fails
      */
-    constructor(tag: Int, inputStream: InputStream?) : super(tag, inputStream)
+    constructor(tag: Int, inputStream: InputStream) : super(tag, inputStream)
 
     /**
      * Returns the list of tags of fields actually present.
      * 
      * @return list of tags
      */
-    abstract val tagPresenceList: MutableList<Int?>
+    abstract val tagPresenceList: MutableList<Int>?
 
     @Throws(IOException::class)
-    protected abstract fun readField(expectedTag: Int, tlvInputStream: TLVInputStream?)
+    protected abstract fun readField(expectedTag: Int, tlvInputStream: TLVInputStream)
 
     @Throws(IOException::class)
-    protected abstract fun writeField(tag: Int, tlvOut: TLVOutputStream?)
+    protected abstract fun writeField(tag: Int, tlvOut: TLVOutputStream)
 
     @Throws(IOException::class)
     override fun readContent(inputStream: InputStream) {
         val tlvInputStream = inputStream as? TLVInputStream ?: TLVInputStream(inputStream)
-        val tagList: MutableList<Int?> = readTagList(tlvInputStream)
+        val tagList: MutableList<Int> = readTagList(tlvInputStream)
         /* Now read the fields in order. */
         for (t in tagList) {
-            readField(t!!, tlvInputStream)
+            readField(t, tlvInputStream)
         }
     }
 
 
     @Throws(IOException::class)
     override fun writeContent(outputStream: OutputStream) {
-        val tlvOut = out as? TLVOutputStream ?: TLVOutputStream(out)
+        val tlvOut = outputStream as? TLVOutputStream ?: TLVOutputStream(outputStream)
         val tagList = this.tagPresenceList
         writeTagList(tagList, tlvOut)
         for (tag in tagList) {
@@ -102,7 +102,7 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
         private val LOGGER: Logger = Logger.getLogger("kmrtd")
 
         @Throws(IOException::class)
-        protected fun readTagList(tlvInputStream: TLVInputStream): MutableList<Int?> {
+        protected fun readTagList(tlvInputStream: TLVInputStream): MutableList<Int> {
             val tagListTag = tlvInputStream.readTag()
             require(tagListTag == TAG_LIST_TAG) { "Expected tag list in DG11" }
 
@@ -113,7 +113,7 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
             val tagListBytesInputStream = ByteArrayInputStream(tagListBytes)
             try {
                 /* Find out which tags are present. */
-                val tagList: MutableList<Int?> = ArrayList<Int?>()
+                val tagList: MutableList<Int> = ArrayList()
                 while (tagListBytesRead < tagListLength) {
                     /* We're using another TLV inputstream every time to read each tag. */
                     val anotherTLVInputStream = TLVInputStream(tagListBytesInputStream)
@@ -128,12 +128,12 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
         }
 
         @Throws(IOException::class)
-        protected fun writeTagList(tags: MutableList<Int?>, tlvOut: TLVOutputStream) {
+        protected fun writeTagList(tags: MutableList<Int>, tlvOut: TLVOutputStream) {
             tlvOut.writeTag(TAG_LIST_TAG)
             val byteArrayOutputStream = ByteArrayOutputStream()
             for (tag in tags) {
                 val anotherTLVOutputStream = TLVOutputStream(byteArrayOutputStream)
-                anotherTLVOutputStream.writeTag(tag!!)
+                anotherTLVOutputStream.writeTag(tag)
             }
             tlvOut.writeValue(byteArrayOutputStream.toByteArray())
             tlvOut.writeValueEnd() /* TAG_LIST_TAG */
@@ -198,7 +198,7 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
 
         @JvmStatic
         @Throws(IOException::class)
-        protected fun readContentSpecificFieldsList(tlvInputStream: TLVInputStream): MutableList<String?> {
+        protected fun readContentSpecificFieldsList(tlvInputStream: TLVInputStream): MutableList<String> {
             val countTag = tlvInputStream.readTag()
             require(countTag == COUNT_TAG) {
                 "Expected " + Integer.toHexString(COUNT_TAG) + ", found " + Integer.toHexString(
@@ -210,7 +210,7 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
             val countValue = tlvInputStream.readValue()
             require(!(countValue == null || countValue.size != 1)) { "Number of content specific fields should be encoded in single byte, found " + countValue.contentToString() }
             val count = countValue[0].toInt() and 0xFF
-            val list: MutableList<String?> = ArrayList<String?>(count)
+            val list: MutableList<String> = mutableListOf(count.toString())
             for (i in 0..<count) {
                 val tag = tlvInputStream.readTag()
                 /* int length = */
@@ -235,9 +235,9 @@ internal abstract class AdditionalDetailDataGroup : DataGroup {
 
         @JvmStatic
         @Throws(IOException::class)
-        protected fun readList(tlvInputStream: TLVInputStream): MutableList<String?> {
+        protected fun readList(tlvInputStream: TLVInputStream): MutableList<String> {
             val field: String = readString(tlvInputStream)
-            val list: MutableList<String?> = ArrayList<String?>()
+            val list: MutableList<String> = mutableListOf()
             val tokens = field.split("<".toRegex()).toTypedArray()
             for (token in tokens) {
                 list.add(token.trim { it <= ' ' })
