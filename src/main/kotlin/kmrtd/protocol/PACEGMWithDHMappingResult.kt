@@ -74,7 +74,10 @@ class PACEGMWithDHMappingResult(
         if (!super.equals(obj)) {
             return false
         }
-        if (javaClass != obj!!.javaClass) {
+        if (obj == null) {
+            return false
+        }
+        if (javaClass != obj.javaClass) {
             return false
         }
 
