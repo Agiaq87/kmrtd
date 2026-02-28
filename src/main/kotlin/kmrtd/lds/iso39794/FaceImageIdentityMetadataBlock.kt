@@ -38,103 +38,37 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+/*
+ * Modified work Copyright (C) 2026 Alessandro Giaquinto
+ * Kotlin port of JMRTD
+ *
+ * Licensed under LGPL 3.0
+ */
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
-import kmrtd.ASN1Util
-import java.util.*
+import org.jmrtd.ASN1Util
+import java.util.Objects
 
-class FaceImageIdentityMetadataBlock : Block {
-    enum class GenderCode(override val code: Int) : EncodableEnum<GenderCode?> {
-        UNKNOWN(0),
-        OTHER(1),
-        MALE(2),
-        FEMALE(3);
-
-        override fun getCode(): Int {
-            return code
-        }
-
-        companion object {
-            fun fromCode(code: Int): GenderCode? {
-                return EncodableEnum.fromCode<GenderCode?>(code, GenderCode::class.java)
-            }
-        }
-    }
-
-    enum class EyeColourCode(override val code: Int) : EncodableEnum<EyeColourCode?> {
-        UNKNOWN(0),
-        OTHER(1),
-        BLACK(2),
-        BLUE(3),
-        BROWN(4),
-        GREY(5),
-        GREEN(6),
-        HAZEL(7),
-        MULTI_COLOURED(8),
-        PINK(9);
-
-        override fun getCode(): Int {
-            return code
-        }
-
-        companion object {
-            fun fromCode(code: Int): EyeColourCode? {
-                return EncodableEnum.fromCode<EyeColourCode?>(code, EyeColourCode::class.java)
-            }
-        }
-    }
-
-    enum class HairColourCode(override val code: Int) : EncodableEnum<HairColourCode?> {
-        UNKNOWN(0),
-        OTHER(1),
-        BALD(2),
-        BLACK(3),
-        BLONDE(4),
-        BROWN(5),
-        GREY(6),
-        WHITE(7),
-        RED(8),
-        KNOWN_COLOURED(9);
-
-        override fun getCode(): Int {
-            return code
-        }
-
-        companion object {
-            fun fromCode(code: Int): HairColourCode? {
-                return EncodableEnum.fromCode<HairColourCode?>(code, HairColourCode::class.java)
-            }
-        }
-    }
-
-    var genderCode: GenderCode? = null
-        private set
-
-    var eyeColourCode: EyeColourCode? = null
-        private set
-
-    var hairColourCode: HairColourCode? = null
-        private set
-
-    var subjectHeight: Int = 0
-        private set
-
-    var propertiesBlock: FaceImagePropertiesBlock? = null
-        private set
-
-    var expressionBlock: FaceImageExpressionBlock? = null
-        private set
-
-    var poseAngleBlock: FaceImagePoseAngleBlock? = null
-        private set
-
-    constructor(
-        genderCode: GenderCode?, eyeColourCode: EyeColourCode?,
-        hairColourCode: HairColourCode?, subjectHeight: Int, propertiesBlock: FaceImagePropertiesBlock?,
-        expressionBlock: FaceImageExpressionBlock?, poseAngleBlock: FaceImagePoseAngleBlock?
+data class FaceImageIdentityMetadataBlock(
+    val genderCode: GenderCode?,
+    val eyeColourCode: EyeColourCode?,
+    val hairColourCode: HairColourCode?,
+    val subjectHeight: Int = 0,
+    val propertiesBlock: FaceImagePropertiesBlock?,
+    val expressionBlock: FaceImageExpressionBlock?,
+    val poseAngleBlock: FaceImagePoseAngleBlock?
+) : Block() {
+    /*constructor(
+        genderCode: GenderCode?,
+        eyeColourCode: EyeColourCode?,
+        hairColourCode: HairColourCode?,
+        subjectHeight: Int,
+        propertiesBlock: FaceImagePropertiesBlock?,
+        expressionBlock: FaceImageExpressionBlock?,
+        poseAngleBlock: FaceImagePoseAngleBlock?
     ) {
         this.genderCode = genderCode
         this.eyeColourCode = eyeColourCode
@@ -143,7 +77,7 @@ class FaceImageIdentityMetadataBlock : Block {
         this.propertiesBlock = propertiesBlock
         this.expressionBlock = expressionBlock
         this.poseAngleBlock = poseAngleBlock
-    }
+    }*/
 
     //  IdentityMetadataBlock ::= SEQUENCE {
     //    gender [0] Gender OPTIONAL,
@@ -155,109 +89,168 @@ class FaceImageIdentityMetadataBlock : Block {
     //    poseAngleBlock [6] PoseAngleBlock OPTIONAL,
     //    ...
     //  }
-    internal constructor(asn1Encodable: ASN1Encodable) {
+    /*internal constructor(asn1Encodable: ASN1Encodable) {
         requireNotNull(asn1Encodable) { "Cannot decode null!" }
         require(!(asn1Encodable !is ASN1Sequence && asn1Encodable !is ASN1TaggedObject)) { "Cannot decode!" }
 
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
         if (taggedObjects.containsKey(0)) {
-            genderCode = GenderCode.Companion.fromCode(
-                ISO39794Util.decodeCodeFromChoiceExtensionBlockFallback(
-                    taggedObjects.get(0)
-                )
+            genderCode = GenderCode.fromCode(
+                ISO39794Util.decodeCodeFromChoiceExtensionBlockFallback(taggedObjects[0])
             )
         }
         if (taggedObjects.containsKey(1)) {
-            eyeColourCode = EyeColourCode.Companion.fromCode(
-                ISO39794Util.decodeCodeFromChoiceExtensionBlockFallback(
-                    taggedObjects.get(1)
-                )
+            eyeColourCode = EyeColourCode.fromCode(
+                ISO39794Util.decodeCodeFromChoiceExtensionBlockFallback(taggedObjects[1])
             )
         }
         if (taggedObjects.containsKey(2)) {
-            hairColourCode = HairColourCode.Companion.fromCode(
-                ISO39794Util.decodeCodeFromChoiceExtensionBlockFallback(
-                    taggedObjects.get(2)
-                )
+            hairColourCode = HairColourCode.fromCode(
+                ISO39794Util.decodeCodeFromChoiceExtensionBlockFallback(taggedObjects[2])
             )
         }
         if (taggedObjects.containsKey(3)) {
-            subjectHeight = ASN1Util.decodeInt(taggedObjects.get(3))
+            subjectHeight = ASN1Util.decodeInt(taggedObjects[3])
         }
         if (taggedObjects.containsKey(4)) {
-            propertiesBlock = FaceImagePropertiesBlock(taggedObjects.get(4))
+            propertiesBlock = FaceImagePropertiesBlock(taggedObjects[4])
         }
         if (taggedObjects.containsKey(5)) {
-            expressionBlock = FaceImageExpressionBlock(taggedObjects.get(5))
+            expressionBlock = FaceImageExpressionBlock.from(taggedObjects[5]!!)
         }
         if (taggedObjects.containsKey(6)) {
-            poseAngleBlock = FaceImagePoseAngleBlock(taggedObjects.get(6))
+            poseAngleBlock = FaceImagePoseAngleBlock(taggedObjects[6])
         }
-    }
+    }*/
 
-    override fun hashCode(): Int {
-        return Objects.hash(
-            expressionBlock, eyeColourCode, genderCode, hairColourCode, poseAngleBlock, propertiesBlock,
-            subjectHeight
+    /*    public override fun hashCode(): Int {
+            return Objects.hash(
+                expressionBlock,
+                eyeColourCode,
+                genderCode,
+                hairColourCode,
+                poseAngleBlock,
+                propertiesBlock,
+                subjectHeight
+            )
+        }
+
+        public override fun equals(obj: Any?): Boolean {
+            if (this === obj) {
+                return true
+            }
+            if (obj == null) {
+                return false
+            }
+            if (javaClass != obj.javaClass) {
+                return false
+            }
+
+            val other = obj as FaceImageIdentityMetadataBlock
+            return expressionBlock == other.expressionBlock && eyeColourCode == other.eyeColourCode && genderCode == other.genderCode && hairColourCode == other.hairColourCode && poseAngleBlock == other.poseAngleBlock
+                    && propertiesBlock == other.propertiesBlock && subjectHeight == other.subjectHeight
+        }
+
+        override fun toString(): String {
+            return ("FaceImageIdentityMetadataBlock ["
+                    + "genderCode: " + genderCode
+                    + ", eyeColourCode: " + eyeColourCode
+                    + ", hairColourCode: " + hairColourCode
+                    + ", subjectHeight: " + subjectHeight
+                    + ", propertiesBlock: " + propertiesBlock
+                    + ", expressionBlock: " + expressionBlock
+                    + ", poseAngleBlock: " + poseAngleBlock
+                    + "]")
+        }*/
+
+    override val aSN1Object: ASN1Encodable
+        get() = ASN1Util.encodeTaggedObjects(
+            buildMap {
+                genderCode?.let { put(0, ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(it.code)) }
+                eyeColourCode?.let { put(1, ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(it.code)) }
+                hairColourCode?.let { put(2, ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(it.code)) }
+                if (subjectHeight >= 0) {
+                    put(3, ASN1Util.encodeInt(subjectHeight))
+                }
+                propertiesBlock?.let { put(4, it.aSN1Object) }
+                expressionBlock?.let { put(5, it.aSN1Object) }
+            }
         )
-    }
-
-    override fun equals(obj: Any?): Boolean {
-        if (this === obj) {
-            return true
-        }
-        if (obj == null) {
-            return false
-        }
-        if (javaClass != obj.javaClass) {
-            return false
-        }
-
-        val other = obj as FaceImageIdentityMetadataBlock
-        return expressionBlock == other.expressionBlock && eyeColourCode == other.eyeColourCode && genderCode == other.genderCode && hairColourCode == other.hairColourCode && poseAngleBlock == other.poseAngleBlock
-                && propertiesBlock == other.propertiesBlock && subjectHeight == other.subjectHeight
-    }
-
-    override fun toString(): String {
-        return ("FaceImageIdentityMetadataBlock ["
-                + "genderCode: " + genderCode
-                + ", eyeColourCode: " + eyeColourCode
-                + ", hairColourCode: " + hairColourCode
-                + ", subjectHeight: " + subjectHeight
-                + ", propertiesBlock: " + propertiesBlock
-                + ", expressionBlock: " + expressionBlock
-                + ", poseAngleBlock: " + poseAngleBlock
-                + "]")
-    }
-
-    /* PACKAGE */
-    override fun getASN1Object(): ASN1Encodable? {
-        val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        if (genderCode != null) {
-            taggedObjects[0] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(genderCode!!.getCode())
-        }
-        if (eyeColourCode != null) {
-            taggedObjects[1] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(eyeColourCode!!.getCode())
-        }
-        if (hairColourCode != null) {
-            taggedObjects[2] = ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(hairColourCode!!.getCode())
-        }
-        if (subjectHeight >= 0) {
-            taggedObjects[3] = ASN1Util.encodeInt(subjectHeight)
-        }
-        if (propertiesBlock != null) {
-            taggedObjects[4] = propertiesBlock!!.getASN1Object()
-        }
-        if (expressionBlock != null) {
-            taggedObjects[5] = expressionBlock!!.getASN1Object()
-        }
-        if (poseAngleBlock != null) {
-            taggedObjects[6] = poseAngleBlock.getASN1Object()
-        }
-        return ASN1Util.encodeTaggedObjects(taggedObjects)
-    }
+        /* PACKAGE */
+        /*get() {
+            val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
+                HashMap<Int?, ASN1Encodable?>()
+            if (genderCode != null) {
+                taggedObjects.put(
+                    0,
+                    ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(genderCode!!.getCode())
+                )
+            }
+            if (eyeColourCode != null) {
+                taggedObjects.put(
+                    1,
+                    ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(eyeColourCode!!.getCode())
+                )
+            }
+            if (hairColourCode != null) {
+                taggedObjects.put(
+                    2,
+                    ISO39794Util.encodeCodeAsChoiceExtensionBlockFallback(hairColourCode!!.getCode())
+                )
+            }
+            if (subjectHeight >= 0) {
+                taggedObjects.put(3, ASN1Util.encodeInt(subjectHeight))
+            }
+            if (propertiesBlock != null) {
+                taggedObjects.put(4, propertiesBlock!!.aSN1Object)
+            }
+            if (expressionBlock != null) {
+                taggedObjects.put(5, expressionBlock!!.aSN1Object)
+            }
+            if (poseAngleBlock != null) {
+                taggedObjects.put(6, poseAngleBlock!!.aSN1Object)
+            }
+            return ASN1Util.encodeTaggedObjects(taggedObjects)
+        }*/
 
     companion object {
         private const val serialVersionUID = 5968313840533997792L
+
+        /**
+         * Factory method
+         *
+         * IdentityMetadataBlock ::= SEQUENCE {
+         *   gender [0] Gender OPTIONAL,
+         *   eyeColour [1] EyeColour OPTIONAL,
+         *   hairColour [2] HairColour OPTIONAL,
+         *   subjectHeight [3] SubjectHeight OPTIONAL,
+         *   propertiesBlock [4] PropertiesBlock OPTIONAL,
+         *   expressionBlock [5] ExpressionBlock OPTIONAL,
+         *   poseAngleBlock [6] PoseAngleBlock OPTIONAL,
+         *   ...
+         * }
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable): FaceImageIdentityMetadataBlock {
+            require(!(asn1Encodable !is ASN1Sequence && asn1Encodable !is ASN1TaggedObject)) { "Cannot decode!" }
+
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return FaceImageIdentityMetadataBlock(
+                genderCode = if (taggedObjects.containsKey(0)) GenderCode.fromCode(
+                    ISO39794Util.decodeCodeFromChoiceExtensionBlockFallback(taggedObjects[0])
+                ) else null,
+                eyeColourCode = if (taggedObjects.containsKey(1)) EyeColourCode.fromCode(
+                    ISO39794Util.decodeCodeFromChoiceExtensionBlockFallback(taggedObjects[1])
+                ) else null,
+                hairColourCode = if (taggedObjects.containsKey(2)) HairColourCode.fromCode(
+                    ISO39794Util.decodeCodeFromChoiceExtensionBlockFallback(taggedObjects[2])
+                ) else null,
+                subjectHeight = if (taggedObjects.containsKey(3)) ASN1Util.decodeInt(taggedObjects[3]) else 0,
+                propertiesBlock = if (taggedObjects.containsKey(4)) FaceImagePropertiesBlock.from(taggedObjects[4]) else null,
+                expressionBlock = taggedObjects[5]?.let { FaceImageExpressionBlock.from(it) },
+                poseAngleBlock = if (taggedObjects.containsKey(6)) FaceImagePoseAngleBlock.from(taggedObjects[6]) else null
+            )
+        }
     }
 }

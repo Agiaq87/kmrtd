@@ -38,41 +38,36 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import kmrtd.ASN1Util
-import java.util.*
+import org.jmrtd.ASN1Util
+import java.util.Objects
 
-class FaceImageLandmarkBlock : Block {
-    val landmarkKind: FaceImageLandmarkKind?
-
-    var landmarkCoordinates: FaceImageLandmarkCoordinates? = null
-        private set
-
-    constructor(landmarkKind: FaceImageLandmarkKind?, landmarkCoordinates: FaceImageLandmarkCoordinates?) {
-        this.landmarkKind = landmarkKind
-        this.landmarkCoordinates = landmarkCoordinates
-    }
+data class FaceImageLandmarkBlock(
+    val landmarkKind: FaceImageLandmarkKind?,
+    val landmarkCoordinates: FaceImageLandmarkCoordinates?
+) : Block() {
 
     //  LandmarkBlock ::= SEQUENCE {
     //    landmarkKind [0] LandmarkKind,
     //    landmarkCoordinates [1] LandmarkCoordinates OPTIONAL,
     //    ...
     //  }
-    internal constructor(asn1Encodable: ASN1Encodable?) {
+    /*internal constructor(asn1Encodable: ASN1Encodable?) {
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        landmarkKind = FaceImageLandmarkKind.decodeLandmarkKind(taggedObjects.get(0))
+        landmarkKind = FaceImageLandmarkKind.decodeLandmarkKind(taggedObjects[0])
         if (taggedObjects.containsKey(1)) {
-            landmarkCoordinates = FaceImageLandmarkCoordinates.decodeLandmarkCoordinates(taggedObjects.get(1))
+            landmarkCoordinates =
+                FaceImageLandmarkCoordinates.decodeLandmarkCoordinates(taggedObjects[1])
         }
-    }
+    }*/
 
-    override fun hashCode(): Int {
+    /*public override fun hashCode(): Int {
         return Objects.hash(landmarkCoordinates, landmarkKind)
     }
 
-    override fun equals(obj: Any?): Boolean {
+    public override fun equals(obj: Any?): Boolean {
         if (this === obj) {
             return true
         }
@@ -93,34 +88,76 @@ class FaceImageLandmarkBlock : Block {
                 + "landmarkKind: " + landmarkKind
                 + ", landmarkCoordinates: " + landmarkCoordinates
                 + "]")
-    }
+    }*/
 
+    override val aSN1Object: ASN1Encodable
+        get() = ASN1Util.encodeTaggedObjects(
+            buildMap {
+                put(0, FaceImageLandmarkKind.encodeLandmarkKind(landmarkKind))
+                landmarkCoordinates?.let {
+                    put(1, FaceImageLandmarkCoordinates.encodeLandmarkCoordinates(it))
+                }
+            }
+        )
     /* PACKAGE */
-    override fun getASN1Object(): ASN1Encodable? {
-        val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        taggedObjects[0] = FaceImageLandmarkKind.encodeLandmarkKind(landmarkKind)
+    /*get() {
+        val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
+            HashMap<Int?, ASN1Encodable?>()
+        taggedObjects.put(0, FaceImageLandmarkKind.encodeLandmarkKind(landmarkKind))
         if (landmarkCoordinates != null) {
-            taggedObjects[1] = FaceImageLandmarkCoordinates.encodeLandmarkCoordinates(landmarkCoordinates)
+            taggedObjects.put(
+                1,
+                FaceImageLandmarkCoordinates.encodeLandmarkCoordinates(landmarkCoordinates)
+            )
         }
         return ASN1Util.encodeTaggedObjects(taggedObjects)
-    }
+    }*/
 
     companion object {
-        private val serialVersionUID = -8008877005187206392L
+        private const val serialVersionUID = -8008877005187206392L
 
         @JvmStatic
-        fun decodeLandmarkBlocks(asn1Encodable: ASN1Encodable?): MutableList<FaceImageLandmarkBlock?> {
+        fun decodeLandmarkBlocks(asn1Encodable: ASN1Encodable): List<FaceImageLandmarkBlock> =
+            if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
+                ASN1Util.list(asn1Encodable).map { FaceImageLandmarkBlock.from(it) }
+            } else {
+                listOf(FaceImageLandmarkBlock.from(asn1Encodable))
+            }
+
+
+        /*fun buildLandmarkBlocks(asn1Encodable: ASN1Encodable?): MutableList<FaceImageLandmarkBlock?> {
             if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
                 val blockASN1Objects = ASN1Util.list(asn1Encodable)
                 val blocks: MutableList<FaceImageLandmarkBlock?> =
                     ArrayList<FaceImageLandmarkBlock?>(blockASN1Objects.size)
                 for (blockASN1Object in blockASN1Objects) {
-                    blocks.add(FaceImageLandmarkBlock(blockASN1Object))
+                    blocks.add(FaceImageLandmarkBlock.from(blockASN1Object))
                 }
                 return blocks
             } else {
                 return mutableListOf<FaceImageLandmarkBlock?>(FaceImageLandmarkBlock(asn1Encodable))
             }
+        }*/
+
+        /**
+         * Factory method
+         *
+         * LandmarkBlock ::= SEQUENCE {
+         *   landmarkKind [0] LandmarkKind,
+         *   landmarkCoordinates [1] LandmarkCoordinates OPTIONAL,
+         *   ...
+         * }
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable): FaceImageLandmarkBlock {
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return FaceImageLandmarkBlock(
+                landmarkKind = FaceImageLandmarkKind.decodeLandmarkKind(taggedObjects[0]),
+                landmarkCoordinates = if (taggedObjects.containsKey(1)) FaceImageLandmarkCoordinates.decodeLandmarkCoordinates(
+                    taggedObjects[1]
+                ) else null
+            )
         }
     }
 }

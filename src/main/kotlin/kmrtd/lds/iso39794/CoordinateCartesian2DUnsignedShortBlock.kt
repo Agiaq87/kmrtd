@@ -38,32 +38,20 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
-import kmrtd.ASN1Util
 import org.bouncycastle.asn1.ASN1Encodable
-import java.util.*
+import org.jmrtd.ASN1Util
 
-class CoordinateCartesian2DUnsignedShortBlock : Block, FaceImageLandmarkCoordinates {
-    val x: Int
+data class CoordinateCartesian2DUnsignedShortBlock(
+    val x: Int,
     val y: Int
+) : Block(), FaceImageLandmarkCoordinates {
+ /*   internal constructor(asn1Encodable: ASN1Encodable?) {
 
-    constructor(x: Int, y: Int) {
-        this.x = x
-        this.y = y
-    }
+    }*/
 
-    //  CoordinateCartesian2DUnsignedShortBlock ::= SEQUENCE {
-    //    x               [0] INTEGER (0..65535),
-    //    y               [1] INTEGER (0..65535)
-    //  }
-    internal constructor(asn1Encodable: ASN1Encodable?) {
-        val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        x = ASN1Util.decodeInt(taggedObjects.get(0))
-        y = ASN1Util.decodeInt(taggedObjects.get(1))
-    }
-
-    override fun hashCode(): Int {
+    /*override fun hashCode(): Int {
         return Objects.hash(x, y)
     }
 
@@ -87,36 +75,70 @@ class CoordinateCartesian2DUnsignedShortBlock : Block, FaceImageLandmarkCoordina
                 + "x: " + x
                 + ", y: " + y
                 + "]")
-    }
+    }*/
 
-    override fun getASN1Object(): ASN1Encodable? {
-        val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        taggedObjects[0] = ASN1Util.encodeInt(x)
-        taggedObjects[1] = ASN1Util.encodeInt(y)
-        return ASN1Util.encodeTaggedObjects(taggedObjects)
-    }
+    override val aSN1Object: ASN1Encodable
+        get() = ASN1Util.encodeTaggedObjects(
+            mapOf(
+                0 to ASN1Util.encodeInt(x),
+                1 to ASN1Util.encodeInt(y)
+            )
+        )
+        /*get() {
+            val taggedObjects: MutableMap<Int, ASN1Encodable> =
+                HashMap<Int, ASN1Encodable>()
+            taggedObjects[0] = ASN1Util.encodeInt(x)
+            taggedObjects[1] = ASN1Util.encodeInt(y)
+            return ASN1Util.encodeTaggedObjects(taggedObjects)
+        }*/
 
     companion object {
-        private val serialVersionUID = -3221155578581711766L
+        private const val serialVersionUID = -3221155578581711766L
 
         /* PACKAGE */
         @JvmStatic
-        fun decodeCoordinateCartesian2DUnsignedShortBlocks(asn1Encodable: ASN1Encodable?): MutableList<CoordinateCartesian2DUnsignedShortBlock?> {
+        fun decodeCoordinateCartesian2DUnsignedShortBlocks(asn1Encodable: ASN1Encodable?): List<CoordinateCartesian2DUnsignedShortBlock> =
+            if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
+                ASN1Util.list(asn1Encodable).map { from(it) }
+            } else {
+                listOf(from(asn1Encodable))
+            }
+
+
+        /*{
             if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
                 val blockASN1Objects = ASN1Util.list(asn1Encodable)
-                val blocks: MutableList<CoordinateCartesian2DUnsignedShortBlock?> =
-                    ArrayList<CoordinateCartesian2DUnsignedShortBlock?>(blockASN1Objects.size)
+                val blocks: MutableList<CoordinateCartesian2DUnsignedShortBlock> =
+                    ArrayList(blockASN1Objects.size)
                 for (blockASN1Object in blockASN1Objects) {
-                    blocks.add(CoordinateCartesian2DUnsignedShortBlock(blockASN1Object))
+                    blocks.add(from(blockASN1Object))
                 }
                 return blocks
             } else {
-                return mutableListOf<CoordinateCartesian2DUnsignedShortBlock?>(
-                    CoordinateCartesian2DUnsignedShortBlock(
-                        asn1Encodable
-                    )
+                return mutableListOf(
+                    from(asn1Encodable)
                 )
             }
+        }*/
+
+        /**
+         * Factory method
+         *
+         * CoordinateCartesian2DUnsignedShortBlock ::= SEQUENCE {
+         *   x               [0] INTEGER (0..65535),
+         *   y               [1] INTEGER (0..65535)
+         * }
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable?): CoordinateCartesian2DUnsignedShortBlock {
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return CoordinateCartesian2DUnsignedShortBlock(
+                x = ASN1Util.decodeInt(taggedObjects[0]),
+                y = ASN1Util.decodeInt(taggedObjects[1])
+            )
         }
     }
+
+
 }

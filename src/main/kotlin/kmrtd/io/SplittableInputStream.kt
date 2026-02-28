@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.io
+package org.jmrtd.io
 
 import java.io.IOException
 import java.io.InputStream
@@ -40,19 +40,8 @@ import java.io.InputStream
  * @version $Revision: 1808 $
  */
 class SplittableInputStream(inputStream: InputStream, length: Int) : InputStream() {
-    private val inputStreamBuffer: InputStreamBuffer
-    private val carrier: InputStreamBuffer.SubInputStream
-
-    /**
-     * Wraps an input stream so that copy streams can be split off.
-     * 
-     * @param inputStream the original input stream
-     * @param length the precise length of bytes that the original input stream provides
-     */
-    init {
-        this.inputStreamBuffer = InputStreamBuffer(inputStream, length)
-        this.carrier = inputStreamBuffer.inputStream
-    }
+    private val inputStreamBuffer: InputStreamBuffer = InputStreamBuffer(inputStream, length)
+    private val carrier: InputStreamBuffer.SubInputStream = inputStreamBuffer.inputStream
 
     /**
      * Updates this stream's buffer based on some other stream's buffer.
@@ -105,9 +94,8 @@ class SplittableInputStream(inputStream: InputStream, length: Int) : InputStream
      * @throws IOException if an I/O error occurs
      */
     @Throws(IOException::class)
-    override fun read(): Int {
-        return carrier.read()
-    }
+    override fun read(): Int =
+        carrier.read()
 
     /**
      * Skips over and discards `n` bytes of data from this input
@@ -125,9 +113,8 @@ class SplittableInputStream(inputStream: InputStream, length: Int) : InputStream
      * @throws IOException if the stream does not support seek, or if some other I/O error occurs
      */
     @Throws(IOException::class)
-    override fun skip(n: Long): Long {
-        return carrier.skip(n)
-    }
+    override fun skip(n: Long): Long =
+        carrier.skip(n)
 
     /**
      * Returns an estimate of the number of bytes that can be read (or
@@ -143,9 +130,8 @@ class SplittableInputStream(inputStream: InputStream, length: Int) : InputStream
      * @throws IOException on error
      */
     @Throws(IOException::class)
-    override fun available(): Int {
-        return carrier.available()
-    }
+    override fun available(): Int =
+        carrier.available()
 
     /**
      * Closes this input stream and releases any system resources associated
@@ -154,9 +140,8 @@ class SplittableInputStream(inputStream: InputStream, length: Int) : InputStream
      * @throws IOException on error
      */
     @Throws(IOException::class)
-    override fun close() {
+    override fun close() =
         carrier.close()
-    }
 
     /**
      * Marks the current position in this input stream. A subsequent call to
@@ -182,9 +167,8 @@ class SplittableInputStream(inputStream: InputStream, length: Int) : InputStream
      * @see InputStream.reset
      */
     @Synchronized
-    override fun mark(readlimit: Int) {
+    override fun mark(readlimit: Int) =
         carrier.mark(readlimit)
-    }
 
     /**
      * Repositions this stream to the position at the time the
@@ -233,9 +217,8 @@ class SplittableInputStream(inputStream: InputStream, length: Int) : InputStream
      */
     @Synchronized
     @Throws(IOException::class)
-    override fun reset() {
+    override fun reset() =
         carrier.reset()
-    }
 
     /**
      * Tests if this input stream supports the `mark` and
@@ -250,9 +233,8 @@ class SplittableInputStream(inputStream: InputStream, length: Int) : InputStream
      * @see InputStream.mark
      * @see InputStream.reset
      */
-    override fun markSupported(): Boolean {
-        return carrier.markSupported()
-    }
+    override fun markSupported(): Boolean =
+        carrier.markSupported()
 
     val length: Int
         /**

@@ -38,29 +38,32 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.BERTags
 import org.bouncycastle.asn1.DERTaggedObject
-import kmrtd.ASN1Util
-import kmrtd.cbeff.BiometricDataBlock
-import kmrtd.cbeff.CBEFFInfo
-import kmrtd.cbeff.ISO781611
-import kmrtd.cbeff.StandardBiometricHeader
+import org.jmrtd.ASN1Util
+import org.jmrtd.cbeff.BiometricDataBlock
+import org.jmrtd.cbeff.CBEFFInfo
+import org.jmrtd.cbeff.ISO781611
+import org.jmrtd.cbeff.StandardBiometricHeader
 import java.io.InputStream
-import java.util.*
+import java.util.Objects
+import java.util.SortedMap
+import java.util.TreeMap
 
 class FaceImageDataBlock : Block, BiometricDataBlock {
     val versionBlock: VersionBlock
-    val representationBlocks: MutableList<FaceImageRepresentationBlock?>?
+    val representationBlocks: List<FaceImageRepresentationBlock?>?
 
     private var sbh: StandardBiometricHeader?
 
     constructor(
         versionBlock: VersionBlock,
-        representationBlocks: MutableList<FaceImageRepresentationBlock?>?, sbh: StandardBiometricHeader?
+        representationBlocks: MutableList<FaceImageRepresentationBlock?>?,
+        sbh: StandardBiometricHeader?
     ) {
         this.versionBlock = versionBlock
         this.representationBlocks = representationBlocks
@@ -86,32 +89,37 @@ class FaceImageDataBlock : Block, BiometricDataBlock {
         require(asn1Encodable is ASN1Sequence) { "Cannot decode!" }
 
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        versionBlock = VersionBlock(taggedObjects.get(0))
-        representationBlocks = FaceImageRepresentationBlock.decodeRepresentationBlocks(taggedObjects.get(1))
+        versionBlock = VersionBlock.from(taggedObjects[0]!!)
+        representationBlocks =
+            FaceImageRepresentationBlock.decodeRepresentationBlocks(taggedObjects[1])
     }
 
-    override fun getStandardBiometricHeader(): StandardBiometricHeader {
-        if (sbh == null) {
-            val biometricType = byteArrayOf(CBEFFInfo.BIOMETRIC_TYPE_FACIAL_FEATURES.toByte())
-            val biometricSubtype = byteArrayOf(CBEFFInfo.BIOMETRIC_SUBTYPE_NONE.toByte())
-            val formatOwner = byteArrayOf(
-                ((StandardBiometricHeader.JTC1_SC37_FORMAT_OWNER_VALUE and 0xFF00) shr 8).toByte(),
-                (StandardBiometricHeader.JTC1_SC37_FORMAT_OWNER_VALUE and 0xFF).toByte()
-            )
-            val formatType = byteArrayOf(
-                ((StandardBiometricHeader.ISO_39794_FACE_IMAGE_FORMAT_TYPE_VALUE and 0xFF00) shr 8).toByte(),
-                (StandardBiometricHeader.ISO_39794_FACE_IMAGE_FORMAT_TYPE_VALUE and 0xFF).toByte()
-            )
+    override val standardBiometricHeader: StandardBiometricHeader
+        get() {
+            if (sbh == null) {
+                val biometricType =
+                    byteArrayOf(CBEFFInfo.BIOMETRIC_TYPE_FACIAL_FEATURES.toByte())
+                val biometricSubtype =
+                    byteArrayOf(CBEFFInfo.BIOMETRIC_SUBTYPE_NONE.toByte())
+                val formatOwner = byteArrayOf(
+                    ((StandardBiometricHeader.JTC1_SC37_FORMAT_OWNER_VALUE and 0xFF00) shr 8).toByte(),
+                    (StandardBiometricHeader.JTC1_SC37_FORMAT_OWNER_VALUE and 0xFF).toByte()
+                )
+                val formatType = byteArrayOf(
+                    ((StandardBiometricHeader.ISO_39794_FACE_IMAGE_FORMAT_TYPE_VALUE and 0xFF00) shr 8).toByte(),
+                    (StandardBiometricHeader.ISO_39794_FACE_IMAGE_FORMAT_TYPE_VALUE and 0xFF).toByte()
+                )
 
-            val elements: SortedMap<Int?, ByteArray?> = TreeMap<Int?, ByteArray?>()
-            elements[ISO781611.BIOMETRIC_TYPE_TAG] = biometricType // 81
-            elements[ISO781611.BIOMETRIC_SUBTYPE_TAG] = biometricSubtype // 82
-            elements[ISO781611.FORMAT_OWNER_TAG] = formatOwner // 87
-            elements[ISO781611.FORMAT_TYPE_TAG] = formatType // 88
-            sbh = StandardBiometricHeader(elements)
+                val elements: SortedMap<Int?, ByteArray?> =
+                    TreeMap<Int?, ByteArray?>()
+                elements[ISO781611.BIOMETRIC_TYPE_TAG] = biometricType // 81
+                elements[ISO781611.BIOMETRIC_SUBTYPE_TAG] = biometricSubtype // 82
+                elements[ISO781611.FORMAT_OWNER_TAG] = formatOwner // 87
+                elements[ISO781611.FORMAT_TYPE_TAG] = formatType // 88
+                sbh = StandardBiometricHeader(elements)
+            }
+            return sbh!!
         }
-        return sbh!!
-    }
 
     override fun hashCode(): Int {
         return Objects.hash(representationBlocks, sbh, versionBlock)
@@ -142,12 +150,23 @@ class FaceImageDataBlock : Block, BiometricDataBlock {
                 + "]")
     }
 
-    override val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable
+        get() = DERTaggedObject(
+            false,
+            BERTags.APPLICATION,
+            0x05,
+            ASN1Util.encodeTaggedObjects(
+                mapOf(
+                    0 to versionBlock.aSN1Object,
+                    1 to ISO39794Util.encodeBlocks(representationBlocks)
+                )
+            )
+        )
         /* PACKAGE */
-        get() {
+        /*get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects[0] = versionBlock.getASN1Object()
+            taggedObjects[0] = versionBlock.aSN1Object
             taggedObjects[1] = ISO39794Util.encodeBlocks(representationBlocks)
             return DERTaggedObject(
                 false,
@@ -155,9 +174,9 @@ class FaceImageDataBlock : Block, BiometricDataBlock {
                 0x05,
                 ASN1Util.encodeTaggedObjects(taggedObjects)
             )
-        }
+        }*/
 
     companion object {
-        private val serialVersionUID = -7831183488053975281L
+        private const val serialVersionUID = -7831183488053975281L
     }
 }

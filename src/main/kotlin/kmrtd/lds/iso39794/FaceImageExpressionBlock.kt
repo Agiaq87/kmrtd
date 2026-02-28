@@ -38,14 +38,20 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import kmrtd.ASN1Util
-import java.util.*
+import org.jmrtd.ASN1Util
 
-class FaceImageExpressionBlock : Block {
-    var isNeutral: Boolean? = null
+data class FaceImageExpressionBlock(
+    val isNeutral: Boolean,
+    val isSmile: Boolean,
+    val isRaisedEyebrows: Boolean,
+    val isEyesLookingAwayFromTheCamera: Boolean,
+    val isSquinting: Boolean,
+    val isFrowning: Boolean
+) : Block() {
+    /*var isNeutral: Boolean? = null
         private set
     var isSmile: Boolean? = null
         private set
@@ -56,9 +62,9 @@ class FaceImageExpressionBlock : Block {
     var isSquinting: Boolean? = null
         private set
     var isFrowning: Boolean? = null
-        private set
+        private set*/
 
-    constructor(
+    /*constructor(
         isNeutral: Boolean?, isSmile: Boolean?, isRaisedEyebrows: Boolean?,
         isEyesLookingAwayFromTheCamera: Boolean?, isSquinting: Boolean?, isFrowning: Boolean?
     ) {
@@ -68,7 +74,7 @@ class FaceImageExpressionBlock : Block {
         this.isEyesLookingAwayFromTheCamera = isEyesLookingAwayFromTheCamera
         this.isSquinting = isSquinting
         this.isFrowning = isFrowning
-    }
+    }*/
 
     //  ExpressionBlock ::= SEQUENCE {
     //    neutral [0] BOOLEAN OPTIONAL,
@@ -79,7 +85,7 @@ class FaceImageExpressionBlock : Block {
     //    frowning [5] BOOLEAN OPTIONAL,
     //    ...
     //  }
-    internal constructor(asn1Encodable: ASN1Encodable?) {
+/*    internal constructor(asn1Encodable: ASN1Encodable?) {
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
         if (taggedObjects.containsKey(0)) {
             isNeutral = ASN1Util.decodeBoolean(taggedObjects.get(0))
@@ -99,9 +105,9 @@ class FaceImageExpressionBlock : Block {
         if (taggedObjects.containsKey(5)) {
             isFrowning = ASN1Util.decodeBoolean(taggedObjects.get(5))
         }
-    }
+    }*/
 
-    public override fun hashCode(): Int {
+    /*public override fun hashCode(): Int {
         return Objects.hash(
             isEyesLookingAwayFromTheCamera,
             isFrowning,
@@ -139,35 +145,86 @@ class FaceImageExpressionBlock : Block {
                 + ", isSquinting: " + isSquinting
                 + ", isFrowning: " + isFrowning
                 + "]")
-    }
+    }*/
 
-    override val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable
+        get() = ASN1Util.encodeTaggedObjects(
+            mapOf(
+                0 to ASN1Util.encodeBoolean(isNeutral),
+                1 to ASN1Util.encodeBoolean(isSmile),
+                2 to ASN1Util.encodeBoolean(isRaisedEyebrows),
+                3 to ASN1Util.encodeBoolean(isEyesLookingAwayFromTheCamera),
+                4 to ASN1Util.encodeBoolean(isSquinting),
+                5 to ASN1Util.encodeBoolean(isFrowning)
+            )
+        )
         /* PACKAGE */
-        get() {
+        /*get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
             if (isNeutral != null) {
-                taggedObjects[0] = ASN1Util.encodeBoolean(isNeutral!!)
+                taggedObjects.put(0, ASN1Util.encodeBoolean(isNeutral!!))
             }
             if (isSmile != null) {
-                taggedObjects[1] = ASN1Util.encodeBoolean(isSmile!!)
+                taggedObjects.put(1, ASN1Util.encodeBoolean(isSmile!!))
             }
             if (isRaisedEyebrows != null) {
-                taggedObjects[2] = ASN1Util.encodeBoolean(isRaisedEyebrows!!)
+                taggedObjects.put(2, ASN1Util.encodeBoolean(isRaisedEyebrows!!))
             }
             if (isEyesLookingAwayFromTheCamera != null) {
-                taggedObjects[3] = ASN1Util.encodeBoolean(isEyesLookingAwayFromTheCamera!!)
+                taggedObjects.put(
+                    3,
+                    ASN1Util.encodeBoolean(isEyesLookingAwayFromTheCamera!!)
+                )
             }
             if (isSquinting != null) {
-                taggedObjects[4] = ASN1Util.encodeBoolean(isSquinting!!)
+                taggedObjects.put(4, ASN1Util.encodeBoolean(isSquinting!!))
             }
             if (isFrowning != null) {
-                taggedObjects[5] = ASN1Util.encodeBoolean(isFrowning!!)
+                taggedObjects.put(5, ASN1Util.encodeBoolean(isFrowning!!))
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
-        }
+        }*/
 
     companion object {
-        private val serialVersionUID = -3603621366074466000L
+        private const val serialVersionUID = -3603621366074466000L
+
+        /**
+         * Factory method
+         *
+         * ExpressionBlock ::= SEQUENCE {
+         *   neutral [0] BOOLEAN OPTIONAL,
+         *   smile [1] BOOLEAN OPTIONAL,
+         *   raisedEyebrows [2] BOOLEAN OPTIONAL,
+         *   eyesLookingAwayFromTheCamera [3] BOOLEAN OPTIONAL,
+         *   squinting [4] BOOLEAN OPTIONAL,
+         *   frowning [5] BOOLEAN OPTIONAL,
+         *   ...
+         * }
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable): FaceImageExpressionBlock {
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            if (
+                taggedObjects.containsKey(0) &&
+                taggedObjects.containsKey(1) &&
+                taggedObjects.containsKey(2) &&
+                taggedObjects.containsKey(3) &&
+                taggedObjects.containsKey(4) &&
+                taggedObjects.containsKey(5)
+            ) {
+                return FaceImageExpressionBlock(
+                    isNeutral = ASN1Util.decodeBoolean(taggedObjects[0]),
+                    isSmile = ASN1Util.decodeBoolean(taggedObjects[1]),
+                    isRaisedEyebrows = ASN1Util.decodeBoolean(taggedObjects[2]),
+                    isEyesLookingAwayFromTheCamera = ASN1Util.decodeBoolean(taggedObjects[3]),
+                    isSquinting = ASN1Util.decodeBoolean(taggedObjects[4]),
+                    isFrowning = ASN1Util.decodeBoolean(taggedObjects[5])
+                )
+            }
+
+            throw Exception("Cannot decode the class")
+        }
     }
 }

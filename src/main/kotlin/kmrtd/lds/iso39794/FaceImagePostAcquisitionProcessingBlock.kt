@@ -38,67 +38,28 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import kmrtd.ASN1Util
-import java.util.*
+import org.jmrtd.ASN1Util
+import java.util.Objects
 
-class FaceImagePostAcquisitionProcessingBlock : Block {
-    var isRotated: Boolean? = null
-        private set
-    var isCropped: Boolean? = null
-        private set
-    var isDownSampled: Boolean? = null
-        private set
-    var isWhiteBalanceAdjusted: Boolean? = null
-        private set
-    var isMultiplyCompressed: Boolean? = null
-        private set
-    var isInterpolated: Boolean? = null
-        private set
-    var isContrastStretched: Boolean? = null
-        private set
-    var isPoseCorrected: Boolean? = null
-        private set
-    var isMultiViewImage: Boolean? = null
-        private set
-    var isAgeProgressed: Boolean? = null
-        private set
-    var isSuperResolutionProcessed: Boolean? = null
-        private set
-    var isNormalised: Boolean? = null
-        private set
+data class FaceImagePostAcquisitionProcessingBlock(
+    val isRotated: Boolean?,
+    val isCropped: Boolean?,
+    val isDownSampled: Boolean?,
+    val isWhiteBalanceAdjusted: Boolean?,
+    val isMultiplyCompressed: Boolean?,
+    val isInterpolated: Boolean?,
+    val isContrastStretched: Boolean?,
+    val isPoseCorrected: Boolean?,
+    val isMultiViewImage: Boolean?,
+    val isAgeProgressed: Boolean?,
+    val isSuperResolutionProcessed: Boolean?,
+    val isNormalised: Boolean?
+) : Block() {
 
-    constructor(
-        isRotated: Boolean?,
-        isCropped: Boolean?,
-        isDownSampled: Boolean?,
-        isWhiteBalanceAdjusted: Boolean?,
-        isMultiplyCompressed: Boolean?,
-        isInterpolated: Boolean?,
-        isContrastStretched: Boolean?,
-        isPoseCorrected: Boolean?,
-        isMultiViewImage: Boolean?,
-        isAgeProgressed: Boolean?,
-        isSuperResolutionProcessed: Boolean?,
-        isNormalised: Boolean?
-    ) {
-        this.isRotated = isRotated
-        this.isCropped = isCropped
-        this.isDownSampled = isDownSampled
-        this.isWhiteBalanceAdjusted = isWhiteBalanceAdjusted
-        this.isMultiplyCompressed = isMultiplyCompressed
-        this.isInterpolated = isInterpolated
-        this.isContrastStretched = isContrastStretched
-        this.isPoseCorrected = isPoseCorrected
-        this.isMultiViewImage = isMultiViewImage
-        this.isAgeProgressed = isAgeProgressed
-        this.isSuperResolutionProcessed = isSuperResolutionProcessed
-        this.isNormalised = isNormalised
-    }
-
-    constructor(asn1Encodable: ASN1Encodable?) {
+    /*constructor(asn1Encodable: ASN1Encodable?) {
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
         if (taggedObjects.containsKey(0)) {
             isRotated = ASN1Util.decodeBoolean(taggedObjects.get(0))
@@ -136,9 +97,9 @@ class FaceImagePostAcquisitionProcessingBlock : Block {
         if (taggedObjects.containsKey(11)) {
             isNormalised = ASN1Util.decodeBoolean(taggedObjects.get(11))
         }
-    }
+    }*/
 
-    override fun hashCode(): Int {
+    /*public override fun hashCode(): Int {
         return Objects.hash(
             isAgeProgressed,
             isContrastStretched,
@@ -155,7 +116,7 @@ class FaceImagePostAcquisitionProcessingBlock : Block {
         )
     }
 
-    override fun equals(obj: Any?): Boolean {
+    public override fun equals(obj: Any?): Boolean {
         if (this === obj) {
             return true
         }
@@ -193,51 +154,116 @@ class FaceImagePostAcquisitionProcessingBlock : Block {
                 + ", isSuperResolutionProcessed: " + isSuperResolutionProcessed
                 + ", isNormalised: " + isNormalised
                 + "]")
-    }
+    }*/
 
-    /* PACKAGE */
-    override fun getASN1Object(): ASN1Encodable? {
-        val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        if (isRotated != null) {
-            taggedObjects[0] = ASN1Util.encodeBoolean(isRotated!!)
-        }
-        if (isCropped != null) {
-            taggedObjects[1] = ASN1Util.encodeBoolean(isCropped!!)
-        }
-        if (isDownSampled != null) {
-            taggedObjects[2] = ASN1Util.encodeBoolean(isDownSampled!!)
-        }
-        if (isWhiteBalanceAdjusted != null) {
-            taggedObjects[3] = ASN1Util.encodeBoolean(isWhiteBalanceAdjusted!!)
-        }
-        if (isMultiplyCompressed != null) {
-            taggedObjects[4] = ASN1Util.encodeBoolean(isMultiplyCompressed!!)
-        }
-        if (isInterpolated != null) {
-            taggedObjects[5] = ASN1Util.encodeBoolean(isInterpolated!!)
-        }
-        if (isContrastStretched != null) {
-            taggedObjects[6] = ASN1Util.encodeBoolean(isContrastStretched!!)
-        }
-        if (isPoseCorrected != null) {
-            taggedObjects[7] = ASN1Util.encodeBoolean(isPoseCorrected!!)
-        }
-        if (isMultiViewImage != null) {
-            taggedObjects[8] = ASN1Util.encodeBoolean(isMultiViewImage!!)
-        }
-        if (isAgeProgressed != null) {
-            taggedObjects[9] = ASN1Util.encodeBoolean(isAgeProgressed!!)
-        }
-        if (isSuperResolutionProcessed != null) {
-            taggedObjects[10] = ASN1Util.encodeBoolean(isSuperResolutionProcessed!!)
-        }
-        if (isNormalised != null) {
-            taggedObjects[11] = ASN1Util.encodeBoolean(isNormalised!!)
-        }
-        return ASN1Util.encodeTaggedObjects(taggedObjects)
-    }
+    override val aSN1Object: ASN1Encodable
+        get() = ASN1Util.encodeTaggedObjects(
+            buildMap {
+                isRotated?.let {
+                    put(0, ASN1Util.encodeBoolean(it))
+                }
+                isCropped?.let{
+                    put(1, ASN1Util.encodeBoolean(it))
+                }
+                isDownSampled?.let{
+                    put(2, ASN1Util.encodeBoolean(it))
+                }
+                isWhiteBalanceAdjusted?.let{
+                    put(3, ASN1Util.encodeBoolean(it))
+                }
+                isMultiplyCompressed?.let{
+                    put(4, ASN1Util.encodeBoolean(it))
+                }
+                isInterpolated?.let{
+                    put(5, ASN1Util.encodeBoolean(it))
+                }
+                isContrastStretched?.let{
+                    put(6, ASN1Util.encodeBoolean(it))
+                }
+                isPoseCorrected?.let{
+                    put(7, ASN1Util.encodeBoolean(it))
+                }
+                isMultiViewImage?.let{
+                    put(8, ASN1Util.encodeBoolean(it))
+                }
+                isAgeProgressed?.let{
+                    put(9, ASN1Util.encodeBoolean(it))
+                }
+                isSuperResolutionProcessed?.let{
+                    put(10, ASN1Util.encodeBoolean(it))
+                }
+                isNormalised?.let{
+                    put(11, ASN1Util.encodeBoolean(it))
+                }
+            }
+        )
+        /* PACKAGE */
+        /*get() {
+            val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
+                HashMap<Int?, ASN1Encodable?>()
+            if (isRotated != null) {
+                taggedObjects[0] = ASN1Util.encodeBoolean(isRotated)
+            }
+            if (isCropped != null) {
+                taggedObjects[1] = ASN1Util.encodeBoolean(isCropped)
+            }
+            if (isDownSampled != null) {
+                taggedObjects[2] = ASN1Util.encodeBoolean(isDownSampled)
+            }
+            if (isWhiteBalanceAdjusted != null) {
+                taggedObjects[3] = ASN1Util.encodeBoolean(isWhiteBalanceAdjusted)
+            }
+            if (isMultiplyCompressed != null) {
+                taggedObjects[4] = ASN1Util.encodeBoolean(isMultiplyCompressed)
+            }
+            if (isInterpolated != null) {
+                taggedObjects[5] = ASN1Util.encodeBoolean(isInterpolated)
+            }
+            if (isContrastStretched != null) {
+                taggedObjects[6] = ASN1Util.encodeBoolean(isContrastStretched)
+            }
+            if (isPoseCorrected != null) {
+                taggedObjects[7] = ASN1Util.encodeBoolean(isPoseCorrected)
+            }
+            if (isMultiViewImage != null) {
+                taggedObjects[8] = ASN1Util.encodeBoolean(isMultiViewImage)
+            }
+            if (isAgeProgressed != null) {
+                taggedObjects[9] = ASN1Util.encodeBoolean(isAgeProgressed)
+            }
+            if (isSuperResolutionProcessed != null) {
+                taggedObjects[10] = ASN1Util.encodeBoolean(isSuperResolutionProcessed)
+            }
+            if (isNormalised != null) {
+                taggedObjects[11] = ASN1Util.encodeBoolean(isNormalised)
+            }
+            return ASN1Util.encodeTaggedObjects(taggedObjects)
+        }*/
 
     companion object {
-        private val serialVersionUID = -3603621266074466100L
+        private const val serialVersionUID = -3603621266074466100L
+
+        /**
+         * Factory method
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable?): FaceImagePostAcquisitionProcessingBlock {
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return FaceImagePostAcquisitionProcessingBlock(
+                isRotated = if (taggedObjects.containsKey(0)) ASN1Util.decodeBoolean(taggedObjects[0]) else null,
+                isCropped = if (taggedObjects.containsKey(1)) ASN1Util.decodeBoolean(taggedObjects[1]) else null,
+                isDownSampled = if (taggedObjects.containsKey(2)) ASN1Util.decodeBoolean(taggedObjects[2]) else null,
+                isWhiteBalanceAdjusted = if (taggedObjects.containsKey(3)) ASN1Util.decodeBoolean(taggedObjects[3]) else null,
+                isMultiplyCompressed = if (taggedObjects.containsKey(4)) ASN1Util.decodeBoolean(taggedObjects[4]) else null,
+                isInterpolated = if (taggedObjects.containsKey(5)) ASN1Util.decodeBoolean(taggedObjects[5]) else null,
+                isContrastStretched = if (taggedObjects.containsKey(6)) ASN1Util.decodeBoolean(taggedObjects[6]) else null,
+                isPoseCorrected = if (taggedObjects.containsKey(7)) ASN1Util.decodeBoolean(taggedObjects[7]) else null,
+                isMultiViewImage = if (taggedObjects.containsKey(8)) ASN1Util.decodeBoolean(taggedObjects[8]) else null,
+                isAgeProgressed = if (taggedObjects.containsKey(9)) ASN1Util.decodeBoolean(taggedObjects[9]) else null,
+                isSuperResolutionProcessed = if (taggedObjects.containsKey(10)) ASN1Util.decodeBoolean(taggedObjects[10]) else null,
+                isNormalised = if (taggedObjects.containsKey(11)) ASN1Util.decodeBoolean(taggedObjects[11]) else null
+            )
+        }
     }
 }

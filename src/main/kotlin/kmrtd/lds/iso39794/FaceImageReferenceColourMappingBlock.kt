@@ -38,142 +38,37 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+/*
+ * Modified work Copyright (C) 2026 Alessandro Giaquinto
+ * Kotlin port of JMRTD
+ *
+ * Licensed under LGPL 3.0
+ */
+package org.jmrtd.lds.iso39794
 
-import net.sf.scuba.util.Hex
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.DEROctetString
-import kmrtd.ASN1Util
-import java.util.*
+import org.jmrtd.ASN1Util
+import org.jmrtd.lds.iso39794.ReferenceColourDefinitionAndValueBlock.Companion.decodeReferenceColourDefinitionAndValueBlocks
 
-class FaceImageReferenceColourMappingBlock : Block {
-    class ReferenceColourDefinitionAndValueBlock : Block {
-        var referenceColourDefinition: ByteArray?
-            private set
-        var referenceColourValue: ByteArray?
-            private set
+data class FaceImageReferenceColourMappingBlock(
+    val referenceColourSchema: ByteArray?,
+    val referenceColourDefinitionAndValueBlocks: List<ReferenceColourDefinitionAndValueBlock>?
+) : Block() {
 
-        constructor(referenceColourDefinition: ByteArray?, referenceColourValue: ByteArray?) {
-            this.referenceColourDefinition = referenceColourDefinition
-            this.referenceColourValue = referenceColourValue
-        }
-
-        //    ReferenceColourDefinitionAndValueBlock ::= SEQUENCE {
-        //            referenceColourDefinition [0] OCTET STRING OPTIONAL,
-        //            referenceColourValue [1] OCTET STRING OPTIONAL,
-        //            ...
-        //    }
-        internal constructor(asn1Encodable: ASN1Encodable?) {
-            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-            if (taggedObjects.containsKey(0)) {
-                referenceColourDefinition = ASN1OctetString.getInstance(taggedObjects.get(0)).getOctets()
-            }
-            if (taggedObjects.containsKey(1)) {
-                referenceColourValue = ASN1OctetString.getInstance(taggedObjects.get(1)).getOctets()
-            }
-        }
-
-        override fun hashCode(): Int {
-            val prime = 31
-            var result = 1
-            result = prime * result + referenceColourDefinition.contentHashCode()
-            result = prime * result + referenceColourValue.contentHashCode()
-            return result
-        }
-
-        override fun equals(obj: Any?): Boolean {
-            if (this === obj) {
-                return true
-            }
-            if (obj == null) {
-                return false
-            }
-            if (javaClass != obj.javaClass) {
-                return false
-            }
-
-            val other = obj as ReferenceColourDefinitionAndValueBlock
-            return referenceColourDefinition.contentEquals(other.referenceColourDefinition) && referenceColourValue.contentEquals(
-                other.referenceColourValue
-            )
-        }
-
-        override fun toString(): String {
-            return ("ReferenceColourDefinitionAndValueBlock ["
-                    + "referenceColourDefinition: " + Hex.bytesToHexString(referenceColourDefinition)
-                    + ", referenceColourValue: " + Hex.bytesToHexString(referenceColourValue)
-                    + "]")
-        }
-
-        override fun getASN1Object(): ASN1Encodable? {
-            val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-            if (referenceColourDefinition != null) {
-                taggedObjects[0] = DEROctetString(referenceColourDefinition)
-            }
-            if (referenceColourValue != null) {
-                taggedObjects[1] = DEROctetString(referenceColourValue)
-            }
-            return ASN1Util.encodeTaggedObjects(taggedObjects)
-        }
-
-        companion object {
-            private val serialVersionUID = -7927429988191532374L
-
-            /* PACKAGE */
-            fun decodeReferenceColourDefinitionAndValueBlocks(asn1Encodable: ASN1Encodable?): MutableList<ReferenceColourDefinitionAndValueBlock?> {
-                if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
-                    val blockASN1Objects = ASN1Util.list(asn1Encodable)
-                    val blocks: MutableList<ReferenceColourDefinitionAndValueBlock?> =
-                        ArrayList<ReferenceColourDefinitionAndValueBlock?>(blockASN1Objects.size)
-                    for (blockASN1Object in blockASN1Objects) {
-                        blocks.add(ReferenceColourDefinitionAndValueBlock(blockASN1Object))
-                    }
-                    return blocks
-                } else {
-                    return mutableListOf<ReferenceColourDefinitionAndValueBlock?>(
-                        ReferenceColourDefinitionAndValueBlock(
-                            asn1Encodable
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    //  ReferenceColourMappingBlock ::= SEQUENCE {
-    //    referenceColourSchema [0] OCTET STRING OPTIONAL,
-    //    referenceColourDefinitionAndValueBlocks [1] ReferenceColourDefinitionAndValueBlocks OPTIONAL,
-    //    ...
-    // }
-    var referenceColourSchema: ByteArray?
-        private set
-
-    var referenceColourDefinitionAndValueBlocks: MutableList<ReferenceColourDefinitionAndValueBlock?>? = null
-        private set
-
-    constructor(
-        referenceColourSchema: ByteArray?,
-        referenceColourDefinitionAndValueBlocks: MutableList<ReferenceColourDefinitionAndValueBlock?>?
-    ) {
-        this.referenceColourSchema = referenceColourSchema
-        this.referenceColourDefinitionAndValueBlocks = referenceColourDefinitionAndValueBlocks
-    }
-
-    internal constructor(asn1Encodable: ASN1Encodable?) {
+    /*internal constructor(asn1Encodable: ASN1Encodable?) {
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
         if (taggedObjects.containsKey(0)) {
-            referenceColourSchema = ASN1OctetString.getInstance(taggedObjects.get(0)).getOctets()
+            referenceColourSchema = ASN1OctetString.getInstance(taggedObjects[0]).octets
         }
         if (taggedObjects.containsKey(1)) {
             referenceColourDefinitionAndValueBlocks =
-                ReferenceColourDefinitionAndValueBlock.Companion.decodeReferenceColourDefinitionAndValueBlocks(
-                    taggedObjects.get(1)
-                )
+                decodeReferenceColourDefinitionAndValueBlocks(taggedObjects[1])
         }
-    }
+    }*/
 
-    override fun hashCode(): Int {
+    /*public override fun hashCode(): Int {
         val prime = 31
         var result = 1
         result = prime * result + referenceColourSchema.contentHashCode()
@@ -181,7 +76,7 @@ class FaceImageReferenceColourMappingBlock : Block {
         return result
     }
 
-    override fun equals(obj: Any?): Boolean {
+    public override fun equals(obj: Any?): Boolean {
         if (this === obj) {
             return true
         }
@@ -202,21 +97,66 @@ class FaceImageReferenceColourMappingBlock : Block {
                 + "referenceColourSchema: " + Hex.bytesToHexString(referenceColourSchema)
                 + ", referenceColourDefinitionAndValueBlocks: " + referenceColourDefinitionAndValueBlocks
                 + "]")
+    }*/
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as FaceImageReferenceColourMappingBlock
+
+        if (!referenceColourSchema.contentEquals(other.referenceColourSchema)) return false
+        if (referenceColourDefinitionAndValueBlocks != other.referenceColourDefinitionAndValueBlocks) return false
+        if (aSN1Object != other.aSN1Object) return false
+
+        return true
     }
 
-    /* PACAKAGE */
-    override fun getASN1Object(): ASN1Encodable? {
-        val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        if (referenceColourSchema != null) {
-            taggedObjects[0] = DEROctetString(referenceColourSchema)
-        }
-        if (referenceColourDefinitionAndValueBlocks != null) {
-            taggedObjects[1] = ISO39794Util.encodeBlocks(referenceColourDefinitionAndValueBlocks)
-        }
-        return ASN1Util.encodeTaggedObjects(taggedObjects)
+    override fun hashCode(): Int {
+        var result = referenceColourSchema?.contentHashCode() ?: 0
+        result = 31 * result + (referenceColourDefinitionAndValueBlocks?.hashCode() ?: 0)
+        result = 31 * result + aSN1Object.hashCode()
+        return result
     }
+
+    override val aSN1Object: ASN1Encodable
+        get() = ASN1Util.encodeTaggedObjects(
+            buildMap {
+                referenceColourSchema?.let{
+                    put(0, DEROctetString(it))
+                }
+                referenceColourDefinitionAndValueBlocks?.let {
+                    put(1, ISO39794Util.encodeBlocks(it))
+                }
+            }
+        )
+        /* PACAKAGE */
+        /*get() {
+            val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
+                HashMap<Int?, ASN1Encodable?>()
+            if (referenceColourSchema != null) {
+                taggedObjects[0] = DEROctetString(referenceColourSchema)
+            }
+            if (referenceColourDefinitionAndValueBlocks != null) {
+                taggedObjects[1] = ISO39794Util.encodeBlocks(referenceColourDefinitionAndValueBlocks)
+            }
+            return ASN1Util.encodeTaggedObjects(taggedObjects)
+        }*/
 
     companion object {
-        private val serialVersionUID = -347556999620185601L
+        private const val serialVersionUID = -347556999620185601L
+
+        /**
+         * Factory method
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable?): FaceImageReferenceColourMappingBlock {
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return FaceImageReferenceColourMappingBlock(
+                referenceColourSchema = if (taggedObjects.containsKey(0)) ASN1OctetString.getInstance(taggedObjects[0]).octets else null,
+                referenceColourDefinitionAndValueBlocks = if (taggedObjects.containsKey(1)) decodeReferenceColourDefinitionAndValueBlocks(taggedObjects[1]) else null
+            )
+        }
     }
 }

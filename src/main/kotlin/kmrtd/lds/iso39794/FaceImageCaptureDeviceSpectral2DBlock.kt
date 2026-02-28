@@ -38,27 +38,30 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
-import kmrtd.ASN1Util
-import java.util.*
+import org.jmrtd.ASN1Util
 
-class FaceImageCaptureDeviceSpectral2DBlock : Block {
-    var isWhiteLight: Boolean? = null
+data class FaceImageCaptureDeviceSpectral2DBlock(
+    val isWhiteLight: Boolean?,
+    val isNearInfrared: Boolean?,
+    val isThermal: Boolean?
+) : Block() {
+/*    var isWhiteLight: Boolean? = null
         private set
     var isNearInfrared: Boolean? = null
         private set
     var isThermal: Boolean? = null
-        private set
+        private set*/
 
-    constructor(isWhiteLight: Boolean?, isNearInfrared: Boolean?, isThermal: Boolean?) {
+/*    constructor(isWhiteLight: Boolean?, isNearInfrared: Boolean?, isThermal: Boolean?) {
         this.isWhiteLight = isWhiteLight
         this.isNearInfrared = isNearInfrared
         this.isThermal = isThermal
-    }
+    }*/
 
     //  CaptureDeviceSpectral2DBlock ::= SEQUENCE {
     //    whiteLight [0] BOOLEAN OPTIONAL,
@@ -66,7 +69,7 @@ class FaceImageCaptureDeviceSpectral2DBlock : Block {
     //    thermal [2] BOOLEAN OPTIONAL,
     //    ...
     //  }
-    internal constructor(asn1Encodable: ASN1Encodable?) {
+    /*internal constructor(asn1Encodable: ASN1Encodable?) {
         require(!(asn1Encodable !is ASN1Sequence && asn1Encodable !is ASN1TaggedObject)) { "Cannot decode!" }
 
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
@@ -79,13 +82,13 @@ class FaceImageCaptureDeviceSpectral2DBlock : Block {
         if (taggedObjects.containsKey(2)) {
             isThermal = ASN1Util.decodeBoolean(taggedObjects.get(2))
         }
-    }
+    }*/
 
-    override fun hashCode(): Int {
+    /*public override fun hashCode(): Int {
         return Objects.hash(isNearInfrared, isThermal, isWhiteLight)
     }
 
-    override fun equals(obj: Any?): Boolean {
+    public override fun equals(obj: Any?): Boolean {
         if (this === obj) {
             return true
         }
@@ -105,24 +108,55 @@ class FaceImageCaptureDeviceSpectral2DBlock : Block {
                 + "isWhiteLight: " + isWhiteLight
                 + ", isNearInfrared: " + isNearInfrared
                 + ", isThermal: " + isThermal + "]")
-    }
+    }*/
 
-    /* PACKAGE */
-    override fun getASN1Object(): ASN1Encodable? {
-        val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        if (isWhiteLight != null) {
-            taggedObjects[0] = ASN1Util.encodeBoolean(isWhiteLight!!)
-        }
-        if (isNearInfrared != null) {
-            taggedObjects[1] = ASN1Util.encodeBoolean(isNearInfrared!!)
-        }
-        if (isThermal != null) {
-            taggedObjects[2] = ASN1Util.encodeBoolean(isThermal!!)
-        }
-        return ASN1Util.encodeTaggedObjects(taggedObjects)
-    }
+    override val aSN1Object: ASN1Encodable
+        get() = ASN1Util.encodeTaggedObjects(
+            mapOf(
+                0 to isWhiteLight?.let { ASN1Util.encodeBoolean(it) },
+                1 to isNearInfrared?.let { ASN1Util.encodeBoolean(it) },
+                2 to isThermal?.let { ASN1Util.encodeBoolean(it) }
+            )
+        )
+        /* PACKAGE */
+        /*get() {
+            val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
+                HashMap<Int?, ASN1Encodable?>()
+            if (isWhiteLight != null) {
+                taggedObjects.put(0, ASN1Util.encodeBoolean(isWhiteLight!!))
+            }
+            if (isNearInfrared != null) {
+                taggedObjects.put(1, ASN1Util.encodeBoolean(isNearInfrared!!))
+            }
+            if (isThermal != null) {
+                taggedObjects.put(2, ASN1Util.encodeBoolean(isThermal!!))
+            }
+            return ASN1Util.encodeTaggedObjects(taggedObjects)
+        }*/
 
     companion object {
         private const val serialVersionUID = 1003955292326716335L
+
+        /**
+         * Factory method
+         *
+         * CaptureDeviceSpectral2DBlock ::= SEQUENCE {
+         *   whiteLight [0] BOOLEAN OPTIONAL,
+         *   nearInfrared [1] BOOLEAN OPTIONAL,
+         *   thermal [2] BOOLEAN OPTIONAL,
+         *   ...
+         * }
+         */
+        fun from(asn1Encodable: ASN1Encodable): FaceImageCaptureDeviceSpectral2DBlock {
+            require(!(asn1Encodable !is ASN1Sequence && asn1Encodable !is ASN1TaggedObject)) { "Cannot decode!" }
+
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return FaceImageCaptureDeviceSpectral2DBlock(
+                isWhiteLight = taggedObjects[0]?.let { ASN1Util.decodeBoolean(it) },
+                isNearInfrared = taggedObjects[1]?.let { ASN1Util.decodeBoolean(it) },
+                isThermal = taggedObjects[2]?.let { ASN1Util.decodeBoolean(it) }
+            )
+        }
     }
 }

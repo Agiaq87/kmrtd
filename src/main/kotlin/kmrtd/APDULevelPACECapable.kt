@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd
+package org.jmrtd
 
 import net.sf.scuba.smartcards.APDUWrapper
 import net.sf.scuba.smartcards.CardServiceException
@@ -54,7 +54,7 @@ interface APDULevelPACECapable {
         wrapper: APDUWrapper,
         oid: String,
         refPublicKeyOrSecretKey: Int,
-        refPrivateKeyOrForComputingSessionKey: ByteArray?
+        refPrivateKeyOrForComputingSessionKey: ByteArray
     )
 
     /**
@@ -70,5 +70,10 @@ interface APDULevelPACECapable {
      * @throws CardServiceException on error
      */
     @Throws(CardServiceException::class)
-    fun sendGeneralAuthenticate(wrapper: APDUWrapper, data: ByteArray, le: Int, isLast: Boolean): ByteArray
+    fun sendGeneralAuthenticate(
+        wrapper: APDUWrapper,
+        data: ByteArray,
+        le: Int,
+        isLast: Boolean
+    ): ByteArray
 }

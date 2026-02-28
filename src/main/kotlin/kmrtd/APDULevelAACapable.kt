@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd
+package org.jmrtd
 
 import net.sf.scuba.smartcards.APDUWrapper
 import net.sf.scuba.smartcards.CardServiceException
@@ -51,5 +51,9 @@ interface APDULevelAACapable {
      * @throws CardServiceException on tranceive error
      */
     @Throws(CardServiceException::class)
-    fun sendInternalAuthenticate(wrapper: APDUWrapper, signatureLength: Int, rndIFD: ByteArray): ByteArray
+    fun sendInternalAuthenticate(
+        wrapper: APDUWrapper,
+        signatureLength: Int,
+        rndIFD: ByteArray
+    ): ByteArray
 }

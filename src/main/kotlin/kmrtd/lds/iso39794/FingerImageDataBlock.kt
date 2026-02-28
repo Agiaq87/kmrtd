@@ -38,23 +38,25 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.BERTags
 import org.bouncycastle.asn1.DERTaggedObject
-import kmrtd.ASN1Util
-import kmrtd.cbeff.BiometricDataBlock
-import kmrtd.cbeff.CBEFFInfo
-import kmrtd.cbeff.ISO781611
-import kmrtd.cbeff.StandardBiometricHeader
+import org.jmrtd.ASN1Util
+import org.jmrtd.cbeff.BiometricDataBlock
+import org.jmrtd.cbeff.CBEFFInfo
+import org.jmrtd.cbeff.ISO781611
+import org.jmrtd.cbeff.StandardBiometricHeader
 import java.io.InputStream
-import java.util.*
+import java.util.Objects
+import java.util.SortedMap
+import java.util.TreeMap
 
 class FingerImageDataBlock : Block, BiometricDataBlock {
     val versionBlock: VersionBlock
-    val representationBlocks: MutableList<FingerImageRepresentationBlock>
+    val representationBlocks: List<FingerImageRepresentationBlock>
 
     private var sbh: StandardBiometricHeader?
 
@@ -87,38 +89,45 @@ class FingerImageDataBlock : Block, BiometricDataBlock {
         require(asn1Encodable is ASN1Sequence) { "Cannot decode!" }
 
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        versionBlock = VersionBlock(taggedObjects[0])
-        representationBlocks = FingerImageRepresentationBlock.decodeRepresentationBlocks(taggedObjects.get(1))
+        versionBlock = VersionBlock.from(taggedObjects[0])
+        representationBlocks =
+            FingerImageRepresentationBlock.decodeRepresentationBlocks(taggedObjects[1])
     }
 
-    /**
-     * Returns the standard biometric header of this biometric data block.
-     * 
-     * @return the standard biometric header
-     */
-    override fun getStandardBiometricHeader(): StandardBiometricHeader {
-        if (sbh == null) {
-            val biometricType = byteArrayOf(CBEFFInfo.BIOMETRIC_TYPE_FINGERPRINT.toByte())
-            val biometricSubtype = byteArrayOf(this.biometricSubtype.toByte())
-            val formatOwner = byteArrayOf(
-                ((StandardBiometricHeader.JTC1_SC37_FORMAT_OWNER_VALUE and 0xFF00) shr 8).toByte(),
-                (StandardBiometricHeader.JTC1_SC37_FORMAT_OWNER_VALUE and 0xFF).toByte()
-            )
-            val formatType = byteArrayOf(
-                ((StandardBiometricHeader.ISO_39794_FINGER_IMAGE_FORMAT_TYPE_VALUE and 0xFF00) shr 8).toByte(),
-                (StandardBiometricHeader.ISO_39794_FINGER_IMAGE_FORMAT_TYPE_VALUE and 0xFF).toByte()
-            )
+    override val standardBiometricHeader: StandardBiometricHeader
+        /**
+         * Returns the standard biometric header of this biometric data block.
+         * 
+         * @return the standard biometric header
+         */
+        get() {
+            if (sbh == null) {
+                val biometricType =
+                    byteArrayOf(CBEFFInfo.BIOMETRIC_TYPE_FINGERPRINT.toByte())
+                val biometricSubtype =
+                    byteArrayOf(this.biometricSubtype.toByte())
+                val formatOwner = byteArrayOf(
+                    ((StandardBiometricHeader.JTC1_SC37_FORMAT_OWNER_VALUE and 0xFF00) shr 8).toByte(),
+                    (StandardBiometricHeader.JTC1_SC37_FORMAT_OWNER_VALUE and 0xFF).toByte()
+                )
+                val formatType = byteArrayOf(
+                    ((StandardBiometricHeader.ISO_39794_FINGER_IMAGE_FORMAT_TYPE_VALUE and 0xFF00) shr 8).toByte(),
+                    (StandardBiometricHeader.ISO_39794_FINGER_IMAGE_FORMAT_TYPE_VALUE and 0xFF).toByte()
+                )
 
-            val elements: SortedMap<Int?, ByteArray?> = TreeMap<Int?, ByteArray?>()
-            elements[ISO781611.BIOMETRIC_TYPE_TAG] = biometricType // 81 -> 08 == finger
-            elements[ISO781611.BIOMETRIC_SUBTYPE_TAG] = biometricSubtype // 82 -> depends on left/right and finger
-            elements[ISO781611.FORMAT_OWNER_TAG] = formatOwner // 87 -> 0101
-            elements[ISO781611.FORMAT_TYPE_TAG] = formatType // 88 -> 0028, corresponds to g3-binary-finger-image
+                val elements: SortedMap<Int?, ByteArray?> =
+                    TreeMap<Int?, ByteArray?>()
+                elements[ISO781611.BIOMETRIC_TYPE_TAG] = biometricType // 81 -> 08 == finger
+                elements[ISO781611.BIOMETRIC_SUBTYPE_TAG] =
+                    biometricSubtype // 82 -> depends on left/right and finger
+                elements[ISO781611.FORMAT_OWNER_TAG] = formatOwner // 87 -> 0101
+                elements[ISO781611.FORMAT_TYPE_TAG] =
+                    formatType // 88 -> 0028, corresponds to g3-binary-finger-image
 
-            sbh = StandardBiometricHeader(elements)
+                sbh = StandardBiometricHeader(elements)
+            }
+            return sbh!!
         }
-        return sbh!!
-    }
 
     override fun hashCode(): Int {
         return Objects.hash(representationBlocks, sbh, versionBlock)
@@ -148,13 +157,19 @@ class FingerImageDataBlock : Block, BiometricDataBlock {
                 + "]")
     }
 
-    /* PACKAGE */
-    override fun getASN1Object(): ASN1Encodable {
-        val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        taggedObjects[0] = versionBlock.getASN1Object()
-        taggedObjects[1] = ISO39794Util.encodeBlocks(representationBlocks)
-        return DERTaggedObject(false, BERTags.APPLICATION, 0x04, ASN1Util.encodeTaggedObjects(taggedObjects))
-    }
+    override val aSN1Object: ASN1Encodable
+        /* PACKAGE */
+        get() {
+            val taggedObjects: MutableMap<Int, ASN1Encodable?> = mutableMapOf()
+            taggedObjects[0] = versionBlock.aSN1Object
+            taggedObjects[1] = ISO39794Util.encodeBlocks(representationBlocks)
+            return DERTaggedObject(
+                false,
+                BERTags.APPLICATION,
+                0x04,
+                ASN1Util.encodeTaggedObjects(taggedObjects)
+            )
+        }
 
     /* PRIVATE */
     private val biometricSubtype: Int
@@ -171,7 +186,7 @@ class FingerImageDataBlock : Block, BiometricDataBlock {
                 this.representationBlocks
 
             for (block in blocks) {
-                val subType = block.getBiometricSubtype()
+                val subType = block.biometricSubtype
                 if (isFirst) {
                     result = subType
                     isFirst = false
@@ -183,6 +198,6 @@ class FingerImageDataBlock : Block, BiometricDataBlock {
         }
 
     companion object {
-        private val serialVersionUID = -7831183486053375281L
+        private const val serialVersionUID = -7831183486053375281L
     }
 }

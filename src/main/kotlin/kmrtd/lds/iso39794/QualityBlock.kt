@@ -38,33 +38,18 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
-import kmrtd.ASN1Util
-import kmrtd.lds.iso39794.ISO39794Util.decodeScoreOrError
-import kmrtd.lds.iso39794.ISO39794Util.encodeScoreOrError
 import org.bouncycastle.asn1.ASN1Encodable
-import java.util.*
+import org.jmrtd.ASN1Util
 
-class QualityBlock : Block {
-    //  QualityBlock ::= SEQUENCE {
-    //    algorithmIdBlock                [0] RegistryIdBlock,
-    //    scoreOrError                    [1] ScoreOrError,
-    //    ...
-    //  }
-    val algorithmIdBlock: RegistryIdBlock
-
+data class QualityBlock(
+    val algorithmIdBlock: RegistryIdBlock,
     val score: Int
+) : Block() {
+/*
+    internal constructor() {
 
-    constructor(algorithmIdBlock: RegistryIdBlock, score: Int) {
-        this.algorithmIdBlock = algorithmIdBlock
-        this.score = score
-    }
-
-    internal constructor(asn1Encodable: ASN1Encodable?) {
-        val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        algorithmIdBlock = RegistryIdBlock(taggedObjects.get(0))
-        score = decodeScoreOrError(taggedObjects.get(1))
     }
 
     override fun hashCode(): Int {
@@ -91,34 +76,66 @@ class QualityBlock : Block {
                 + "algorithmIdBlock: " + algorithmIdBlock
                 + ", score: " + score
                 + "]")
-    }
+    }*/
 
-    override val aSN1Object: ASN1Encodable?
-        get() {
-            val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
-                HashMap<Int?, ASN1Encodable?>()
-            taggedObjects[0] = algorithmIdBlock.getASN1Object()
+    override val aSN1Object: ASN1Encodable
+        /*get() {
+            val taggedObjects: MutableMap<Int, ASN1Encodable> = mutableMapOf()
+                //HashMap<Int, ASN1Encodable>()
+            taggedObjects[0] = algorithmIdBlock.aSN1Object
             if (score >= 0) {
-                taggedObjects[1] = encodeScoreOrError(score)
+                taggedObjects[1] = ISO39794Util.encodeScoreOrError(score)
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
-        }
+        }*/
+        get() = ASN1Util.encodeTaggedObjects(
+            buildMap {
+                put(0, algorithmIdBlock.aSN1Object)
+                if (score >= 0) {
+                    put(1, ISO39794Util.encodeScoreOrError(score))
+                }
+            }
+        )
 
     companion object {
         private const val serialVersionUID = 8529221328304209845L
 
         //  QualityBlocks ::= SEQUENCE OF QualityBlock
-        fun decodeQualityBlocks(asn1Encodable: ASN1Encodable?): MutableList<QualityBlock?> {
+        @JvmStatic
+        fun decodeQualityBlocks(asn1Encodable: ASN1Encodable?): List<QualityBlock> =
             if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
+                ASN1Util.list(asn1Encodable).map { from(it) }
+            } else {
+                listOf(from(asn1Encodable))
+            }
+            /*if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
                 val blockASN1Objects = ASN1Util.list(asn1Encodable)
-                val blocks: MutableList<QualityBlock?> = ArrayList<QualityBlock?>(blockASN1Objects.size)
+                val blocks: MutableList<QualityBlock> = mutableListOf()
                 for (blockASN1Object in blockASN1Objects) {
-                    blocks.add(QualityBlock(blockASN1Object))
+                    blocks.add(QualityBlock.from(blockASN1Object))
                 }
                 return blocks
             } else {
-                return mutableListOf<QualityBlock?>(QualityBlock(asn1Encodable))
-            }
+                return mutableListOf(QualityBlock.from(asn1Encodable))
+            }*/
+
+        /**
+         * Factory method
+         *
+         * QualityBlock ::= SEQUENCE {
+         *   algorithmIdBlock                [0] RegistryIdBlock,
+         *   scoreOrError                    [1] ScoreOrError,
+         *   ...
+         * }
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable?): QualityBlock {
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return QualityBlock(
+                algorithmIdBlock = RegistryIdBlock.from(taggedObjects[0]),
+                score = ISO39794Util.decodeScoreOrError(taggedObjects[1])
+            )
         }
     }
 }

@@ -25,12 +25,19 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+/*
+ * Modified work Copyright (C) 2026 Alessandro Giaquinto
+ * Kotlin port of JMRTD
+ *
+ * Licensed under LGPL 3.0
+ */
+package org.jmrtd.lds.iso39794
 
 internal interface EncodableEnum<T : Enum<T>> {
     val code: Int
 
     companion object {
+        @JvmStatic
         fun <T> fromCode(code: Int, c: Class<T>): T? {
             for (value in c.getEnumConstants()) {
                 if (value is EncodableEnum<*>) {

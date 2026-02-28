@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd
+package org.jmrtd
 
 import net.sf.scuba.smartcards.CardServiceException
 
@@ -35,7 +35,7 @@ import net.sf.scuba.smartcards.CardServiceException
  * @author The JMRTD team (info@jmrtd.org)
  * 
  * @version $Revision: 1892 $
- * 
+ *
  * @since 0.7.27
  */
 open class CardServiceProtocolException : CardServiceException {
@@ -53,7 +53,7 @@ open class CardServiceProtocolException : CardServiceException {
      * @param msg a message
      * @param step the protocol step that failed
      */
-    constructor(msg: String?, step: Int) : super(msg) {
+    constructor(msg: String, step: Int) : super(msg) {
         this.step = step
     }
 
@@ -64,7 +64,7 @@ open class CardServiceProtocolException : CardServiceException {
      * @param step the protocol step that failed
      * @param cause the exception causing this exception
      */
-    constructor(msg: String?, step: Int, cause: Throwable?) : super(msg, cause) {
+    constructor(msg: String, step: Int, cause: Throwable?) : super(msg, cause) {
         this.step = step
     }
 
@@ -75,7 +75,7 @@ open class CardServiceProtocolException : CardServiceException {
      * @param step the protocol step that failed
      * @param sw the status word that caused this CardServiceException
      */
-    constructor(msg: String?, step: Int, sw: Int) : super(msg, sw) {
+    constructor(msg: String, step: Int, sw: Int) : super(msg, sw) {
         this.step = step
     }
 
@@ -87,15 +87,13 @@ open class CardServiceProtocolException : CardServiceException {
      * @param cause the exception causing this exception
      * @param sw the status word that caused this CardServiceException
      */
-    constructor(msg: String?, step: Int, cause: Throwable?, sw: Int) : super(msg, cause, sw) {
+    constructor(msg: String, step: Int, cause: Throwable?, sw: Int) : super(msg, cause, sw) {
         this.step = step
     }
 
     override val message: String
-        get() = StringBuilder()
-            .append(super.message)
-            .append(" (").append("step: ").append(step).append(")")
-            .toString()
+        get() = "${super.message} (" + "step: $step)"
+
 
     companion object {
         private const val serialVersionUID = 8527846223511524125L

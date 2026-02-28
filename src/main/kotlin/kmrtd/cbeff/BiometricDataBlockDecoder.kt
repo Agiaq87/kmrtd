@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.cbeff
+package org.jmrtd.cbeff
 
 import java.io.IOException
 import java.io.InputStream
@@ -55,5 +55,10 @@ interface BiometricDataBlockDecoder<B : BiometricDataBlock> {
      * @throws IOException if reading failed
      */
     @Throws(IOException::class)
-    fun decode(inputStream: InputStream, sbh: StandardBiometricHeader, index: Int, length: Int): B
+    fun decode(
+        inputStream: InputStream,
+        sbh: StandardBiometricHeader,
+        index: Int,
+        length: Int
+    ): B
 }

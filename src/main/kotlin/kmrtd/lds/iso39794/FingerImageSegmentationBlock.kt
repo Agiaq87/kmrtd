@@ -38,11 +38,12 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import kmrtd.ASN1Util
-import java.util.*
+import org.jmrtd.ASN1Util
+import org.jmrtd.lds.iso39794.RegistryIdBlock.Companion.from
+import java.util.Objects
 
 class FingerImageSegmentationBlock internal constructor(asn1Encodable: ASN1Encodable?) : Block() {
     //  SegmentationBlock ::= SEQUENCE {
@@ -52,19 +53,19 @@ class FingerImageSegmentationBlock internal constructor(asn1Encodable: ASN1Encod
     //  }
     val algorithmIdBlock: RegistryIdBlock
 
-    val segmentBlocks: MutableList<FingerImageSegmentBlock?>?
+    val segmentBlocks: MutableList<FingerImageSegmentBlock?>
 
     init {
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        algorithmIdBlock = RegistryIdBlock(taggedObjects.get(0))
+        algorithmIdBlock = from(taggedObjects[0])
         segmentBlocks = FingerImageSegmentBlock.decodeFingerImageSegmentBlocks(taggedObjects.get(1))
     }
 
-    public override fun hashCode(): Int {
+    override fun hashCode(): Int {
         return Objects.hash(algorithmIdBlock, segmentBlocks)
     }
 
-    public override fun equals(obj: Any?): Boolean {
+    override fun equals(obj: Any?): Boolean {
         if (this === obj) {
             return true
         }
@@ -87,20 +88,37 @@ class FingerImageSegmentationBlock internal constructor(asn1Encodable: ASN1Encod
                 + "]")
     }
 
-    override val aSN1Object: ASN1Encodable?
-        get() {
+    override val aSN1Object: ASN1Encodable
+        get() = ASN1Util.encodeTaggedObjects(
+            mapOf(
+                0 to algorithmIdBlock.aSN1Object,
+                1 to ISO39794Util.encodeBlocks(segmentBlocks)
+            )
+        )
+        /*get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects[0] = algorithmIdBlock.getASN1Object()
+            taggedObjects[0] = algorithmIdBlock.aSN1Object
             taggedObjects[1] = ISO39794Util.encodeBlocks(segmentBlocks)
             return ASN1Util.encodeTaggedObjects(taggedObjects)
-        }
+        }*/
 
     companion object {
-        private val serialVersionUID = -971841765544346186L
+        private const val serialVersionUID = -971841765544346186L
 
         /* PACKAGE */
-        fun decodeFingerImageSegmentationBlocks(asn1Encodable: ASN1Encodable?): MutableList<FingerImageSegmentationBlock?> {
+        @JvmStatic
+        fun decodeFingerImageSegmentationBlocks(asn1Encodable: ASN1Encodable?): List<FingerImageSegmentationBlock?> =
+            if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
+                ASN1Util.list(asn1Encodable).map {
+                    FingerImageSegmentationBlock(it)
+                }
+            } else {
+                listOf(FingerImageSegmentationBlock(asn1Encodable))
+            }
+
+
+        /*{
             if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
                 val blockASN1Objects = ASN1Util.list(asn1Encodable)
                 val blocks: MutableList<FingerImageSegmentationBlock?> =
@@ -110,8 +128,12 @@ class FingerImageSegmentationBlock internal constructor(asn1Encodable: ASN1Encod
                 }
                 return blocks
             } else {
-                return mutableListOf<FingerImageSegmentationBlock?>(FingerImageSegmentationBlock(asn1Encodable))
+                return mutableListOf<FingerImageSegmentationBlock?>(
+                    FingerImageSegmentationBlock(
+                        asn1Encodable
+                    )
+                )
             }
-        }
+        }*/
     }
 }

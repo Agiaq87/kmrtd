@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.cbeff
+package org.jmrtd.cbeff
 
 /**
  * CBEFF according to ISO 19785-1 (version 2.0) and NISTIR 6529-A (version 1.1).
@@ -36,7 +36,7 @@ package kmrtd.cbeff
  * 
  * @since 0.4.7
  */
-interface CBEFFInfo {
+interface CBEFFInfo<R : BiometricDataBlock> {
     companion object {
         /*
    * Biometric type value, based on

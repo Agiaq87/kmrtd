@@ -25,26 +25,19 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import java.io.IOException
 import java.io.Serializable
-import java.util.logging.Level
-import java.util.logging.Logger
 
 abstract class Block : Serializable {
+
     abstract val aSN1Object: ASN1Encodable
 
     val encoded: ByteArray?
-        get() {
-            try {
-                return this.aSN1Object.toASN1Primitive().getEncoded("DER")
-            } catch (ioe: IOException) {
-                LOGGER.log(Level.WARNING, "Error decoding", ioe)
-                return null
-            }
-        }
+        get() = runCatching {
+            aSN1Object.toASN1Primitive().getEncoded("DER")
+        }.getOrNull()
 
     abstract override fun hashCode(): Int
 
@@ -52,8 +45,5 @@ abstract class Block : Serializable {
 
     companion object {
         private const val serialVersionUID = -8585852930916738115L
-
-        @JvmField
-        protected val LOGGER: Logger = Logger.getLogger("kmrtd.lds.iso39794")
     }
 }

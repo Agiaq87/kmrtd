@@ -38,36 +38,24 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
-import kmrtd.ASN1Util
 import org.bouncycastle.asn1.ASN1Encodable
-import java.util.*
+import org.jmrtd.ASN1Util
 
-class CoordinateCartesian3DUnsignedShortBlock : Block, FaceImageLandmarkCoordinates {
-    val x: Int
-    val y: Int
+data class CoordinateCartesian3DUnsignedShortBlock(
+    val x: Int,
+    val y: Int,
     val z: Int
-
-    constructor(x: Int, y: Int, z: Int) {
-        this.x = x
-        this.y = y
-        this.z = z
-    }
-
-    //  CoordinateCartesian3DUnsignedShortBlock ::= SEQUENCE {
-    //    x               [0] INTEGER (0..65535),
-    //    y               [1] INTEGER (0..65535),
-    //    z               [2] INTEGER (0..65535)
-    //  }
-    internal constructor(asn1Encodable: ASN1Encodable?) {
+) : Block(), FaceImageLandmarkCoordinates {
+/*    internal constructor(asn1Encodable: ASN1Encodable?) {
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        x = ASN1Util.decodeInt(taggedObjects.get(0))
-        y = ASN1Util.decodeInt(taggedObjects.get(1))
-        z = ASN1Util.decodeInt(taggedObjects.get(2))
-    }
+        x = ASN1Util.decodeInt(taggedObjects[0])
+        y = ASN1Util.decodeInt(taggedObjects[1])
+        z = ASN1Util.decodeInt(taggedObjects[2])
+    }*/
 
-    override fun hashCode(): Int {
+   /* override fun hashCode(): Int {
         return Objects.hash(x, y, z)
     }
 
@@ -92,20 +80,46 @@ class CoordinateCartesian3DUnsignedShortBlock : Block, FaceImageLandmarkCoordina
                 + ", y: " + y
                 + ", z: " + z
                 + "]")
-    }
+    }*/
 
-    override val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable
         /* PACKAGE */
-        get() {
+        get() = ASN1Util.encodeTaggedObjects(
+            mapOf(
+                0 to ASN1Util.encodeInt(x),
+                1 to ASN1Util.encodeInt(y),
+                2 to ASN1Util.encodeInt(z)
+            )
+        )
+        /*get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
-                HashMap<Int?, ASN1Encodable?>()
+                HashMap()
             taggedObjects[0] = ASN1Util.encodeInt(x)
             taggedObjects[1] = ASN1Util.encodeInt(y)
             taggedObjects[2] = ASN1Util.encodeInt(z)
             return ASN1Util.encodeTaggedObjects(taggedObjects)
-        }
+        }*/
 
     companion object {
-        private val serialVersionUID = -6100355379192071041L
+        private const val serialVersionUID = -6100355379192071041L
+
+        /**
+         * Factory method
+         *
+         * CoordinateCartesian3DUnsignedShortBlock ::= SEQUENCE {
+         *   x               [0] INTEGER (0..65535),
+         *   y               [1] INTEGER (0..65535),
+         *   z               [2] INTEGER (0..65535)
+         * }
+         */
+        fun from(asn1Encodable: ASN1Encodable?): CoordinateCartesian3DUnsignedShortBlock {
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return CoordinateCartesian3DUnsignedShortBlock(
+                x  = ASN1Util.decodeInt(taggedObjects[0]),
+                y  = ASN1Util.decodeInt(taggedObjects[1]),
+                z = ASN1Util.decodeInt(taggedObjects[2])
+            )
+        }
     }
 }

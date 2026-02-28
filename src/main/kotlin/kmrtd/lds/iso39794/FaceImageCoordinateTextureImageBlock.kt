@@ -38,34 +38,23 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import kmrtd.ASN1Util
+import org.jmrtd.ASN1Util
 import java.math.BigInteger
-import java.util.*
 
-class FaceImageCoordinateTextureImageBlock : Block, FaceImageLandmarkCoordinates {
-    val uInPixel: BigInteger
-
+data class FaceImageCoordinateTextureImageBlock(
+    val uInPixel: BigInteger,
     val vInPixel: BigInteger
-
-    constructor(uInPixel: BigInteger, vInPixel: BigInteger) {
-        this.uInPixel = uInPixel
-        this.vInPixel = vInPixel
-    }
-
-    //  CoordinateTextureImageBlock ::= SEQUENCE {
-    //    uInPixel [0] INTEGER (0..MAX),
-    //    vInPixel [1] INTEGER (0..MAX)
-    //  }
-    internal constructor(asn1Encodable: ASN1Encodable?) {
+) : Block(), FaceImageLandmarkCoordinates {
+    /*internal constructor(asn1Encodable: ASN1Encodable?) {
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
         uInPixel = ASN1Util.decodeBigInteger(taggedObjects.get(0))
         vInPixel = ASN1Util.decodeBigInteger(taggedObjects.get(1))
-    }
+    }*/
 
-    override fun hashCode(): Int {
+    /*override fun hashCode(): Int {
         return Objects.hash(uInPixel, vInPixel)
     }
 
@@ -89,19 +78,43 @@ class FaceImageCoordinateTextureImageBlock : Block, FaceImageLandmarkCoordinates
                 + "uInPixel: " + uInPixel
                 + ", vInPixel: " + vInPixel
                 + "]")
-    }
+    }*/
 
-    override val aSN1Object: ASN1Encodable?
-        /* PACKAGE */
-        get() {
-            val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
-                HashMap<Int?, ASN1Encodable?>()
-            taggedObjects[0] = ASN1Util.encodeBigInteger(uInPixel)
-            taggedObjects[1] = ASN1Util.encodeBigInteger(vInPixel)
-            return ASN1Util.encodeTaggedObjects(taggedObjects)
-        }
+    override val aSN1Object: ASN1Encodable
+        get() = ASN1Util.encodeTaggedObjects(
+            mapOf(
+                0 to ASN1Util.encodeBigInteger(uInPixel),
+                1 to ASN1Util.encodeBigInteger(vInPixel)
+            )
+        )
+    /* PACKAGE */
+    /*get() {
+        val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
+            HashMap<Int?, ASN1Encodable?>()
+        taggedObjects[0] = ASN1Util.encodeBigInteger(uInPixel)
+        taggedObjects[1] = ASN1Util.encodeBigInteger(vInPixel)
+        return ASN1Util.encodeTaggedObjects(taggedObjects)
+    }*/
 
     companion object {
-        private val serialVersionUID = -563037651358748573L
+        private const val serialVersionUID = -563037651358748573L
+
+        /**
+         * Factory method
+         *
+         * CoordinateTextureImageBlock ::= SEQUENCE {
+         *   uInPixel [0] INTEGER (0..MAX),
+         *   vInPixel [1] INTEGER (0..MAX)
+         * }
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable): FaceImageCoordinateTextureImageBlock {
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return FaceImageCoordinateTextureImageBlock(
+                uInPixel = ASN1Util.decodeBigInteger(taggedObjects[0]),
+                vInPixel = ASN1Util.decodeBigInteger(taggedObjects[1])
+            )
+        }
     }
 }

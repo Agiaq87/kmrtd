@@ -25,11 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd
-
-import kmrtd.support.DocumentNumber
-import kmrtd.support.ICAODate
-
+package org.jmrtd
 
 /**
  * A BAC key.
@@ -43,22 +39,22 @@ interface BACKeySpec : AccessKeySpec {
      * Returns the document number. This does not include a check digit.
      * The result may include filler characters to make sure the resulting
      * length is at least 9.
-     * 
+     *
      * @return the document number
      */
-    val documentNumber: DocumentNumber
+    val documentNumber: String
 
     /**
      * Returns the date of birth string.
      * 
      * @return a *yymmdd* string
      */
-    val dateOfBirth: ICAODate
+    val dateOfBirth: String
 
     /**
      * Returns the date of expiry string.
      * 
      * @return a *yymmdd* string
      */
-    val dateOfExpiry: ICAODate
+    val dateOfExpiry: String
 }

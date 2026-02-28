@@ -21,12 +21,11 @@
  */
 /*
  * Modified work Copyright (C) 2026 Alessandro Giaquinto
- * Kotlin port of JMRTD 
+ * Kotlin port of JMRTD
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd
-
+package org.jmrtd
 import java.io.Serializable
 import java.security.spec.KeySpec
 
@@ -37,7 +36,6 @@ import java.security.spec.KeySpec
  * 
  * @version $Revision: 1799 $
  */
-
 interface AccessKeySpec : Serializable, KeySpec {
     /**
      * Returns the type of access key.

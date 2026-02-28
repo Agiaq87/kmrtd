@@ -25,9 +25,9 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.protocol
+package org.jmrtd.protocol
 
-import kmrtd.AccessKeySpec
+import org.jmrtd.AccessKeySpec
 import java.io.Serializable
 
 /**
@@ -37,7 +37,7 @@ import java.io.Serializable
  * 
  * @version $Revision: 1781 $
  */
-class BACResult
+data class BACResult
 /**
  * Creates a BAC result.
  * 
@@ -55,67 +55,27 @@ class BACResult
      * 
      * @return the secure messaging wrapper
      */
-    val wrapper: SecureMessagingWrapper?
+    val wrapper: SecureMessagingWrapper
 ) : Serializable {
     /**
      * Creates a BAC result without specifying the initial access key.
      * 
      * @param wrapper the secure messaging wrapper that resulted from the BAC protocol run
      */
-    constructor(wrapper: SecureMessagingWrapper?) : this(null, wrapper)
+    constructor(wrapper: SecureMessagingWrapper) : this(null, wrapper)
 
     /**
      * Returns a textual representation of this terminal authentication result.
      * 
      * @return a textual representation of this terminal authentication result
      */
-    override fun toString(): String {
-        return StringBuilder()
-            .append("BACResult [bacKey: " + (this.bACKey ?: "-"))
-            .append(", wrapper: $wrapper")
-            .append("]")
-            .toString()
-    }
-
-    override fun hashCode(): Int {
-        val prime = 1234567891
-        var result = 1991
-        result = prime * result + (if (this.bACKey == null) 0 else bACKey.hashCode())
-        result = prime * result + (wrapper?.hashCode() ?: 0)
-        return result
-    }
-
-    override fun equals(obj: Any?): Boolean {
-        if (this === obj) {
-            return true
-        }
-        if (obj == null) {
-            return false
-        }
-        if (javaClass != obj.javaClass) {
-            return false
-        }
-
-        val other = obj as BACResult
-        if (this.bACKey == null) {
-            if (other.bACKey != null) {
-                return false
-            }
-        } else if (this.bACKey != other.bACKey) {
-            return false
-        }
-        if (wrapper == null) {
-            if (other.wrapper != null) {
-                return false
-            }
-        } else if (wrapper != other.wrapper) {
-            return false
-        }
-
-        return true
+    override fun toString(): String = buildString {
+        append("BACResult [bacKey: ").append(bACKey ?: "-")
+        append(", wrapper: ").append(wrapper)
+        append(']')
     }
 
     companion object {
-        private val serialVersionUID = -7114911372181772099L
+        private const val serialVersionUID = -7114911372181772099L
     }
 }

@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.cbeff
+package org.jmrtd.cbeff
 
 /**
  * Simple CBEFF BIR.
@@ -51,4 +51,4 @@ class SimpleCBEFFInfo<B : BiometricDataBlock>
      * @return a biometric data block
      */
     val biometricDataBlock: B
-) : CBEFFInfo
+) : CBEFFInfo<B>

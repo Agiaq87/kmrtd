@@ -38,44 +38,47 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
-import kmrtd.lds.iso39794.RegistryIdBlock.Companion.decodeRegistryIdBlocks
 import org.bouncycastle.asn1.ASN1Encodable
-import kmrtd.ASN1Util
-import java.util.*
+import org.jmrtd.ASN1Util
 
-class FaceImageCaptureDeviceBlock : Block {
+data class FaceImageCaptureDeviceBlock(
     /** Identification of the model capture device.  */
-    var model: RegistryIdBlock? = null
+    val model: RegistryIdBlock?,
+    /** Identification of certifications.  */
+    val certifications: List<RegistryIdBlock>?
+) : Block() {
+
+    /*var model: RegistryIdBlock? = null
         private set
 
-    /** Identification of certifications.  */
+
     var certifications: MutableList<RegistryIdBlock?>? = null
         private set
 
     constructor(model: RegistryIdBlock?, certifications: MutableList<RegistryIdBlock?>?) {
         this.model = model
         this.certifications = certifications
-    }
+    }*/
 
     //  CaptureDeviceBlock ::= SEQUENCE {
     //    modelIdBlock [0] RegistryIdBlock OPTIONAL,
     //    certificationIdBlocks [1] CertificationIdBlocks OPTIONAL,
     //    ...
     //  }
-    internal constructor(asn1Encodable: ASN1Encodable) {
+    /*internal constructor(asn1Encodable: ASN1Encodable) {
         requireNotNull(asn1Encodable) { "Cannot decode null!" }
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
         if (taggedObjects.containsKey(0)) {
-            model = RegistryIdBlock(taggedObjects.get(0))
+            model = from(taggedObjects[0])
         }
         if (taggedObjects.containsKey(1)) {
-            certifications = decodeRegistryIdBlocks(taggedObjects.get(1))
+            certifications = RegistryIdBlock.decodeRegistryIdBlocks(taggedObjects.get(1))
         }
-    }
+    }*/
 
-    public override fun hashCode(): Int {
+    /*public override fun hashCode(): Int {
         return Objects.hash(certifications, model)
     }
 
@@ -99,23 +102,56 @@ class FaceImageCaptureDeviceBlock : Block {
                 + "model: " + model
                 + ", certifications: " + certifications
                 + "]")
-    }
+    }*/
 
-    override val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable
+        get() = ASN1Util.encodeTaggedObjects(
+            buildMap {
+                model?.let{ put(0, model.aSN1Object) }
+                certifications?.let{
+                    put(
+                        1,
+                        ISO39794Util.encodeBlocks(certifications)
+                    )
+                }
+            }
+        )
         /* PACKAGE */
-        get() {
+        /*get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
             if (model != null) {
-                taggedObjects[0] = model!!.getASN1Object()
+                taggedObjects.put(0, model!!.aSN1Object)
             }
             if (certifications != null) {
-                taggedObjects[1] = ISO39794Util.encodeBlocks(certifications)
+                taggedObjects.put(
+                    1,
+                    ISO39794Util.encodeBlocks(certifications)
+                )
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
-        }
+        }*/
 
     companion object {
         private const val serialVersionUID = 2537450971926807146L
+
+        /**
+         * Factory method
+         *
+         * CaptureDeviceBlock ::= SEQUENCE {
+         *   modelIdBlock [0] RegistryIdBlock OPTIONAL,
+         *   certificationIdBlocks [1] CertificationIdBlocks OPTIONAL,
+         *   ...
+         * }
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable): FaceImageCaptureDeviceBlock {
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return FaceImageCaptureDeviceBlock(
+                model = taggedObjects[0]?.let { RegistryIdBlock.from(it) },
+                certifications = taggedObjects[1]?.let { RegistryIdBlock.decodeRegistryIdBlocks(it) }
+            )
+        }
     }
 }

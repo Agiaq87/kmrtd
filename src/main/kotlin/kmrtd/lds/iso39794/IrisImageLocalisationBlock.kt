@@ -38,11 +38,11 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import kmrtd.ASN1Util
-import java.util.*
+import org.jmrtd.ASN1Util
+import java.util.Objects
 
 class IrisImageLocalisationBlock(asn1Encodable: ASN1Encodable?) : Block() {
     var irisCenterXSmallest: Int = 0
@@ -73,37 +73,37 @@ class IrisImageLocalisationBlock(asn1Encodable: ASN1Encodable?) : Block() {
     init {
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
         if (taggedObjects.containsKey(0)) {
-            irisCenterXSmallest = ASN1Util.decodeInt(taggedObjects.get(0))
+            irisCenterXSmallest = ASN1Util.decodeInt(taggedObjects[0])
         }
         if (taggedObjects.containsKey(1)) {
-            irisCenterXLargest = ASN1Util.decodeInt(taggedObjects.get(1))
+            irisCenterXLargest = ASN1Util.decodeInt(taggedObjects[1])
         }
         if (taggedObjects.containsKey(2)) {
-            irisCenterYSmallest = ASN1Util.decodeInt(taggedObjects.get(2))
+            irisCenterYSmallest = ASN1Util.decodeInt(taggedObjects[2])
         }
 
         if (taggedObjects.containsKey(3)) {
-            irisCenterYLargest = ASN1Util.decodeInt(taggedObjects.get(3))
+            irisCenterYLargest = ASN1Util.decodeInt(taggedObjects[3])
         }
 
         if (taggedObjects.containsKey(4)) {
-            irisDiameterSmallest = ASN1Util.decodeInt(taggedObjects.get(4))
+            irisDiameterSmallest = ASN1Util.decodeInt(taggedObjects[4])
         }
 
         if (taggedObjects.containsKey(5)) {
-            irisDiameterLargest = ASN1Util.decodeInt(taggedObjects.get(5))
+            irisDiameterLargest = ASN1Util.decodeInt(taggedObjects[5])
         }
     }
 
 
-    public override fun hashCode(): Int {
+    override fun hashCode(): Int {
         return Objects.hash(
             irisCenterXLargest, irisCenterXSmallest, irisCenterYLargest, irisCenterYSmallest,
             irisDiameterLargest, irisDiameterSmallest
         )
     }
 
-    public override fun equals(obj: Any?): Boolean {
+    override fun equals(obj: Any?): Boolean {
         if (this === obj) {
             return true
         }
@@ -129,11 +129,10 @@ class IrisImageLocalisationBlock(asn1Encodable: ASN1Encodable?) : Block() {
                 + "]")
     }
 
-    override val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable
         /* PACKAGE. */
         get() {
-            val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
-                HashMap<Int?, ASN1Encodable?>()
+            val taggedObjects: MutableMap<Int, ASN1Encodable?> = mutableMapOf()
             if (irisCenterXSmallest >= 0) {
                 taggedObjects[0] = ASN1Util.encodeInt(irisCenterXSmallest)
             }

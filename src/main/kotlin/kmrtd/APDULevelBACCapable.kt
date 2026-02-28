@@ -21,11 +21,11 @@
  */
 /*
  * Modified work Copyright (C) 2026 Alessandro Giaquinto
- * Kotlin port of JMRTD 
+ * Kotlin port of JMRTD
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd
+package org.jmrtd
 
 import net.sf.scuba.smartcards.CardServiceException
 import javax.crypto.SecretKey

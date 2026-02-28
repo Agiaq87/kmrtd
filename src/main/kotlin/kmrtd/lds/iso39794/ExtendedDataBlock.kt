@@ -38,35 +38,26 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
-import kmrtd.ASN1Util
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.DEROctetString
-import java.util.*
+import org.jmrtd.ASN1Util
+import org.jmrtd.lds.iso39794.RegistryIdBlock.Companion.from
+import java.util.Objects
 
-class ExtendedDataBlock : Block {
-    val dataTypeIdBlock: RegistryIdBlock
-
+data class ExtendedDataBlock(
+    val dataTypeIdBlock: RegistryIdBlock,
     val data: ByteArray
-
-    constructor(dataTypeIdBlock: RegistryIdBlock, data: ByteArray) {
-        this.dataTypeIdBlock = dataTypeIdBlock
-        this.data = data
-    }
-
-    //  ExtendedDataBlock ::= SEQUENCE {
-    //    dataTypeIdBlock         [0] RegistryIdBlock,
-    //    data                    [1] OCTET STRING
-    //  }
-    internal constructor(asn1Encodable: ASN1Encodable?) {
+) : Block() {
+    /*internal constructor(asn1Encodable: ASN1Encodable?) {
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        dataTypeIdBlock = RegistryIdBlock(taggedObjects[0])
-        data = ASN1OctetString.getInstance(taggedObjects[1]).octets
-    }
+        dataTypeIdBlock = from(taggedObjects.get(0))
+        data = ASN1OctetString.getInstance(taggedObjects.get(1)).getOctets()
+    }*/
 
-    public override fun hashCode(): Int {
+    /*public override fun hashCode(): Int {
         val prime = 31
         var result = 1
         result = prime * result + data.contentHashCode()
@@ -94,32 +85,84 @@ class ExtendedDataBlock : Block {
                 + "dataTypeIdBlock: " + dataTypeIdBlock
                 + ", data: " + data.size
                 + "]")
+    }*/
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ExtendedDataBlock
+
+        if (dataTypeIdBlock != other.dataTypeIdBlock) return false
+        if (!data.contentEquals(other.data)) return false
+        if (aSN1Object != other.aSN1Object) return false
+
+        return true
     }
 
-    override val aSN1Object: ASN1Encodable?
-        get() {
+    override fun hashCode(): Int {
+        var result = dataTypeIdBlock.hashCode()
+        result = 31 * result + data.contentHashCode()
+        result = 31 * result + aSN1Object.hashCode()
+        return result
+    }
+
+    override val aSN1Object: ASN1Encodable
+        get() = ASN1Util.encodeTaggedObjects(
+            mapOf(
+                0 to dataTypeIdBlock.aSN1Object,
+                1 to DEROctetString(data)
+            )
+        )
+        /*get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
-            taggedObjects[0] = dataTypeIdBlock.getASN1Object()
+            taggedObjects[0] = dataTypeIdBlock.aSN1Object
             taggedObjects[1] = DEROctetString(data)
             return ASN1Util.encodeTaggedObjects(taggedObjects)
-        }
+        }*/
 
     companion object {
-        private val serialVersionUID = -1557206933986460059L
+        private const val serialVersionUID = -1557206933986460059L
 
         /* PACKAGE */
-        fun decodeExtendedDataBlocks(asn1Encodable: ASN1Encodable?): MutableList<ExtendedDataBlock?> {
+        @JvmStatic
+        fun decodeExtendedDataBlocks(asn1Encodable: ASN1Encodable): List<ExtendedDataBlock> =
+            if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
+                ASN1Util.list(asn1Encodable).map { from(it) }
+            } else {
+                listOf(from(asn1Encodable))
+            }
+        /*{
             if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
                 val blockASN1Objects = ASN1Util.list(asn1Encodable)
-                val blocks: MutableList<ExtendedDataBlock?> = ArrayList<ExtendedDataBlock?>(blockASN1Objects.size)
+                val blocks: MutableList<ExtendedDataBlock?> =
+                    ArrayList<ExtendedDataBlock?>(blockASN1Objects.size)
                 for (blockASN1Object in blockASN1Objects) {
-                    blocks.add(ExtendedDataBlock(blockASN1Object))
+                    blocks.add(ExtendedDataBlock.from(blockASN1Object))
                 }
                 return blocks
             } else {
                 return mutableListOf<ExtendedDataBlock?>(ExtendedDataBlock(asn1Encodable))
             }
+        }*/
+
+        /**
+         * Factory method
+         *
+         * ExtendedDataBlock ::= SEQUENCE {
+         *   dataTypeIdBlock         [0] RegistryIdBlock,
+         *   data                    [1] OCTET STRING
+         * }
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable): ExtendedDataBlock {
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return ExtendedDataBlock(
+                dataTypeIdBlock = from(taggedObjects[0]),
+                data = ASN1OctetString.getInstance(taggedObjects[1]).octets
+            )
         }
     }
 }

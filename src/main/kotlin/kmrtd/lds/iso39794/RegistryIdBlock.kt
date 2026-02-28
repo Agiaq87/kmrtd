@@ -38,41 +38,34 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1Sequence
-import kmrtd.ASN1Util
-import java.util.*
+import org.jmrtd.ASN1Util
 
-class RegistryIdBlock : Block {
-    //  RegistryId ::= INTEGER (1..65535)
-    //
-    //  RegistryIdBlock ::= SEQUENCE {
-    //    organization            [0] RegistryId,
-    //    id                      [1] RegistryId
-    //  }
-    val organization: Int
-
+data class RegistryIdBlock(
+    val organization: Int,
     val id: Int
-
-    constructor(organzation: Int, id: Int) {
-        this.organization = organzation
+) : Block() {
+    /*constructor(organization: Int, id: Int) {
+        this.organization = organization
         this.id = id
-    }
+    }*/
 
-    internal constructor(asn1Encodable: ASN1Encodable?) {
+    /*internal constructor(asn1Encodable: ASN1Encodable?) {
         require(asn1Encodable is ASN1Sequence) { "Cannot decode!" }
-        val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        organization = ASN1Util.decodeInt(taggedObjects.get(0))
-        id = ASN1Util.decodeInt(taggedObjects.get(1))
-    }
 
-    override fun hashCode(): Int {
+        val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+        val organization = ASN1Util.decodeInt(taggedObjects[0])
+        val id = ASN1Util.decodeInt(taggedObjects[1])
+    }*/
+
+    /*public override fun hashCode(): Int {
         return Objects.hash(id, organization)
     }
 
-    override fun equals(obj: Any?): Boolean {
+    public override fun equals(obj: Any?): Boolean {
         if (this === obj) {
             return true
         }
@@ -88,18 +81,26 @@ class RegistryIdBlock : Block {
     }
 
     override fun toString(): String {
-        return "RegistryIdBlock[organization: " + organization + ", id: " + id + "]"
-    }
+        return "RegistryIdBlock[organization: $organization, id: $id]"
+    }*/
 
-    override fun getASN1Object(): ASN1Encodable? {
-        val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
+    override val aSN1Object: ASN1Encodable
+        get() = ASN1Util.encodeTaggedObjects(
+            mapOf(
+                0 to ASN1Util.encodeInt(organization),
+                1 to ASN1Util.encodeInt(id)
+            )
+        )
+    /*get() {
+        val taggedObjects: MutableMap<Int, ASN1Encodable> =
+            HashMap()
         taggedObjects[0] = ASN1Util.encodeInt(organization)
         taggedObjects[1] = ASN1Util.encodeInt(id)
         return ASN1Util.encodeTaggedObjects(taggedObjects)
-    }
+    }*/
 
     companion object {
-        private val serialVersionUID = -5942649140248216405L
+        private const val serialVersionUID = -5942649140248216405L
 
         // RegistryId ::= INTEGER (1..65535)
         //
@@ -111,17 +112,32 @@ class RegistryIdBlock : Block {
         //
         // CertificationIdBlocks ::= SEQUENCE OF CertificationIdBlock
         @JvmStatic
-        fun decodeRegistryIdBlocks(asn1Encodable: ASN1Encodable?): MutableList<RegistryIdBlock?> {
+        fun decodeRegistryIdBlocks(asn1Encodable: ASN1Encodable): List<RegistryIdBlock> =
             if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
-                val blockASN1Objects = ASN1Util.list(asn1Encodable)
-                val blocks: MutableList<RegistryIdBlock?> = ArrayList<RegistryIdBlock?>(blockASN1Objects.size)
-                for (blockASN1Object in blockASN1Objects) {
-                    blocks.add(RegistryIdBlock(blockASN1Object))
-                }
-                return blocks
+                ASN1Util.list(asn1Encodable).map { from(it) }
             } else {
-                return mutableListOf<RegistryIdBlock?>(RegistryIdBlock(asn1Encodable))
+                listOf(from(asn1Encodable))
             }
+
+        /**
+         * Factory method
+         *
+         * RegistryId ::= INTEGER (1..65535)
+         * RegistryIdBlock ::= SEQUENCE {
+         *   organization            [0] RegistryId,
+         *   id                      [1] RegistryId
+         * }
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable?): RegistryIdBlock {
+            require(asn1Encodable is ASN1Sequence) { "Cannot decode!" }
+
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return RegistryIdBlock(
+                organization = ASN1Util.decodeInt(taggedObjects[0]),
+                id = ASN1Util.decodeInt(taggedObjects[1])
+            )
         }
     }
 }

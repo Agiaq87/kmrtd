@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.cbeff
+package org.jmrtd.cbeff
 
 import java.io.Serializable
 

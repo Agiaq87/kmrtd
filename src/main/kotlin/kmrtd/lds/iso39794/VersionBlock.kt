@@ -38,70 +38,94 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1Sequence
-import kmrtd.ASN1Util
+import org.jmrtd.ASN1Util
 import java.io.Serializable
-import java.util.*
 
-//  VersionBlock ::= SEQUENCE {
-//    generation              [0] VersionGeneration,
-//    year                    [1] VersionYear,
-//    ...
-//  }
-class VersionBlock : Block, Serializable {
-    val generation: Int
-
+data class VersionBlock(
+    val generation: Int,
     val year: Int
+) : Block(), Serializable {
 
-    constructor(generation: Int, year: Int) {
+
+    /*constructor(generation: Int, year: Int) {
         this.year = year
         this.generation = generation
-    }
+    }*/
 
-    internal constructor(asn1Encodable: ASN1Encodable?) {
+    /*internal constructor(asn1Encodable: ASN1Encodable?) {
         require(asn1Encodable is ASN1Sequence) { "Cannot decode!" }
 
         val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
         generation = ASN1Util.decodeInt(taggedObjects[0])
         year = ASN1Util.decodeInt(taggedObjects[1])
-    }
+    }*/
 
-    override fun hashCode(): Int {
+    /*override fun hashCode(): Int {
         return Objects.hash(generation, year)
     }
 
-    override fun equals(obj: Any?): Boolean {
-        if (this === obj) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (obj == null) {
+        if (other == null) {
             return false
         }
-        if (javaClass != obj.javaClass) {
+        if (javaClass != other.javaClass) {
             return false
         }
 
-        val other = obj as VersionBlock
-        return generation == other.generation && year == other.year
+        val otherObj = other as VersionBlock
+        return generation == otherObj.generation && year == otherObj.year
     }
 
     override fun toString(): String {
         return ("VersionBlock ["
                 + "generation: " + generation
                 + ", year: " + year + "]")
-    }
+    }*/
 
-    override fun getASN1Object(): ASN1Encodable? {
-        val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        taggedObjects[0] = ASN1Util.encodeInt(generation)
-        taggedObjects[1] = ASN1Util.encodeInt(year)
-        return ASN1Util.encodeTaggedObjects(taggedObjects)
-    }
+    override val aSN1Object: ASN1Encodable
+        get() = ASN1Util.encodeTaggedObjects(
+            mapOf(
+                0 to ASN1Util.encodeInt(generation),
+                1 to ASN1Util.encodeInt(year)
+            )
+        )
+        /*get() {
+            val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
+                HashMap()
+            taggedObjects[0] = ASN1Util.encodeInt(generation)
+            taggedObjects[1] = ASN1Util.encodeInt(year)
+            return ASN1Util.encodeTaggedObjects(taggedObjects)
+        }*/
 
     companion object {
         private const val serialVersionUID = 8681451530654803679L
+
+        /**
+         * Factory method
+         *
+         * VersionBlock ::= SEQUENCE {
+         *   generation              [0] VersionGeneration,
+         *   year                    [1] VersionYear,
+         *   ...
+         * }
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable?): VersionBlock {
+            require(asn1Encodable is ASN1Sequence) { "Cannot decode!" }
+
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return VersionBlock(
+                generation = ASN1Util.decodeInt(taggedObjects[0]),
+                year = ASN1Util.decodeInt(taggedObjects[1])
+            )
+        }
     }
 }

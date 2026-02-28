@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.cbeff
+package org.jmrtd.cbeff
 
 /**
  * Complex (nested) CBEFF BIR.
@@ -37,16 +37,16 @@ package kmrtd.cbeff
  * 
  * @since 0.4.7
  */
-class ComplexCBEFFInfo<R : BiometricDataBlock> : CBEFFInfo/*<R>*/ {
-    private val subRecords: MutableList<CBEFFInfo> = ArrayList/*<CBEFFInfo>*/()
+class ComplexCBEFFInfo<R : BiometricDataBlock> : CBEFFInfo<R> {
+    private val subRecords: MutableList<CBEFFInfo<R>> = mutableListOf<CBEFFInfo<R>>()
 
     /**
      * Returns the records inside this complex CBEFF info.
      * 
      * @return a list of CBEFF infos
      */
-    fun getSubRecords(): MutableList<CBEFFInfo> {
-        return ArrayList(this.subRecords)
+    fun getSubRecords(): MutableList<CBEFFInfo<R>> {
+        return /*mutableListOf<CBEFFInfo<R>>(*/this.subRecords/*)*/
     }
 
     /**
@@ -54,7 +54,7 @@ class ComplexCBEFFInfo<R : BiometricDataBlock> : CBEFFInfo/*<R>*/ {
      * 
      * @param subRecord the CBEFF info to add
      */
-    fun add(subRecord: CBEFFInfo) {
+    fun add(subRecord: CBEFFInfo<R>) {
         this.subRecords.add(subRecord)
     }
 
@@ -63,7 +63,7 @@ class ComplexCBEFFInfo<R : BiometricDataBlock> : CBEFFInfo/*<R>*/ {
      * 
      * @param subRecords a list of CBEFF infos
      */
-    fun addAll(subRecords: MutableList<CBEFFInfo>) {
+    fun addAll(subRecords: MutableList<CBEFFInfo<R>>) {
         this.subRecords.addAll(subRecords)
     }
 

@@ -38,98 +38,47 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
-import kmrtd.ASN1Util
 import org.bouncycastle.asn1.ASN1Encodable
-import java.util.*
+import org.jmrtd.ASN1Util
 
-class DateTimeBlock : Block {
-    val year: Int
-    val month: Int
-    val day: Int
-    val hour: Int
-    val minute: Int
-    val second: Int
+data class DateTimeBlock(
+    val year: Int,
+    val month: Int,
+    val day: Int,
+    val hour: Int,
+    val minute: Int,
+    val second: Int,
     val millisecond: Int
+) : Block() {
 
-    constructor(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, millisecond: Int) {
-        this.year = year
-        this.month = month
-        this.day = day
-        this.hour = hour
-        this.minute = minute
-        this.second = second
-        this.millisecond = millisecond
-    }
-
-    //  DateTimeBlock ::= SEQUENCE {
-    //    year          [0] Year,
-    //    month         [1] Month          OPTIONAL,
-    //    day           [2] Day            OPTIONAL,
-    //    hour          [3] Hour           OPTIONAL,
-    //    minute        [4] Minute         OPTIONAL,
-    //    second        [5] Second         OPTIONAL,
-    //    millisecond   [6] Millisecond    OPTIONAL
-    //  }
-    //  Year ::= INTEGER (0..9999)
-    //
-    //  Month ::= INTEGER (1..12)
-    //
-    //  Day ::= INTEGER (1..31)
-    //
-    //  Hour ::= INTEGER (0..23)
-    //
-    //  Minute ::= INTEGER (0..59)
-    //
-    //  Second ::= INTEGER (0..59)
-    //
-    //  Millisecond ::= INTEGER (0..999)
-    internal constructor(asn1Encodable: ASN1Encodable?) {
-        val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        year = ASN1Util.decodeInt(taggedObjects[0])
-        month = if (taggedObjects.containsKey(1)) ASN1Util.decodeInt(taggedObjects.get(1)) else -1
-        day = if (taggedObjects.containsKey(2)) ASN1Util.decodeInt(taggedObjects.get(2)) else -1
-        hour = if (taggedObjects.containsKey(3)) ASN1Util.decodeInt(taggedObjects.get(3)) else -1
-        minute = if (taggedObjects.containsKey(4)) ASN1Util.decodeInt(taggedObjects.get(4)) else -1
-        second = if (taggedObjects.containsKey(5)) ASN1Util.decodeInt(taggedObjects.get(5)) else -1
-        millisecond = if (taggedObjects.containsKey(6)) ASN1Util.decodeInt(taggedObjects.get(6)) else -1
-    }
-
-    public override fun hashCode(): Int {
-        return Objects.hash(day, hour, millisecond, minute, month, second, year)
-    }
-
-    public override fun equals(obj: Any?): Boolean {
-        if (this === obj) {
-            return true
-        }
-        if (obj == null) {
-            return false
-        }
-        if (javaClass != obj.javaClass) {
-            return false
-        }
-
-        val other = obj as DateTimeBlock
-        return year == other.year && month == other.month && day == other.day && hour == other.hour && minute == other.minute && second == other.second && millisecond == other.millisecond
-    }
-
-    override fun toString(): String {
-        return ("DateTimeBlock ["
-                + "year: " + year
-                + ", month: " + month
-                + ", day: " + day
-                + ", hour: " + hour
-                + ", minute: " + minute
-                + ", second: " + second
-                + ", millisecond: " + millisecond
-                + "]")
-    }
-
-    override val aSN1Object: ASN1Encodable?
+    override val aSN1Object: ASN1Encodable
         /* PACKAGE */
-        get() {
+        get() = ASN1Util.encodeTaggedObjects(
+            buildMap {
+                put(0, ASN1Util.encodeInt(year))
+                if (month >= 0) {
+                    put(1, ASN1Util.encodeInt(month))
+                }
+                if (day >= 0) {
+                    put(2, ASN1Util.encodeInt(day))
+                }
+                if (hour >= 0) {
+                    put(3, ASN1Util.encodeInt(hour))
+                }
+                if (minute >= 0) {
+                    put(4, ASN1Util.encodeInt(minute))
+                }
+                if (second >= 0) {
+                    put(5, ASN1Util.encodeInt(second))
+                }
+                if (millisecond >= 0) {
+                    put(6, ASN1Util.encodeInt(millisecond))
+                }
+            }
+        )
+        /*get() {
             val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
                 HashMap<Int?, ASN1Encodable?>()
             taggedObjects[0] = ASN1Util.encodeInt(year)
@@ -152,9 +101,45 @@ class DateTimeBlock : Block {
                 taggedObjects[6] = ASN1Util.encodeInt(millisecond)
             }
             return ASN1Util.encodeTaggedObjects(taggedObjects)
-        }
+        }*/
 
     companion object {
         private const val serialVersionUID = 2053705457048769663L
+
+        /**
+         * Factory method
+         *
+         * DateTimeBlock ::= SEQUENCE {
+         *   year          [0] Year,
+         *   month         [1] Month          OPTIONAL,
+         *   day           [2] Day            OPTIONAL,
+         *   hour          [3] Hour           OPTIONAL,
+         *   minute        [4] Minute         OPTIONAL,
+         *   second        [5] Second         OPTIONAL,
+         *   millisecond   [6] Millisecond    OPTIONAL
+         * }
+         * Year ::= INTEGER (0..9999)
+         * Month ::= INTEGER (1..12)
+         * Day ::= INTEGER (1..31)
+         * Hour ::= INTEGER (0..23)
+         * Minute ::= INTEGER (0..59)
+         * Second ::= INTEGER (0..59)
+         * Millisecond ::= INTEGER (0..999)
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable?): DateTimeBlock {
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return DateTimeBlock(
+                year = ASN1Util.decodeInt(taggedObjects[0]),
+                month = if (taggedObjects.containsKey(1)) ASN1Util.decodeInt(taggedObjects[1]) else -1,
+                day = if (taggedObjects.containsKey(2)) ASN1Util.decodeInt(taggedObjects[2]) else -1,
+                hour = if (taggedObjects.containsKey(3)) ASN1Util.decodeInt(taggedObjects[3]) else -1,
+                minute = if (taggedObjects.containsKey(4)) ASN1Util.decodeInt(taggedObjects[4]) else -1,
+                second = if (taggedObjects.containsKey(5)) ASN1Util.decodeInt(taggedObjects[5]) else -1,
+                millisecond =
+                    if (taggedObjects.containsKey(6)) ASN1Util.decodeInt(taggedObjects[6]) else -1
+            )
+        }
     }
 }

@@ -38,40 +38,33 @@
  *
  * Licensed under LGPL 3.0
  */
-package kmrtd.lds.iso39794
+package org.jmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
-import kmrtd.ASN1Util
-import java.util.*
+import org.jmrtd.ASN1Util
 
-class PADScoreBlock : Block {
-    //  PADScoreBlock ::=       SEQUENCE {
-    //    mechanismIdBlock                [0] RegistryIdBlock,
-    //    scoreOrError                    [1] ScoreOrError,
-    //    ...
-    //  }
-    val mechanismIdBlock: RegistryIdBlock
+data class PADScoreBlock(
+    val mechanismIdBlock: RegistryIdBlock,
 
     //  Score ::= INTEGER       (0..100)
     /* NOTE: -1 for error. */
     val score: Int
+) : Block() {
 
-    constructor(mechanismIdBlock: RegistryIdBlock, score: Int) {
+    /*constructor(mechanismIdBlock: RegistryIdBlock, score: Int) {
         this.mechanismIdBlock = mechanismIdBlock
         this.score = score
-    }
+    }*/
 
-    internal constructor(asn1Encodable: ASN1Encodable?) {
-        val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
-        mechanismIdBlock = RegistryIdBlock(taggedObjects.get(0))
-        score = ISO39794Util.decodeScoreOrError(taggedObjects.get(1))
-    }
+    /*internal constructor(asn1Encodable: ASN1Encodable?) {
 
-    override fun hashCode(): Int {
+    }*/
+
+/*    public override fun hashCode(): Int {
         return Objects.hash(mechanismIdBlock, score)
     }
 
-    override fun equals(obj: Any?): Boolean {
+    public override fun equals(obj: Any?): Boolean {
         if (this === obj) {
             return true
         }
@@ -88,30 +81,65 @@ class PADScoreBlock : Block {
 
     override fun toString(): String {
         return "PADScoreBlock [mechanismIdBlock: $mechanismIdBlock, score: $score]"
-    }
+    }*/
 
-    override fun getASN1Object(): ASN1Encodable? {
-        val taggedObjects: MutableMap<Int?, ASN1Encodable?> = HashMap<Int?, ASN1Encodable?>()
-        taggedObjects[0] = mechanismIdBlock.getASN1Object()
-        taggedObjects[1] = ISO39794Util.encodeScoreOrError(score)
-        return ASN1Util.encodeTaggedObjects(taggedObjects)
-    }
+    override val aSN1Object: ASN1Encodable
+        get() =
+            ASN1Util.encodeTaggedObjects(
+                mapOf (
+                    0 to mechanismIdBlock.aSN1Object,
+                    1 to ISO39794Util.encodeScoreOrError(score)
+                )
+            )
+        /*get() {
+            val taggedObjects: MutableMap<Int?, ASN1Encodable?> =
+                HashMap<Int?, ASN1Encodable?>()
+            taggedObjects[0] = mechanismIdBlock.aSN1Object
+            taggedObjects[1] = ISO39794Util.encodeScoreOrError(score)
+            return ASN1Util.encodeTaggedObjects(taggedObjects)
+        }*/
 
     companion object {
-        private val serialVersionUID = -3307800307477099204L
+        private const val serialVersionUID = -3307800307477099204L
 
         //  QualityBlocks ::= SEQUENCE OF PADScoreBlock
-        fun decodePADScoreBlocks(asn1Encodable: ASN1Encodable?): MutableList<PADScoreBlock?> {
+        @JvmStatic
+        fun decodePADScoreBlocks(asn1Encodable: ASN1Encodable?): List<PADScoreBlock> /*{*/ =
             if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
+                ASN1Util.list(asn1Encodable).map { from(it) }
+            } else {
+                listOf(from(asn1Encodable))
+            }
+            /*if (ASN1Util.isSequenceOfSequences(asn1Encodable)) {
                 val blockASN1Objects = ASN1Util.list(asn1Encodable)
-                val blocks: MutableList<PADScoreBlock?> = ArrayList<PADScoreBlock?>(blockASN1Objects.size)
+                val blocks: MutableList<PADScoreBlock?> =
+                    ArrayList(blockASN1Objects.size)
                 for (blockASN1Object in blockASN1Objects) {
-                    blocks.add(PADScoreBlock(blockASN1Object))
+                    blocks.add(from(blockASN1Object))
                 }
                 return blocks
             } else {
-                return mutableListOf<PADScoreBlock?>(PADScoreBlock(asn1Encodable))
+                return mutableListOf(PADScoreBlock(asn1Encodable))
             }
+        }*/
+
+        /**
+         * Factory method
+         *
+         * PADScoreBlock ::=       SEQUENCE {
+         *   mechanismIdBlock                [0] RegistryIdBlock,
+         *   scoreOrError                    [1] ScoreOrError,
+         *   ...
+         * }
+         */
+        @JvmStatic
+        fun from(asn1Encodable: ASN1Encodable?): PADScoreBlock {
+            val taggedObjects = ASN1Util.decodeTaggedObjects(asn1Encodable)
+
+            return PADScoreBlock(
+                mechanismIdBlock = RegistryIdBlock.from(taggedObjects[0]),
+                score = ISO39794Util.decodeScoreOrError(taggedObjects[1])
+            )
         }
     }
 }
