@@ -31,7 +31,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package org.jmrtd.lds.iso39794
+package kmrtd.lds.iso39794
 
 internal interface EncodableEnum<T : Enum<T>> {
     val code: Int

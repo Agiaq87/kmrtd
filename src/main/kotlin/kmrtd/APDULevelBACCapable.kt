@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package org.jmrtd
+package kmrtd
 
 import net.sf.scuba.smartcards.CardServiceException
 import javax.crypto.SecretKey

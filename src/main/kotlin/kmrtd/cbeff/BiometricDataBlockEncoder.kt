@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package org.jmrtd.cbeff
+package kmrtd.cbeff
 
 import java.io.IOException
 import java.io.OutputStream

@@ -38,7 +38,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package org.jmrtd.lds.iso39794
+package kmrtd.lds.iso39794
 
 enum class FingerImagePositionCode(override val code: Int) : EncodableEnum<FingerImagePositionCode> {
     UNKNOWN_POSITION(0),

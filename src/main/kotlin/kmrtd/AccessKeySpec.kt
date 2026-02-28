@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package org.jmrtd
+package kmrtd
 import java.io.Serializable
 import java.security.spec.KeySpec
 

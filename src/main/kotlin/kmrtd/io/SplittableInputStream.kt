@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package org.jmrtd.io
+package kmrtd.io
 
 import java.io.IOException
 import java.io.InputStream

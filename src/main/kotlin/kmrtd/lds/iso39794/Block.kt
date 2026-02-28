@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package org.jmrtd.lds.iso39794
+package kmrtd.lds.iso39794
 
 import org.bouncycastle.asn1.ASN1Encodable
 import java.io.Serializable

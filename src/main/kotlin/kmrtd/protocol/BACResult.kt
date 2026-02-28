@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package org.jmrtd.protocol
+package kmrtd.protocol
 
 import org.jmrtd.AccessKeySpec
 import java.io.Serializable

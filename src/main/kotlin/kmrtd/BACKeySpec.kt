@@ -25,7 +25,7 @@
  *
  * Licensed under LGPL 3.0
  */
-package org.jmrtd
+package kmrtd
 
 /**
  * A BAC key.
