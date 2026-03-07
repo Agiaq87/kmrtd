@@ -27,21 +27,20 @@
  */
 package kmrtd.protocol
 
-import org.jmrtd.AccessKeySpec
+import kmrtd.AccessKeySpec
 import java.io.Serializable
 
 /**
  * Result of a Basic Access Control protocol run.
  * 
  * @author The JMRTD team (info@jmrtd.org)
- * 
  * @version $Revision: 1781 $
  */
 data class BACResult
 /**
  * Creates a BAC result.
  * 
- * @param bACKey the initial access key
+ * @param bACKey  the initial access key
  * @param wrapper the secure messaging wrapper that resulted from the BAC protocol run
  */(
     /**
@@ -55,27 +54,13 @@ data class BACResult
      * 
      * @return the secure messaging wrapper
      */
-    val wrapper: SecureMessagingWrapper
+    val wrapper: SecureMessagingWrapper?
 ) : Serializable {
     /**
      * Creates a BAC result without specifying the initial access key.
      * 
      * @param wrapper the secure messaging wrapper that resulted from the BAC protocol run
      */
-    constructor(wrapper: SecureMessagingWrapper) : this(null, wrapper)
+    constructor(wrapper: SecureMessagingWrapper?) : this(null, wrapper)
 
-    /**
-     * Returns a textual representation of this terminal authentication result.
-     * 
-     * @return a textual representation of this terminal authentication result
-     */
-    override fun toString(): String = buildString {
-        append("BACResult [bacKey: ").append(bACKey ?: "-")
-        append(", wrapper: ").append(wrapper)
-        append(']')
-    }
-
-    companion object {
-        private const val serialVersionUID = -7114911372181772099L
-    }
 }

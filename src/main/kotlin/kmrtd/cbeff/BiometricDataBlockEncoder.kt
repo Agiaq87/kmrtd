@@ -33,12 +33,9 @@ import java.io.OutputStream
 /**
  * Interface to be implemented by client code to encode BDB implementations.
  * 
- * @author The JMRTD team (info@jmrtd.org)
- * 
- * @version $Revision: 1897 $
- * 
  * @param <B> the type of BDB implementation that is encoded by this encoder
- * 
+ * @author The JMRTD team (info@jmrtd.org)
+ * @version $Revision: 1897 $
  * @since 0.4.7
 </B> */
 interface BiometricDataBlockEncoder<B : BiometricDataBlock> {
@@ -47,7 +44,6 @@ interface BiometricDataBlockEncoder<B : BiometricDataBlock> {
      * 
      * @param bdb the biometric data block to write
      * @param out the output stream to write to
-     * 
      * @throws IOException if writing fails
      */
     @Throws(IOException::class)

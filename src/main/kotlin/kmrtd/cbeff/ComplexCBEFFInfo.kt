@@ -32,70 +32,56 @@ package kmrtd.cbeff
  * Specified in ISO 19785-1 (version 2.0) and NISTIR 6529-A (version 1.1).
  * 
  * @author The JMRTD team (info@jmrtd.org)
- * 
  * @version $Revision: 1885 $
- * 
  * @since 0.4.7
  */
 class ComplexCBEFFInfo<R : BiometricDataBlock> : CBEFFInfo<R> {
-    private val subRecords: MutableList<CBEFFInfo<R>> = mutableListOf<CBEFFInfo<R>>()
+    private val _subRecords: MutableList<CBEFFInfo<R>> = ArrayList<CBEFFInfo<R>>()
 
     /**
      * Returns the records inside this complex CBEFF info.
      * 
      * @return a list of CBEFF infos
      */
-    fun getSubRecords(): MutableList<CBEFFInfo<R>> {
-        return /*mutableListOf<CBEFFInfo<R>>(*/this.subRecords/*)*/
-    }
+    fun getSubRecords(): List<CBEFFInfo<R>> =
+        _subRecords.toList()
 
     /**
      * Adds a record to this complex CBEFF info.
      * 
      * @param subRecord the CBEFF info to add
      */
-    fun add(subRecord: CBEFFInfo<R>) {
-        this.subRecords.add(subRecord)
-    }
+    fun add(subRecord: CBEFFInfo<R>) =
+        _subRecords.add(subRecord)
 
     /**
      * Adds all records in a list to this complex CBEFF info.
      * 
      * @param subRecords a list of CBEFF infos
      */
-    fun addAll(subRecords: MutableList<CBEFFInfo<R>>) {
-        this.subRecords.addAll(subRecords)
-    }
+    fun addAll(subRecords: List<CBEFFInfo<R>>) =
+        _subRecords.addAll(subRecords)
 
     /**
      * Removes a record in this complex CBEFF info.
      * 
      * @param index the index of the CBEFF info to remove
      */
-    fun remove(index: Int) {
-        this.subRecords.removeAt(index)
-    }
+    fun remove(index: Int) =
+        _subRecords.removeAt(index)
 
     /**
      * Tests whether the parameter equals this complex CBEFF info.
      * 
      * @param other some other object
-     * 
      * @return whether the other object is equal to this complex CBEFF info
      */
     override fun equals(other: Any?): Boolean {
-        if (other == null) {
-            return false
-        }
-        if (other === this) {
-            return true
-        }
-        if (other.javaClass != ComplexCBEFFInfo::class.java) {
-            return false
-        }
+        if (other == null) return false
+        if (other === this) return true
+        if (other !is ComplexCBEFFInfo<*>) return false
 
-        val otherRecord = other as ComplexCBEFFInfo<*>
-        return subRecords == otherRecord.getSubRecords()
+        return _subRecords == other._subRecords
     }
 
     /**
@@ -103,7 +89,6 @@ class ComplexCBEFFInfo<R : BiometricDataBlock> : CBEFFInfo<R> {
      * 
      * @return the hash code for this complex CBEFF info
      */
-    override fun hashCode(): Int {
-        return 7 * subRecords.hashCode() + 11
-    }
+    override fun hashCode(): Int =
+        7 * _subRecords.hashCode() + 11
 }

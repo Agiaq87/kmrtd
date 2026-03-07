@@ -33,9 +33,7 @@ import java.io.Serializable
  * Biometric data block.
  * 
  * @author The JMRTD team (info@jmrtd.org)
- * 
  * @version $Revision: 1885 $
- * 
  * @since 0.4.7
  */
 interface BiometricDataBlock : Serializable {

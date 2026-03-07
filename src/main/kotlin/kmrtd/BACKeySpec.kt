@@ -27,11 +27,13 @@
  */
 package kmrtd
 
+import kmrtd.support.DocumentNumber
+import kmrtd.support.ICAODate
+
 /**
  * A BAC key.
  * 
  * @author The JMRTD team
- * 
  * @version $Revision: 1786 $
  */
 interface BACKeySpec : AccessKeySpec {
@@ -42,19 +44,26 @@ interface BACKeySpec : AccessKeySpec {
      *
      * @return the document number
      */
-    val documentNumber: String
+    val documentNumber: DocumentNumber
+
+    fun getDocumentNumber(): String
 
     /**
      * Returns the date of birth string.
-     * 
+     *
      * @return a *yymmdd* string
      */
-    val dateOfBirth: String
+    val dateOfBirth: ICAODate
+
+    fun getDateOfBirth(): String
+
 
     /**
      * Returns the date of expiry string.
-     * 
+     *
      * @return a *yymmdd* string
      */
-    val dateOfExpiry: String
+    val dateOfExpiry: ICAODate
+
+    fun getDateOfExpiry(): String
 }

@@ -26,6 +26,7 @@
  * Licensed under LGPL 3.0
  */
 package kmrtd
+
 import java.io.Serializable
 import java.security.spec.KeySpec
 
@@ -33,7 +34,6 @@ import java.security.spec.KeySpec
  * Super interface for BACKeySpec and PACEKeySpec.
  * 
  * @author The JMRTD team (info@jmrtd.org)
- * 
  * @version $Revision: 1799 $
  */
 interface AccessKeySpec : Serializable, KeySpec {
