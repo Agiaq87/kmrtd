@@ -19,6 +19,12 @@
  *
  * $Id: FingerImageInfo.java 1808 2019-03-07 21:32:19Z martijno $
  */
+/*
+ * Modified work Copyright (C) 2026 Alessandro Giaquinto
+ * Kotlin port of JMRTD
+ *
+ * Licensed under LGPL 3.0
+ */
 package kmrtd.lds.iso19794
 
 import kmrtd.cbeff.CBEFFInfoConstants
@@ -167,7 +173,7 @@ class FingerImageInfo : AbstractImageInfo {
     @Throws(IOException::class)
     override fun readObject(inputStream: InputStream) {
         val dataIn =
-            if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+            inputStream as? DataInputStream ?: DataInputStream(inputStream)
 
         /* Finger image header (14), see Table 4, 7.2 in Annex F. */
         /* NOTE: sometimes called "finger header", "finger record header" */
@@ -177,8 +183,8 @@ class FingerImageInfo : AbstractImageInfo {
         this.viewNumber = dataIn.readUnsignedByte()
         this.quality = dataIn.readUnsignedByte()
         this.impressionType = dataIn.readUnsignedByte()
-        setWidth(dataIn.readUnsignedShort())
-        setHeight(dataIn.readUnsignedShort())
+        width = dataIn.readUnsignedShort()
+        height = dataIn.readUnsignedShort()
         /* int RFU = */
         dataIn.readUnsignedByte() /* Should be 0x0000 */
 
@@ -215,8 +221,8 @@ class FingerImageInfo : AbstractImageInfo {
         dataOut.writeByte(viewNumber)
         dataOut.writeByte(quality)
         dataOut.writeByte(impressionType)
-        dataOut.writeShort(getWidth())
-        dataOut.writeShort(getHeight())
+        dataOut.writeShort(width)
+        dataOut.writeShort(height)
         dataOut.writeByte(0x00) /* RFU */
 
         dataOut.write(imageBytes)
@@ -266,7 +272,13 @@ class FingerImageInfo : AbstractImageInfo {
         }
 
         val other = obj as FingerImageInfo
-        return compressionAlgorithm == other.compressionAlgorithm && impressionType == other.impressionType && position == other.position && quality == other.quality && recordLength == other.recordLength && viewCount == other.viewCount && viewNumber == other.viewNumber
+        return compressionAlgorithm == other.compressionAlgorithm &&
+                impressionType == other.impressionType &&
+                position == other.position &&
+                quality == other.quality &&
+                recordLength == other.recordLength &&
+                viewCount == other.viewCount &&
+                viewNumber == other.viewNumber
     }
 
     /**
@@ -281,9 +293,9 @@ class FingerImageInfo : AbstractImageInfo {
             .append("quality: ").append(quality).append(", ")
             .append("position: ").append(positionToString(position)).append(", ")
             .append("impression type: ").append(impressionTypeToString(impressionType)).append(", ")
-            .append("horizontal line length: ").append(getWidth()).append(", ")
-            .append("vertical line length: ").append(getHeight()).append(", ")
-            .append("image: ").append(getWidth()).append(" x ").append(getHeight())
+            .append("horizontal line length: ").append(width).append(", ")
+            .append("vertical line length: ").append(height).append(", ")
+            .append("image: ").append(width).append(" x ").append(height)
             .append(" \"").append(FingerInfo.Companion.toMimeType(compressionAlgorithm))
             .append("\"")
             .append("]")
@@ -482,14 +494,14 @@ class FingerImageInfo : AbstractImageInfo {
          * Finger or palm impression type, according to Table 7 in ISO 19794-4.
          */
         const val IMPRESSION_TYPE_LIVE_SCAN_CONTACTLESS: Int = 9
-        private val serialVersionUID = -6625447389275461027L
+
         val formatType: ByteArray = byteArrayOf(0x00, 0x09)
             /**
              * Returns the format type.
              * 
              * @return a byte array of length 2
              */
-            get() = Companion.field
+
 
         /**
          * Returns a human readable string for the given position code.
@@ -497,42 +509,41 @@ class FingerImageInfo : AbstractImageInfo {
          * @param position an ISO finger position code
          * @return a human readable string
          */
-        private fun positionToString(position: Int): String? {
+        private fun positionToString(position: Int): String? =
             when (position) {
-                POSITION_UNKNOWN_FINGER -> return "Unknown finger"
-                POSITION_RIGHT_THUMB -> return "Right thumb"
-                POSITION_RIGHT_INDEX_FINGER -> return "Right index finger"
-                POSITION_RIGHT_MIDDLE_FINGER -> return "Right middle finger"
-                POSITION_RIGHT_RING_FINGER -> return "Right ring finger"
-                POSITION_RIGHT_LITTLE_FINGER -> return "Right little finger"
-                POSITION_LEFT_THUMB -> return "Left thumb"
-                POSITION_LEFT_INDEX_FINGER -> return "Left index finger"
-                POSITION_LEFT_MIDDLE_FINGER -> return "Left middle finger"
-                POSITION_LEFT_RING_FINGER -> return "Left ring finger"
-                POSITION_LEFT_LITTLE_FINGER -> return "Left little finger"
-                POSITION_PLAIN_RIGHT_FOUR_FINGERS -> return "Right four fingers"
-                POSITION_PLAIN_LEFT_FOUR_FINGERS -> return "Left four fingers"
-                POSITION_PLAIN_THUMBS -> return "Plain thumbs"
-                POSITION_UNKNOWN_PALM -> return "Unknown palm"
-                POSITION_RIGHT_FULL_PALM -> return "Right full palm"
-                POSITION_RIGHT_WRITER_S_PALM -> return "Right writer's palm"
-                POSITION_LEFT_FULL_PALM -> return "Left full palm"
-                POSITION_LEFT_WRITER_S_PALM -> return "Left writer's palm"
-                POSITION_RIGHT_LOWER_PALM -> return "Right lower palm"
-                POSITION_RIGHT_UPPER_PALM -> return "Right upper palm"
-                POSITION_LEFT_LOWER_PALM -> return "Left lower palm"
-                POSITION_LEFT_UPPER_PALM -> return "Left upper palm"
-                POSITION_RIGHT_OTHER -> return "Right other"
-                POSITION_LEFT_OTHER -> return "Left other"
-                POSITION_RIGHT_INTERDIGITAL -> return "Right interdigital"
-                POSITION_RIGHT_THENAR -> return "Right thenar"
-                POSITION_RIGHT_HYPOTHENAR -> return "Right hypothenar"
-                POSITION_LEFT_INTERDIGITAL -> return "Left interdigital"
-                POSITION_LEFT_THENAR -> return "Left thenar"
-                POSITION_LEFT_HYPOTHENAR -> return "Left hypothenar"
-                else -> return null
+                POSITION_UNKNOWN_FINGER -> "Unknown finger"
+                POSITION_RIGHT_THUMB -> "Right thumb"
+                POSITION_RIGHT_INDEX_FINGER -> "Right index finger"
+                POSITION_RIGHT_MIDDLE_FINGER -> "Right middle finger"
+                POSITION_RIGHT_RING_FINGER -> "Right ring finger"
+                POSITION_RIGHT_LITTLE_FINGER -> "Right little finger"
+                POSITION_LEFT_THUMB -> "Left thumb"
+                POSITION_LEFT_INDEX_FINGER -> "Left index finger"
+                POSITION_LEFT_MIDDLE_FINGER -> "Left middle finger"
+                POSITION_LEFT_RING_FINGER -> "Left ring finger"
+                POSITION_LEFT_LITTLE_FINGER -> "Left little finger"
+                POSITION_PLAIN_RIGHT_FOUR_FINGERS -> "Right four fingers"
+                POSITION_PLAIN_LEFT_FOUR_FINGERS -> "Left four fingers"
+                POSITION_PLAIN_THUMBS -> "Plain thumbs"
+                POSITION_UNKNOWN_PALM -> "Unknown palm"
+                POSITION_RIGHT_FULL_PALM -> "Right full palm"
+                POSITION_RIGHT_WRITER_S_PALM -> "Right writer's palm"
+                POSITION_LEFT_FULL_PALM -> "Left full palm"
+                POSITION_LEFT_WRITER_S_PALM -> "Left writer's palm"
+                POSITION_RIGHT_LOWER_PALM -> "Right lower palm"
+                POSITION_RIGHT_UPPER_PALM -> "Right upper palm"
+                POSITION_LEFT_LOWER_PALM -> "Left lower palm"
+                POSITION_LEFT_UPPER_PALM -> "Left upper palm"
+                POSITION_RIGHT_OTHER -> "Right other"
+                POSITION_LEFT_OTHER -> "Left other"
+                POSITION_RIGHT_INTERDIGITAL -> "Right interdigital"
+                POSITION_RIGHT_THENAR -> "Right thenar"
+                POSITION_RIGHT_HYPOTHENAR -> "Right hypothenar"
+                POSITION_LEFT_INTERDIGITAL -> "Left interdigital"
+                POSITION_LEFT_THENAR -> "Left thenar"
+                POSITION_LEFT_HYPOTHENAR -> "Left hypothenar"
+                else -> null
             }
-        }
 
         /**
          * Returns a human readable string for the given impression type code.
@@ -540,18 +551,17 @@ class FingerImageInfo : AbstractImageInfo {
          * @param impressionType the impression type code
          * @return a human readable string for the given impression type code
          */
-        private fun impressionTypeToString(impressionType: Int): String? {
+        private fun impressionTypeToString(impressionType: Int): String? =
             when (impressionType) {
-                IMPRESSION_TYPE_LIVE_SCAN_PLAIN -> return "Live scan plain"
-                IMPRESSION_TYPE_LIVE_SCAN_ROLLED -> return "Live scan rolled"
-                IMPRESSION_TYPE_NON_LIVE_SCAN_PLAIN -> return "Non-live scan plain"
-                IMPRESSION_TYPE_NON_LIVE_SCAN_ROLLED -> return "Non-live scan rolled"
-                IMPRESSION_TYPE_LATENT -> return "Latent"
-                IMPRESSION_TYPE_SWIPE -> return "Swipe"
-                IMPRESSION_TYPE_LIVE_SCAN_CONTACTLESS -> return "Live scan contactless"
-                else -> return null
+                IMPRESSION_TYPE_LIVE_SCAN_PLAIN -> "Live scan plain"
+                IMPRESSION_TYPE_LIVE_SCAN_ROLLED -> "Live scan rolled"
+                IMPRESSION_TYPE_NON_LIVE_SCAN_PLAIN -> "Non-live scan plain"
+                IMPRESSION_TYPE_NON_LIVE_SCAN_ROLLED -> "Non-live scan rolled"
+                IMPRESSION_TYPE_LATENT -> "Latent"
+                IMPRESSION_TYPE_SWIPE -> "Swipe"
+                IMPRESSION_TYPE_LIVE_SCAN_CONTACTLESS -> "Live scan contactless"
+                else -> null
             }
-        }
 
         /**
          * Converts from ISO (FRH) coding to ICAO/CBEFF (BHT) coding.
@@ -573,41 +583,40 @@ class FingerImageInfo : AbstractImageInfo {
          * @param position an ISO finger position code
          * @return an ICAO biometric subtype
          */
-        private fun toBiometricSubtype(position: Int): Int {
+        private fun toBiometricSubtype(position: Int): Int =
             when (position) {
-                POSITION_UNKNOWN_FINGER -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE
-                POSITION_RIGHT_THUMB -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_THUMB
-                POSITION_RIGHT_INDEX_FINGER -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_POINTER_FINGER
-                POSITION_RIGHT_MIDDLE_FINGER -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_MIDDLE_FINGER
-                POSITION_RIGHT_RING_FINGER -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RING_FINGER
-                POSITION_RIGHT_LITTLE_FINGER -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LITTLE_FINGER
-                POSITION_LEFT_THUMB -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_THUMB
-                POSITION_LEFT_INDEX_FINGER -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_POINTER_FINGER
-                POSITION_LEFT_MIDDLE_FINGER -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_MIDDLE_FINGER
-                POSITION_LEFT_RING_FINGER -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RING_FINGER
-                POSITION_LEFT_LITTLE_FINGER -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LITTLE_FINGER
-                POSITION_PLAIN_RIGHT_FOUR_FINGERS -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
-                POSITION_PLAIN_LEFT_FOUR_FINGERS -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
-                POSITION_PLAIN_THUMBS -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_THUMB
-                POSITION_UNKNOWN_PALM -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE
-                POSITION_RIGHT_FULL_PALM -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
-                POSITION_RIGHT_WRITER_S_PALM -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE
-                POSITION_LEFT_FULL_PALM -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
-                POSITION_LEFT_WRITER_S_PALM -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
-                POSITION_RIGHT_LOWER_PALM -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
-                POSITION_RIGHT_UPPER_PALM -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
-                POSITION_LEFT_LOWER_PALM -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
-                POSITION_LEFT_UPPER_PALM -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
-                POSITION_RIGHT_OTHER -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
-                POSITION_LEFT_OTHER -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
-                POSITION_RIGHT_INTERDIGITAL -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
-                POSITION_RIGHT_THENAR -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
-                POSITION_RIGHT_HYPOTHENAR -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
-                POSITION_LEFT_INTERDIGITAL -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
-                POSITION_LEFT_THENAR -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
-                POSITION_LEFT_HYPOTHENAR -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
-                else -> return CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE
+                POSITION_UNKNOWN_FINGER -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE
+                POSITION_RIGHT_THUMB -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_THUMB
+                POSITION_RIGHT_INDEX_FINGER -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_POINTER_FINGER
+                POSITION_RIGHT_MIDDLE_FINGER -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_MIDDLE_FINGER
+                POSITION_RIGHT_RING_FINGER -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RING_FINGER
+                POSITION_RIGHT_LITTLE_FINGER -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LITTLE_FINGER
+                POSITION_LEFT_THUMB -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_THUMB
+                POSITION_LEFT_INDEX_FINGER -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_POINTER_FINGER
+                POSITION_LEFT_MIDDLE_FINGER -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_MIDDLE_FINGER
+                POSITION_LEFT_RING_FINGER -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RING_FINGER
+                POSITION_LEFT_LITTLE_FINGER -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LITTLE_FINGER
+                POSITION_PLAIN_RIGHT_FOUR_FINGERS -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
+                POSITION_PLAIN_LEFT_FOUR_FINGERS -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
+                POSITION_PLAIN_THUMBS -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_THUMB
+                POSITION_UNKNOWN_PALM -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE
+                POSITION_RIGHT_FULL_PALM -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
+                POSITION_RIGHT_WRITER_S_PALM -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE
+                POSITION_LEFT_FULL_PALM -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
+                POSITION_LEFT_WRITER_S_PALM -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
+                POSITION_RIGHT_LOWER_PALM -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
+                POSITION_RIGHT_UPPER_PALM -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
+                POSITION_LEFT_LOWER_PALM -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
+                POSITION_LEFT_UPPER_PALM -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
+                POSITION_RIGHT_OTHER -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
+                POSITION_LEFT_OTHER -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
+                POSITION_RIGHT_INTERDIGITAL -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
+                POSITION_RIGHT_THENAR -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
+                POSITION_RIGHT_HYPOTHENAR -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_RIGHT
+                POSITION_LEFT_INTERDIGITAL -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
+                POSITION_LEFT_THENAR -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
+                POSITION_LEFT_HYPOTHENAR -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE or CBEFFInfoConstants.BIOMETRIC_SUBTYPE_MASK_LEFT
+                else -> CBEFFInfoConstants.BIOMETRIC_SUBTYPE_NONE
             }
-        }
     }
 }

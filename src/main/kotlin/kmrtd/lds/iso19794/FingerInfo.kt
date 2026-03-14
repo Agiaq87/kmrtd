@@ -19,6 +19,12 @@
  *
  * $Id: FingerInfo.java 1896 2025-04-18 21:39:56Z martijno $
  */
+/*
+ * Modified work Copyright (C) 2026 Alessandro Giaquinto
+ * Kotlin port of JMRTD
+ *
+ * Licensed under LGPL 3.0
+ */
 package kmrtd.lds.iso19794
 
 import kmrtd.cbeff.BiometricDataBlock
@@ -135,34 +141,7 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
     var compressionAlgorithm: Int = 0
         private set
 
-    private var sbh: StandardBiometricHeader?
-
-    /**
-     * Constructs a finger info record.
-     * 
-     * @param captureDeviceId           capture device identifier
-     * @param acquisitionLevel          acquisition level
-     * @param scaleUnits                scale units, one of [.SCALE_UNITS_PPI], [.SCALE_UNITS_PPCM]
-     * @param scanResolutionHorizontal  horizontal scan resolution
-     * @param scanResolutionVertical    vertical scan resolution
-     * @param imageResolutionHorizontal horizontal image resolution
-     * @param imageResolutionVertical   vertical image resolution
-     * @param depth                     image depth
-     * @param compressionAlgorithm      compression algorithm, see [.getCompressionAlgorithm] for valid values
-     * @param fingerImageInfos          the image records
-     */
-    constructor(
-        captureDeviceId: Int, acquisitionLevel: Int, scaleUnits: Int,
-        scanResolutionHorizontal: Int, scanResolutionVertical: Int,
-        imageResolutionHorizontal: Int, imageResolutionVertical: Int,
-        depth: Int, compressionAlgorithm: Int,
-        fingerImageInfos: MutableList<FingerImageInfo?>?
-    ) : this(
-        null, captureDeviceId, acquisitionLevel, scaleUnits,
-        scanResolutionHorizontal, scanResolutionVertical,
-        imageResolutionHorizontal, imageResolutionVertical,
-        depth, compressionAlgorithm, fingerImageInfos
-    )
+    private var sbh: StandardBiometricHeader? = null
 
     /**
      * Constructs a finger info record.
@@ -181,11 +160,16 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
      */
     constructor(
         sbh: StandardBiometricHeader?,
-        captureDeviceId: Int, acquisitionLevel: Int, scaleUnits: Int,
-        scanResolutionHorizontal: Int, scanResolutionVertical: Int,
-        imageResolutionHorizontal: Int, imageResolutionVertical: Int,
-        depth: Int, compressionAlgorithm: Int,
-        fingerImageInfos: MutableList<FingerImageInfo?>?
+        captureDeviceId: Int,
+        acquisitionLevel: Int,
+        scaleUnits: Int,
+        scanResolutionHorizontal: Int,
+        scanResolutionVertical: Int,
+        imageResolutionHorizontal: Int,
+        imageResolutionVertical: Int,
+        depth: Int,
+        compressionAlgorithm: Int,
+        fingerImageInfos: List<FingerImageInfo>
     ) {
         this.sbh = sbh
         this.captureDeviceId = captureDeviceId
@@ -231,7 +215,7 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
         /* General record header (32) according to Table 2 in Section 7.1 of ISO/IEC 19794-4. */
 
         val dataIn =
-            if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+            inputStream as? DataInputStream ?: DataInputStream(inputStream)
 
         val fir0 = dataIn.readInt() /* header (e.g. "FIR", 0x00) (4) */
         require(fir0 == FORMAT_IDENTIFIER) {
@@ -275,7 +259,7 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
 
         for (i in 0..<count) {
             val imageInfo = FingerImageInfo(inputStream, compressionAlgorithm)
-            constructedDataLength += imageInfo.getRecordLength()
+            constructedDataLength += imageInfo.recordLength
             add(imageInfo)
         }
         if (dataLength != constructedDataLength) {
@@ -300,14 +284,17 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
         var dataLength: Long = 0
         val fingerImageInfos = getSubRecords()
         for (fingerImageInfo in fingerImageInfos) {
-            dataLength += fingerImageInfo.getRecordLength()
+            fingerImageInfo?.let {
+                dataLength += it.recordLength
+            }
+            //dataLength += fingerImageInfo?.recordLength
         }
 
         val recordLength = headerLength + dataLength
 
         /* General record header, should be 32... */
         val dataOut =
-            if (outputStream is DataOutputStream) outputStream else DataOutputStream(outputStream)
+            outputStream as? DataOutputStream ?: DataOutputStream(outputStream)
 
         dataOut.writeInt(FORMAT_IDENTIFIER) /* 4 */
         dataOut.writeInt(VERSION_NUMBER) /* + 4 = 8 */
@@ -328,7 +315,7 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
         dataOut.writeShort(0x0000) /* RFU */ /* + 2 = 32 */
 
         for (fingerImageInfo in fingerImageInfos) {
-            fingerImageInfo.writeObject(dataOut)
+            fingerImageInfo?.writeObject(dataOut)
         }
     }
 
@@ -360,7 +347,15 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
         }
 
         val other = obj as FingerInfo
-        return acquisitionLevel == other.acquisitionLevel && captureDeviceId == other.captureDeviceId && compressionAlgorithm == other.compressionAlgorithm && depth == other.depth && this.horizontalImageResolution == other.horizontalImageResolution && this.verticalImageResolution == other.verticalImageResolution && scaleUnits == other.scaleUnits && this.horizontalScanningResolution == other.horizontalScanningResolution && this.verticalScanningResolution == other.verticalScanningResolution
+        return acquisitionLevel == other.acquisitionLevel &&
+                captureDeviceId == other.captureDeviceId &&
+                compressionAlgorithm == other.compressionAlgorithm &&
+                depth == other.depth &&
+                this.horizontalImageResolution == other.horizontalImageResolution &&
+                this.verticalImageResolution == other.verticalImageResolution &&
+                scaleUnits == other.scaleUnits &&
+                this.horizontalScanningResolution == other.horizontalScanningResolution &&
+                this.verticalScanningResolution == other.verticalScanningResolution
     }
 
     override fun toString(): String {
@@ -375,7 +370,7 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
     }
 
     /* ONLY PRIVATE BELOW */
-    val standardBiometricHeader: StandardBiometricHeader
+    override val standardBiometricHeader: StandardBiometricHeader
         /**
          * Returns the standard biometric header of this biometric data block.
          * 
@@ -396,16 +391,15 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
                     (StandardBiometricHeader.ISO_19794_FINGER_IMAGE_FORMAT_TYPE_VALUE and 0xFF).toByte()
                 )
 
-                val elements: SortedMap<Int?, ByteArray?> =
-                    TreeMap<Int?, ByteArray?>()
-                elements.put(ISO781611.BIOMETRIC_TYPE_TAG, biometricType)
-                elements.put(ISO781611.BIOMETRIC_SUBTYPE_TAG, biometricSubtype)
-                elements.put(ISO781611.FORMAT_OWNER_TAG, formatOwner)
-                elements.put(ISO781611.FORMAT_TYPE_TAG, formatType)
+                val elements: SortedMap<Int, ByteArray> = TreeMap()
+                elements[ISO781611.BIOMETRIC_TYPE_TAG] = biometricType
+                elements[ISO781611.BIOMETRIC_SUBTYPE_TAG] = biometricSubtype
+                elements[ISO781611.FORMAT_OWNER_TAG] = formatOwner
+                elements[ISO781611.FORMAT_TYPE_TAG] = formatType
 
                 sbh = StandardBiometricHeader(elements)
             }
-            return sbh
+            return sbh!!
         }
 
     val fingerImageInfos: MutableList<FingerImageInfo?>
@@ -446,12 +440,13 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
             val fingerImageInfos =
                 getSubRecords()
             for (fingerImageInfo in fingerImageInfos) {
-                val fingerImageInfoSubType = fingerImageInfo.getBiometricSubtype()
-                if (isFirst) {
-                    result = fingerImageInfoSubType
-                    isFirst = false
-                } else {
-                    result = result and fingerImageInfoSubType
+                fingerImageInfo?.biometricSubtype?.let {
+                    if (isFirst) {
+                        result = it
+                        isFirst = false
+                    } else {
+                        result = result and it
+                    }
                 }
             }
             return result
@@ -521,7 +516,7 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
         @Throws(IOException::class)
         private fun readUnsignedLong(inputStream: InputStream, byteCount: Int): Long {
             val dataIn =
-                if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+                inputStream as? DataInputStream ?: DataInputStream(inputStream)
             val buf = ByteArray(byteCount)
             dataIn.readFully(buf)
             var result = 0L
@@ -579,17 +574,16 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
          * `COMPRESSION_JPEG2000`, or `COMPRESSION_PNG`
          * @return a mime-type string
          */
-        fun toMimeType(imageDataType: Int): String? {
+        fun toMimeType(imageDataType: Int): String? =
             when (imageDataType) {
-                COMPRESSION_UNCOMPRESSED_NO_BIT_PACKING -> return "image/raw"
-                COMPRESSION_UNCOMPRESSED_BIT_PACKED -> return "image/raw"
-                COMPRESSION_WSQ -> return "image/x-wsq"
-                COMPRESSION_JPEG -> return "image/jpeg"
-                COMPRESSION_JPEG2000 -> return "image/jpeg2000"
-                COMPRESSION_PNG -> return "image/png"
-                else -> return null
+                COMPRESSION_UNCOMPRESSED_NO_BIT_PACKING -> "image/raw"
+                COMPRESSION_UNCOMPRESSED_BIT_PACKED -> "image/raw"
+                COMPRESSION_WSQ -> "image/x-wsq"
+                COMPRESSION_JPEG -> "image/jpeg"
+                COMPRESSION_JPEG2000 -> "image/jpeg2000"
+                COMPRESSION_PNG -> "image/png"
+                else -> null
             }
-        }
 
         /**
          * Converts a mime-type to an image data (compression) type.
@@ -613,5 +607,14 @@ class FingerInfo : AbstractListInfo<FingerImageInfo?>, BiometricDataBlock {
 
             throw IllegalArgumentException("Did not recognize mimeType")
         }
+
+        /**
+         * Factory method
+         *
+         * Constructs a finger info record.
+         * @param sbh         standard biometric header to use
+         * @param inputStream input stream
+         * @throws IOException on I/O error
+         */
     }
 }

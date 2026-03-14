@@ -19,6 +19,12 @@
  *
  * $Id: IrisImageInfo.java 1799 2018-10-30 16:25:48Z martijno $
  */
+/*
+ * Modified work Copyright (C) 2026 Alessandro Giaquinto
+ * Kotlin port of JMRTD
+ *
+ * Licensed under LGPL 3.0
+ */
 package kmrtd.lds.iso19794
 
 import kmrtd.lds.AbstractImageInfo
@@ -96,15 +102,22 @@ class IrisImageInfo : AbstractImageInfo {
      * @throws IOException on error reading the image input stream
      */
     constructor(
-        imageNumber: Int, quality: Int, rotationAngle: Int, rotationAngleUncertainty: Int,
-        width: Int, height: Int, imageBytes: InputStream, imageLength: Int, imageFormat: Int
+        imageNumber: Int,
+        quality: Int,
+        rotationAngle: Int,
+        rotationAngleUncertainty: Int,
+        width: Int,
+        height: Int,
+        imageBytes: InputStream,
+        imageLength: Int,
+        imageFormat: Int
     ) : super(
         TYPE_IRIS,
         width,
         height,
         imageBytes,
         imageLength.toLong(),
-        getMimeTypeFromImageFormat(imageFormat)
+        ISO19794.ImageQuality.getMimeTypeFromImageFormat(imageFormat)
     ) {
         requireNotNull(imageBytes) { "Null image bytes" }
         this.imageNumber = imageNumber
@@ -132,7 +145,10 @@ class IrisImageInfo : AbstractImageInfo {
         imageLength: Int,
         imageFormat: Int
     ) : this(
-        imageNumber, IMAGE_QUAL_UNDEF, ROT_ANGLE_UNDEF, ROT_UNCERTAIN_UNDEF,
+        imageNumber,
+        ISO19794.ImageQuality.IMAGE_QUAL_UNDEF,
+        ISO19794.ImageQuality.ROT_ANGLE_UNDEF,
+        ISO19794.ImageQuality.ROT_UNCERTAIN_UNDEF,
         width, height, imageBytes, imageLength, imageFormat
     )
 
@@ -145,7 +161,7 @@ class IrisImageInfo : AbstractImageInfo {
      */
     internal constructor(inputStream: InputStream, imageFormat: Int) : super(TYPE_IRIS) {
         this.imageFormat = imageFormat
-        setMimeType(getMimeTypeFromImageFormat(imageFormat))
+        mimeType = ISO19794.ImageQuality.getMimeTypeFromImageFormat(imageFormat)
         readObject(inputStream)
     }
 
@@ -195,15 +211,15 @@ class IrisImageInfo : AbstractImageInfo {
                 "image number: " + imageNumber + ", " +
                 "quality: " + quality + ", " +
                 "image: " +
-                getWidth() + " x " + getHeight() +
-                "mime-type: " + getMimeTypeFromImageFormat(imageFormat) +
+                width + " x " + height +
+                "mime-type: " + ISO19794.ImageQuality.getMimeTypeFromImageFormat(imageFormat) +
                 "]"
     }
 
     @Throws(IOException::class)
     override fun readObject(inputStream: InputStream) {
         val dataIn =
-            if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+            inputStream as? DataInputStream ?: DataInputStream(inputStream)
 
         this.imageNumber = dataIn.readUnsignedShort() /* 2 */
         this.quality = dataIn.readUnsignedByte() /* + 1 = 3 */
@@ -238,7 +254,7 @@ class IrisImageInfo : AbstractImageInfo {
 
     @Throws(IOException::class)
     public override fun writeObject(out: OutputStream?) {
-        val dataOut = if (out is DataOutputStream) out else DataOutputStream(out)
+        val dataOut = out as? DataOutputStream ?: DataOutputStream(out)
 
         dataOut.writeShort(this.imageNumber) /* 2 */
         dataOut.writeByte(this.quality) /* + 1 = 3 */
@@ -265,61 +281,5 @@ class IrisImageInfo : AbstractImageInfo {
 
         dataOut.writeInt(getImageLength()) /* + 4 = 11 */
         writeImage(dataOut)
-    }
-
-    companion object {
-        /**
-         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
-         */
-        const val IMAGE_QUAL_UNDEF: Int = 0xFE /* (decimal 254) */
-
-        /* TODO: proper enums for data types */
-        /**
-         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
-         */
-        const val IMAGE_QUAL_LOW_LO: Int = 0x1A
-
-        /**
-         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
-         */
-        const val IMAGE_QUAL_LOW_HI: Int = 0x32 /* (decimal 26-50) */
-
-        /**
-         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
-         */
-        const val IMAGE_QUAL_MED_LO: Int = 0x33
-
-        /**
-         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
-         */
-        const val IMAGE_QUAL_MED_HI: Int = 0x4B /* (decimal 51-75) */
-
-        /**
-         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
-         */
-        const val IMAGE_QUAL_HIGH_LO: Int = 0x4C
-
-        /**
-         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
-         */
-        const val IMAGE_QUAL_HIGH_HI: Int = 0x64 /* (decimal 76-100) */
-        private const val serialVersionUID = 833541246115625112L
-        private const val ROT_ANGLE_UNDEF = 0xFFFF
-        private const val ROT_UNCERTAIN_UNDEF = 0xFFFF
-
-        /**
-         * Returns a mime-type for the given image format code.
-         * 
-         * @param imageFormat the image format code
-         * @return a mime-type
-         */
-        private fun getMimeTypeFromImageFormat(imageFormat: Int): String? {
-            return when (imageFormat) {
-                IrisInfo.Companion.IMAGEFORMAT_MONO_RAW, IrisInfo.Companion.IMAGEFORMAT_RGB_RAW -> WSQ_MIME_TYPE
-                IrisInfo.Companion.IMAGEFORMAT_MONO_JPEG, IrisInfo.Companion.IMAGEFORMAT_RGB_JPEG, IrisInfo.Companion.IMAGEFORMAT_MONO_JPEG_LS, IrisInfo.Companion.IMAGEFORMAT_RGB_JPEG_LS -> JPEG_MIME_TYPE
-                IrisInfo.Companion.IMAGEFORMAT_MONO_JPEG2000, IrisInfo.Companion.IMAGEFORMAT_RGB_JPEG2000 -> JPEG2000_MIME_TYPE
-                else -> null
-            }
-        }
     }
 }

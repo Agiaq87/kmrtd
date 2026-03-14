@@ -6,17 +6,7 @@
  */
 package kmrtd.lds.support
 
-import kmrtd.lds.iso19794.FaceImageInfo.Companion.HAIR_COLOR_BALD
-import kmrtd.lds.iso19794.FaceImageInfo.Companion.HAIR_COLOR_BLACK
-import kmrtd.lds.iso19794.FaceImageInfo.Companion.HAIR_COLOR_BLONDE
-import kmrtd.lds.iso19794.FaceImageInfo.Companion.HAIR_COLOR_BLUE
-import kmrtd.lds.iso19794.FaceImageInfo.Companion.HAIR_COLOR_BROWN
-import kmrtd.lds.iso19794.FaceImageInfo.Companion.HAIR_COLOR_GRAY
-import kmrtd.lds.iso19794.FaceImageInfo.Companion.HAIR_COLOR_GREEN
-import kmrtd.lds.iso19794.FaceImageInfo.Companion.HAIR_COLOR_RED
-import kmrtd.lds.iso19794.FaceImageInfo.Companion.HAIR_COLOR_UNKNOWN
-import kmrtd.lds.iso19794.FaceImageInfo.Companion.HAIR_COLOR_UNSPECIFIED
-import kmrtd.lds.iso19794.FaceImageInfo.Companion.HAIR_COLOR_WHITE
+import kmrtd.lds.iso19794.ISO19794
 
 /**
  * Hair color code based on Section 5.5.5 of ISO 19794-5.
@@ -27,17 +17,17 @@ enum class HairColor
  *
  * @param code the integer code for a color
  */(private val code: Int) {
-    UNSPECIFIED(HAIR_COLOR_UNSPECIFIED),
-    BALD(HAIR_COLOR_BALD),
-    BLACK(HAIR_COLOR_BLACK),
-    BLONDE(HAIR_COLOR_BLONDE),
-    BROWN(HAIR_COLOR_BROWN),
-    GRAY(HAIR_COLOR_GRAY),
-    WHITE(HAIR_COLOR_WHITE),
-    RED(HAIR_COLOR_RED),
-    GREEN(HAIR_COLOR_GREEN),
-    BLUE(HAIR_COLOR_BLUE),
-    UNKNOWN(HAIR_COLOR_UNKNOWN);
+    UNSPECIFIED(ISO19794.HAIR_COLOR_UNSPECIFIED),
+    BALD(ISO19794.HAIR_COLOR_BALD),
+    BLACK(ISO19794.HAIR_COLOR_BLACK),
+    BLONDE(ISO19794.HAIR_COLOR_BLONDE),
+    BROWN(ISO19794.HAIR_COLOR_BROWN),
+    GRAY(ISO19794.HAIR_COLOR_GRAY),
+    WHITE(ISO19794.HAIR_COLOR_WHITE),
+    RED(ISO19794.HAIR_COLOR_RED),
+    GREEN(ISO19794.HAIR_COLOR_GREEN),
+    BLUE(ISO19794.HAIR_COLOR_BLUE),
+    UNKNOWN(ISO19794.HAIR_COLOR_UNKNOWN);
 
     /**
      * Returns the code for this hair color.

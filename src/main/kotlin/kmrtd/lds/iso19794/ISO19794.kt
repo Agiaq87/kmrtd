@@ -6,6 +6,10 @@
  */
 package kmrtd.lds.iso19794
 
+import kmrtd.lds.ImageInfo.JPEG2000_MIME_TYPE
+import kmrtd.lds.ImageInfo.JPEG_MIME_TYPE
+import kmrtd.lds.ImageInfo.WSQ_MIME_TYPE
+
 object ISO19794 {
     /* These correspond to values in Table 4 in 5.5.4 in ISO/IEC 19794-5:2005(E). */
     const val EYE_COLOR_UNSPECIFIED: Int = 0x00
@@ -81,4 +85,201 @@ object ISO19794 {
      * Indexes into poseAngle array.
      */
     const val ROLL = 2
+
+    /**
+     * Consumed in IrisInfo
+     */
+    object ImageFormat {
+        /**
+         * Image format.
+         */
+        const val IMAGEFORMAT_MONO_RAW: Int = 2 /* (0x0002) */
+
+        /**
+         * Image format.
+         */
+        const val IMAGEFORMAT_RGB_RAW: Int = 4 /* (0x0004) */
+
+        /**
+         * Image format.
+         */
+        const val IMAGEFORMAT_MONO_JPEG: Int = 6 /* (0x0006) */
+
+        /**
+         * Image format.
+         */
+        const val IMAGEFORMAT_RGB_JPEG: Int = 8 /* (0x0008) */
+
+        /**
+         * Image format.
+         */
+        const val IMAGEFORMAT_MONO_JPEG_LS: Int = 10 /* (0x000A) */
+
+        /**
+         * Image format.
+         */
+        const val IMAGEFORMAT_RGB_JPEG_LS: Int = 12 /* (0x000C) */
+
+        /**
+         * Image format.
+         */
+        const val IMAGEFORMAT_MONO_JPEG2000: Int = 14 /* (0x000E) */
+
+        /**
+         * Image format.
+         */
+        const val IMAGEFORMAT_RGB_JPEG2000: Int = 16 /* (0x0010) */
+
+        /**
+         * Constant for capture device Id, based on Table 2 in Section 5.5 in ISO 19794-6.
+         */
+        const val CAPTURE_DEVICE_UNDEF: Int = 0
+
+        /**
+         * Constant for horizontal and veritical orientation, based on Table 2 in Section 5.5 in ISO 19794-6.
+         */
+        const val ORIENTATION_UNDEF: Int = 0
+
+        /**
+         * Constant for horizontal and veritical orientation, based on Table 2 in Section 5.5 in ISO 19794-6.
+         */
+        const val ORIENTATION_BASE: Int = 1
+
+        /**
+         * Constant for horizontal and veritical orientation, based on Table 2 in Section 5.5 in ISO 19794-6.
+         */
+        const val ORIENTATION_FLIPPED: Int = 2
+
+        /**
+         * Scan type (rectilinear only), based on Table 2 in Section 5.5 in ISO 19794-6.
+         */
+        const val SCAN_TYPE_UNDEF: Int = 0
+
+        /**
+         * Scan type (rectilinear only), based on Table 2 in Section 5.5 in ISO 19794-6.
+         */
+        const val SCAN_TYPE_PROGRESSIVE: Int = 1
+
+        /**
+         * Scan type (rectilinear only), based on Table 2 in Section 5.5 in ISO 19794-6.
+         */
+        const val SCAN_TYPE_INTERLACE_FRAME: Int = 2
+
+        /**
+         * Scan type (rectilinear only), based on Table 2 in Section 5.5 in ISO 19794-6.
+         */
+        const val SCAN_TYPE_INTERLACE_FIELD: Int = 3
+
+        /**
+         * Scan type (rectilinear only), based on Table 2 in Section 5.5 in ISO 19794-6.
+         */
+        const val SCAN_TYPE_CORRECTED: Int = 4
+
+        /**
+         * Iris occlusion (polar only), based on Table 2 in Section 5.5 in ISO 19794-6.
+         */
+        const val IROCC_UNDEF: Int = 0
+
+        /**
+         * Iris occlusion (polar only), based on Table 2 in Section 5.5 in ISO 19794-6.
+         */
+        const val IROCC_PROCESSED: Int = 1
+
+        /**
+         * Iris occlusion filling (polar only), based on Table 2 in Section 5.5 in ISO 19794-6.
+         */
+        const val IROCC_ZEROFILL: Int = 0
+
+        /**
+         * Iris occlusion filling (polar only), based on Table 2 in Section 5.5 in ISO 19794-6.
+         */
+        const val IROC_UNITFILL: Int = 1
+
+        /* TODO: reference to specification. */
+        const val INTENSITY_DEPTH_UNDEF: Int = 0
+
+        /* TODO: reference to specification. */
+        const val TRANS_UNDEF: Int = 0
+        const val TRANS_STD: Int = 1
+
+        /* TODO: reference to specification. */
+        const val IRBNDY_UNDEF: Int = 0
+        const val IRBNDY_PROCESSED: Int = 1
+
+        /**
+         * Format identifier 'I', 'I', 'R', 0x00.
+         */
+        const val FORMAT_IDENTIFIER = 0x49495200
+
+        /**
+         * Version number.
+         */
+        const val VERSION_NUMBER = 0x30313000
+    }
+
+    /**
+     * Consumed in IrisImageInfo
+     */
+    object ImageQuality {
+        /**
+         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
+         */
+        const val IMAGE_QUAL_UNDEF: Int = 0xFE /* (decimal 254) */
+
+        /* TODO: proper enums for data types */
+        /**
+         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
+         */
+        const val IMAGE_QUAL_LOW_LO: Int = 0x1A
+
+        /**
+         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
+         */
+        const val IMAGE_QUAL_LOW_HI: Int = 0x32 /* (decimal 26-50) */
+
+        /**
+         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
+         */
+        const val IMAGE_QUAL_MED_LO: Int = 0x33
+
+        /**
+         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
+         */
+        const val IMAGE_QUAL_MED_HI: Int = 0x4B /* (decimal 51-75) */
+
+        /**
+         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
+         */
+        const val IMAGE_QUAL_HIGH_LO: Int = 0x4C
+
+        /**
+         * Image quality, based on Table 3 in Section 5.5 of ISO 19794-6.
+         */
+        const val IMAGE_QUAL_HIGH_HI: Int = 0x64 /* (decimal 76-100) */
+        const val ROT_ANGLE_UNDEF = 0xFFFF
+        const val ROT_UNCERTAIN_UNDEF = 0xFFFF
+
+        /**
+         * Returns a mime-type for the given image format code.
+         *
+         * @param imageFormat the image format code
+         * @return a mime-type
+         */
+        fun getMimeTypeFromImageFormat(imageFormat: Int): String? {
+            return when (imageFormat) {
+                ImageFormat.IMAGEFORMAT_MONO_RAW,
+                ImageFormat.IMAGEFORMAT_RGB_RAW -> WSQ_MIME_TYPE
+
+                ImageFormat.IMAGEFORMAT_MONO_JPEG,
+                ImageFormat.IMAGEFORMAT_RGB_JPEG,
+                ImageFormat.IMAGEFORMAT_MONO_JPEG_LS,
+                ImageFormat.IMAGEFORMAT_RGB_JPEG_LS -> JPEG_MIME_TYPE
+
+                ImageFormat.IMAGEFORMAT_MONO_JPEG2000,
+                ImageFormat.IMAGEFORMAT_RGB_JPEG2000 -> JPEG2000_MIME_TYPE
+
+                else -> null
+            }
+        }
+    }
 }

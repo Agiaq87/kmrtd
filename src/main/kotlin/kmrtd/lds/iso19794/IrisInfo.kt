@@ -19,6 +19,12 @@
  *
  * $Id: IrisInfo.java 1896 2025-04-18 21:39:56Z martijno $
  */
+/*
+ * Modified work Copyright (C) 2026 Alessandro Giaquinto
+ * Kotlin port of JMRTD
+ *
+ * Licensed under LGPL 3.0
+ */
 package kmrtd.lds.iso19794
 
 import kmrtd.cbeff.BiometricDataBlock
@@ -33,7 +39,6 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.SortedMap
 import java.util.TreeMap
-import java.util.logging.Logger
 
 /**
  * Iris record header and biometric subtype blocks
@@ -252,10 +257,10 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
         val headerLength: Long = 45
         var dataLength: Long = 0
         for (irisBiometricSubtypeInfo in irisBiometricSubtypeInfos) {
-            dataLength += irisBiometricSubtypeInfo.getRecordLength()
+            dataLength += irisBiometricSubtypeInfo.recordLength
             add(irisBiometricSubtypeInfo)
         }
-        require(!(deviceUniqueId == null || deviceUniqueId.size != 16)) { "deviceUniqueId invalid" }
+        require(deviceUniqueId.size == 16) { "deviceUniqueId invalid" }
         this.deviceUniqueId = ByteArray(16)
         System.arraycopy(deviceUniqueId, 0, this.deviceUniqueId, 0, deviceUniqueId.size)
         this.recordLength = headerLength + dataLength
@@ -292,17 +297,17 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
         /* Iris Record Header (45) */
 
         val dataIn =
-            if (inputStream is DataInputStream) inputStream else DataInputStream(inputStream)
+            inputStream as? DataInputStream ?: DataInputStream(inputStream)
 
         val iir0 = dataIn.readInt() /* format id (e.g. "IIR" 0x00) */ /* 4 */
-        require(iir0 == FORMAT_IDENTIFIER) {
+        require(iir0 == ISO19794.ImageFormat.FORMAT_IDENTIFIER) {
             "'IIR' marker expected! Found " + Integer.toHexString(
                 iir0
             )
         }
 
         val version = dataIn.readInt() /* version (e.g. "010" 0x00) */ /* + 4 = 8 */
-        require(version == VERSION_NUMBER) {
+        require(version == ISO19794.ImageFormat.VERSION_NUMBER) {
             "'010' version number expected! Found " + Integer.toHexString(
                 version
             )
@@ -316,7 +321,7 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
         val count = dataIn.readUnsignedByte() /* + 1 = 15 */
 
         val recordHeaderLength = dataIn.readUnsignedShort() /* Should be 45. */ /* + 2 = 17 */
-        require(recordHeaderLength.toLong() == headerLength) { "Expected header length " + headerLength + ", found " + recordHeaderLength }
+        require(recordHeaderLength.toLong() == headerLength) { "Expected header length $headerLength, found $recordHeaderLength" }
 
         /*
          *  16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1
@@ -360,15 +365,15 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
         /* A record contains biometric subtype (or: 'feature') blocks (which contain image data blocks)... */
         for (i in 0..<count) {
             val biometricSubtypeInfo = IrisBiometricSubtypeInfo(inputStream, imageFormat)
-            constructedDataLength += biometricSubtypeInfo.getRecordLength()
+            constructedDataLength += biometricSubtypeInfo.recordLength
             add(biometricSubtypeInfo)
         }
         if (dataLength != constructedDataLength) {
-            LOGGER.warning(
+            /*LOGGER.warning(
                 ("ConstructedDataLength and dataLength differ: "
                         + "dataLength = " + dataLength
                         + ", constructedDataLength = " + constructedDataLength)
-            )
+            )*/
         }
     }
 
@@ -385,17 +390,17 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
         var dataLength = 0
         val biometricSubtypeInfos = getSubRecords()
         for (biometricSubtypeInfo in biometricSubtypeInfos) {
-            dataLength += biometricSubtypeInfo.getRecordLength().toInt()
+            dataLength += biometricSubtypeInfo?.recordLength?.toInt()
         }
 
         val recordLength = headerLength + dataLength
 
         /* Iris Record Header (45) */
         val dataOut =
-            if (outputStream is DataOutputStream) outputStream else DataOutputStream(outputStream)
+            outputStream as? DataOutputStream ?: DataOutputStream(outputStream)
 
-        dataOut.writeInt(FORMAT_IDENTIFIER) /* header (e.g. "IIR", 0x00) */ /* 4 */
-        dataOut.writeInt(VERSION_NUMBER) /* version in ASCII (e.g. "010" 0x00) */ /* +4 = 8 */
+        dataOut.writeInt(ISO19794.ImageFormat.FORMAT_IDENTIFIER) /* header (e.g. "IIR", 0x00) */ /* 4 */
+        dataOut.writeInt(ISO19794.ImageFormat.VERSION_NUMBER) /* version in ASCII (e.g. "010" 0x00) */ /* +4 = 8 */
 
         dataOut.writeInt(recordLength) /* NOTE: bytes 9-12, i.e. 4 bytes, despite "unsigned long" in ISO/IEC FCD 19749-6. */ /* +4 = 12 */
 
@@ -422,11 +427,11 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
         dataOut.write(deviceUniqueId) /* array of length 16 */ /* + 16 = 45 */
 
         for (biometricSubtypeInfo in biometricSubtypeInfos) {
-            biometricSubtypeInfo.writeObject(outputStream)
+            biometricSubtypeInfo?.writeObject(outputStream)
         }
     }
 
-    val standardBiometricHeader: StandardBiometricHeader
+    override val standardBiometricHeader: StandardBiometricHeader
         /**
          * Returns the standard biometric header of this iris info.
          * 
@@ -449,10 +454,10 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
 
                 val elements: SortedMap<Int?, ByteArray?> =
                     TreeMap<Int?, ByteArray?>()
-                elements.put(ISO781611.BIOMETRIC_TYPE_TAG, biometricType)
-                elements.put(ISO781611.BIOMETRIC_SUBTYPE_TAG, biometricSubtype)
-                elements.put(ISO781611.FORMAT_OWNER_TAG, formatOwner)
-                elements.put(ISO781611.FORMAT_TYPE_TAG, formatType)
+                elements[ISO781611.BIOMETRIC_TYPE_TAG] = biometricType
+                elements[ISO781611.BIOMETRIC_SUBTYPE_TAG] = biometricSubtype
+                elements[ISO781611.FORMAT_OWNER_TAG] = formatOwner
+                elements[ISO781611.FORMAT_TYPE_TAG] = formatType
 
                 sbh = StandardBiometricHeader(elements)
             }
@@ -475,7 +480,7 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
         result = prime * result + rawImageHeight
         result = prime * result + rawImageWidth
         result = prime * result + (recordLength xor (recordLength ushr 32)).toInt()
-        result = prime * result + (if (sbh == null) 0 else sbh.hashCode())
+        result = prime * result + (sbh?.hashCode() ?: 0)
         result = prime * result + scanType
         result = prime * result + verticalOrientation
         return result
@@ -497,7 +502,7 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
             if (other.sbh != null) {
                 return false
             }
-        } else if (!sbh!!.equals(other.sbh)) {
+        } else if (sbh != other.sbh) {
             return false
         }
         if (boundaryExtraction != other.boundaryExtraction) {
@@ -600,138 +605,8 @@ class IrisInfo : AbstractListInfo<IrisBiometricSubtypeInfo?>, BiometricDataBlock
             val irisBiometricSubtypeInfos =
                 getSubRecords()
             for (irisBiometricSubtypeInfo in irisBiometricSubtypeInfos) {
-                result = result and irisBiometricSubtypeInfo.getBiometricSubtype()
+                result = result and irisBiometricSubtypeInfo?.biometricSubtype
             }
             return result
         }
-
-    companion object {
-        /**
-         * Image format.
-         */
-        const val IMAGEFORMAT_MONO_RAW: Int = 2 /* (0x0002) */
-
-        /**
-         * Image format.
-         */
-        const val IMAGEFORMAT_RGB_RAW: Int = 4 /* (0x0004) */
-
-        /**
-         * Image format.
-         */
-        const val IMAGEFORMAT_MONO_JPEG: Int = 6 /* (0x0006) */
-
-        /**
-         * Image format.
-         */
-        const val IMAGEFORMAT_RGB_JPEG: Int = 8 /* (0x0008) */
-
-        /**
-         * Image format.
-         */
-        const val IMAGEFORMAT_MONO_JPEG_LS: Int = 10 /* (0x000A) */
-
-        /**
-         * Image format.
-         */
-        const val IMAGEFORMAT_RGB_JPEG_LS: Int = 12 /* (0x000C) */
-
-        /**
-         * Image format.
-         */
-        const val IMAGEFORMAT_MONO_JPEG2000: Int = 14 /* (0x000E) */
-
-        /**
-         * Image format.
-         */
-        const val IMAGEFORMAT_RGB_JPEG2000: Int = 16 /* (0x0010) */
-
-        /**
-         * Constant for capture device Id, based on Table 2 in Section 5.5 in ISO 19794-6.
-         */
-        const val CAPTURE_DEVICE_UNDEF: Int = 0
-
-        /**
-         * Constant for horizontal and veritical orientation, based on Table 2 in Section 5.5 in ISO 19794-6.
-         */
-        const val ORIENTATION_UNDEF: Int = 0
-
-        /**
-         * Constant for horizontal and veritical orientation, based on Table 2 in Section 5.5 in ISO 19794-6.
-         */
-        const val ORIENTATION_BASE: Int = 1
-
-        /**
-         * Constant for horizontal and veritical orientation, based on Table 2 in Section 5.5 in ISO 19794-6.
-         */
-        const val ORIENTATION_FLIPPED: Int = 2
-
-        /**
-         * Scan type (rectilinear only), based on Table 2 in Section 5.5 in ISO 19794-6.
-         */
-        const val SCAN_TYPE_UNDEF: Int = 0
-
-        /**
-         * Scan type (rectilinear only), based on Table 2 in Section 5.5 in ISO 19794-6.
-         */
-        const val SCAN_TYPE_PROGRESSIVE: Int = 1
-
-        /**
-         * Scan type (rectilinear only), based on Table 2 in Section 5.5 in ISO 19794-6.
-         */
-        const val SCAN_TYPE_INTERLACE_FRAME: Int = 2
-
-        /**
-         * Scan type (rectilinear only), based on Table 2 in Section 5.5 in ISO 19794-6.
-         */
-        const val SCAN_TYPE_INTERLACE_FIELD: Int = 3
-
-        /**
-         * Scan type (rectilinear only), based on Table 2 in Section 5.5 in ISO 19794-6.
-         */
-        const val SCAN_TYPE_CORRECTED: Int = 4
-
-        /**
-         * Iris occlusion (polar only), based on Table 2 in Section 5.5 in ISO 19794-6.
-         */
-        const val IROCC_UNDEF: Int = 0
-
-        /**
-         * Iris occlusion (polar only), based on Table 2 in Section 5.5 in ISO 19794-6.
-         */
-        const val IROCC_PROCESSED: Int = 1
-
-        /**
-         * Iris occlusion filling (polar only), based on Table 2 in Section 5.5 in ISO 19794-6.
-         */
-        const val IROCC_ZEROFILL: Int = 0
-
-        /**
-         * Iris occlusion filling (polar only), based on Table 2 in Section 5.5 in ISO 19794-6.
-         */
-        const val IROC_UNITFILL: Int = 1
-
-        /* TODO: reference to specification. */
-        const val INTENSITY_DEPTH_UNDEF: Int = 0
-
-        /* TODO: reference to specification. */
-        const val TRANS_UNDEF: Int = 0
-        const val TRANS_STD: Int = 1
-
-        /* TODO: reference to specification. */
-        const val IRBNDY_UNDEF: Int = 0
-        const val IRBNDY_PROCESSED: Int = 1
-        private val serialVersionUID = -3415309711643815511L
-        private val LOGGER: Logger = Logger.getLogger("org.jmrtd")
-
-        /**
-         * Format identifier 'I', 'I', 'R', 0x00.
-         */
-        private const val FORMAT_IDENTIFIER = 0x49495200
-
-        /**
-         * Version number.
-         */
-        private const val VERSION_NUMBER = 0x30313000
-    }
 }
